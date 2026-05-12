@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "817185446546",
+    "project_id": "red-hawk-wallet-dev",
+    "storage_bucket": "red-hawk-wallet-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817185446546:android:cd17833d44899c297e244b",
+        "android_client_info": {
+          "package_name": "com.example.redhawkwallet_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_pqs3TGT0J-0e-Mo62GDI3cipjUgKqHE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
