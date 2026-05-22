@@ -1,6 +1,9 @@
 # Local tool configuration (not committed)
 .claude/
 
+# Flutter SDK accidentally placed in project root — must not be committed
+/flutter/
+
 # Miscellaneous
 *.class
 *.lock
