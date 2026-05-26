@@ -5,6 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/student/screens/student_dashboard_screen.dart';
+import '../../features/student/screens/account_profile_screen.dart';
+import '../../features/student/screens/university_verification_screen.dart';
+import '../../features/student/screens/qr_id_screen.dart';
+import '../../features/student/screens/qr_scanner_screen.dart';
+import '../../features/student/screens/transaction_history_screen.dart';
 import '../../features/vendor/screens/vendor_dashboard_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 
@@ -35,6 +40,26 @@ class AppRouter {
       GoRoute(
         path: '/home',
         builder: (context, state) => const StudentDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const AccountProfileScreen(),
+      ),
+      GoRoute(
+        path: '/verify',
+        builder: (context, state) => const UniversityVerificationScreen(),
+      ),
+      GoRoute(
+        path: '/qr-id',
+        builder: (context, state) => const QrIdScreen(),
+      ),
+      GoRoute(
+        path: '/qr-scanner',
+        builder: (context, state) => const QrScannerScreen(),
+      ),
+      GoRoute(
+        path: '/transactions',
+        builder: (context, state) => const TransactionHistoryScreen(),
       ),
       GoRoute(
         path: '/vendor',
