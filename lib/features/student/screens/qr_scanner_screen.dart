@@ -6,41 +6,73 @@ class QrScannerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         title: const Text('Scan QR Code'),
-        centerTitle: true,
+        elevation: 0,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: const [
-                Icon(
-                  Icons.qr_code_scanner,
-                  size: 96,
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Scan QR Code',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
+      body: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(color: Colors.black),
+                Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xFF8B1A2E), width: 3),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.qr_code_scanner, color: Colors.white54, size: 100),
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  "Point your camera at a vendor's QR code.",
-                  textAlign: TextAlign.center,
+                Positioned(
+                  bottom: 60,
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Point camera at vendor QR code',
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text('Demo Mode', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-        ),
+          Container(
+            padding: const EdgeInsets.all(20),
+            color: Colors.black,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+                label: const Text('Cancel'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white12,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
