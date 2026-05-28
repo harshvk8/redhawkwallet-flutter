@@ -10,8 +10,13 @@ import '../../features/student/screens/university_verification_screen.dart';
 import '../../features/student/screens/qr_id_screen.dart';
 import '../../features/student/screens/qr_scanner_screen.dart';
 import '../../features/student/screens/transaction_history_screen.dart';
-import '../../features/vendor/screens/vendor_dashboard_screen.dart';
-import '../../features/admin/screens/admin_dashboard_screen.dart';
+import '../../features/vendor/presentation/vendor_dashboard_screen.dart';
+import '../../features/vendor/presentation/vendor_offers_screen.dart';
+import '../../features/vendor/presentation/vendor_create_payment_request_screen.dart';
+import '../../features/vendor/presentation/vendor_qr_payment_screen.dart';
+import '../../features/vendor/presentation/vendor_transaction_history_screen.dart';
+import '../../features/admin/presentation/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/admin_manage_vendors_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
@@ -66,8 +71,28 @@ class AppRouter {
         builder: (context, state) => const VendorDashboardScreen(),
       ),
       GoRoute(
+        path: '/vendor/offers',
+        builder: (context, state) => const VendorOffersScreen(),
+      ),
+      GoRoute(
+        path: '/vendor/payment-request',
+        builder: (context, state) => const VendorCreatePaymentRequestScreen(),
+      ),
+      GoRoute(
+        path: '/vendor/qr-payment',
+        builder: (context, state) => const VendorQrPaymentScreen(),
+      ),
+      GoRoute(
+        path: '/vendor/history',
+        builder: (context, state) => const VendorTransactionHistoryScreen(),
+      ),
+      GoRoute(
         path: '/admin',
         builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/admin/manage-vendors',
+        builder: (context, state) => const AdminManageVendorsScreen(),
       ),
     ],
   );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -37,7 +38,7 @@ class AdminDashboardScreen extends StatelessWidget {
             const SizedBox(height: 20),
             const Text('Admin Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            _actionButton(Icons.manage_accounts, 'Manage Vendors'),
+            _actionButton(Icons.manage_accounts, 'Manage Vendors', onPressed: () => context.go('/admin/manage-vendors')),
             const SizedBox(height: 8),
             _actionButton(Icons.bar_chart, 'View All Transactions'),
             const SizedBox(height: 8),
@@ -96,11 +97,11 @@ class AdminDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _actionButton(IconData icon, String label) {
+  Widget _actionButton(IconData icon, String label, {VoidCallback? onPressed}) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: onPressed ?? () {},
         icon: Icon(icon),
         label: Text(label),
         style: ElevatedButton.styleFrom(

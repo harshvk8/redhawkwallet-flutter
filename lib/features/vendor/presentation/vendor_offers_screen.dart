@@ -76,7 +76,7 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
                             ),
                             Switch(
                               value: offer['active'],
-                              activeColor: const Color(0xFFC8102E),
+                              activeThumbColor: const Color(0xFFC8102E),
                               onChanged: (val) => setState(() => offers[index]['active'] = val),
                             ),
                           ],

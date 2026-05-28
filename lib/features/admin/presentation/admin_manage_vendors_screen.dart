@@ -152,7 +152,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: filters.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final filter = filters[index];
                   final selected = filter == selectedFilter;
@@ -204,7 +204,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: statusColor.withOpacity(0.1),
+                                  color: statusColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(vendor['status'], style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),

@@ -68,6 +68,16 @@ class StudentDashboardScreen extends StatelessWidget {
                       icon: Icons.receipt_long_outlined,
                       onTap: () => context.go('/transactions'),
                     ),
+                    _NavButton(
+                      label: 'Vendor',
+                      icon: Icons.store_outlined,
+                      onTap: () => context.go('/vendor'),
+                    ),
+                    _NavButton(
+                      label: 'Admin',
+                      icon: Icons.admin_panel_settings_outlined,
+                      onTap: () => context.go('/admin'),
+                    ),
                   ],
                 ),
               ],
