@@ -2,8 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../models/user_model.dart';
 import '../services/auth_service.dart';
-import '../../../core/theme/app_colors.dart';
+import '../services/user_service.dart';
+import '../widgets/auth_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
+  final _userService = UserService();
   bool _loading = false;
   bool _obscurePassword = true;
 
@@ -31,16 +34,43 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await _authService.signIn(
+      final credential = await _authService.signIn(
         _emailController.text.trim(),
         _passwordController.text,
       );
+      final uid = credential.user?.uid;
+      if (uid == null || !mounted) return;
+
+      final userModel = await _userService.getUserDocument(uid);
+      if (!mounted) return;
+
+      if (userModel != null &&
+          !userModel.isEmailVerified &&
+          credential.user?.emailVerified != true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Text('Your email is not verified. Please check your inbox.'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+
+      final role = userModel?.role ?? UserRole.normalUser;
+      if (role == UserRole.vendor) {
+        context.go('/vendor');
+      } else if (role == UserRole.admin) {
+        context.go('/admin');
+      } else {
+        context.go('/home');
+      }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message ?? 'Login failed. Please try again.'),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     } finally {
@@ -50,118 +80,331 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final borderColor =
+        isDark ? const Color(0xFF38383A) : const Color(0xFFE5E7EB);
+    final inputFill =
+        isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF9F9F9);
+    final mutedText =
+        isDark ? const Color(0xFF8E8E93) : const Color(0xFF6B7280);
+    final mutedBg =
+        isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF3F4F6);
+
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 32),
-                Center(
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SingleChildScrollView(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 448),
                   child: Container(
-                    width: 80,
-                    height: 80,
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(20),
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: borderColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black
+                              .withValues(alpha: isDark ? 0.4 : 0.08),
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                    child: const Icon(
-                      Icons.account_balance_wallet,
-                      color: Colors.white,
-                      size: 40,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'RedHawk Wallet',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Sign in to your account',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
-                  ),
-                  validator: (v) =>
-                      (v == null || !v.contains('@')) ? 'Enter a valid email' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _signIn(),
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outlined),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
-                    ),
-                  ),
-                  validator: (v) => (v == null || v.length < 6)
-                      ? 'Password must be at least 6 characters'
-                      : null,
-                ),
-                const SizedBox(height: 28),
-                ElevatedButton(
-                  onPressed: _loading ? null : _signIn,
-                  child: _loading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                    padding: const EdgeInsets.all(32),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Logo
+                          Center(
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: cs.primary,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: cs.primary.withValues(alpha: 0.35),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const AuthHawkLogo(),
+                            ),
                           ),
-                        )
-                      : const Text('Sign In'),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Don't have an account?",
-                      style: TextStyle(color: AppColors.textSecondary),
+                          const SizedBox(height: 24),
+
+                          // Title
+                          Text(
+                            'Welcome to Red Hawk Wallet',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Your campus wallet, rewards, offers, and student ID in one place.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 13, color: mutedText, height: 1.5),
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Email
+                          AuthInputLabel('Email'),
+                          const SizedBox(height: 6),
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black),
+                            decoration: _inputDec(
+                              hint: 'you@university.edu',
+                              icon: Icons.mail_outlined,
+                              fill: inputFill,
+                              border: borderColor,
+                              cs: cs,
+                            ),
+                            validator: (v) => (v == null || !v.contains('@'))
+                                ? 'Enter a valid email'
+                                : null,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Password
+                          AuthInputLabel('Password'),
+                          const SizedBox(height: 6),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) => _signIn(),
+                            style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black),
+                            decoration: _inputDec(
+                              hint: 'Enter your password',
+                              icon: Icons.lock_outlined,
+                              fill: inputFill,
+                              border: borderColor,
+                              cs: cs,
+                              suffix: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  size: 20,
+                                  color: mutedText,
+                                ),
+                                onPressed: () => setState(() =>
+                                    _obscurePassword = !_obscurePassword),
+                              ),
+                            ),
+                            validator: (v) => (v == null || v.length < 6)
+                                ? 'Password must be at least 6 characters'
+                                : null,
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Forgot password
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {},
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                'Forgot password?',
+                                style: TextStyle(
+                                    fontSize: 13, color: cs.primary),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Log In button
+                          ElevatedButton(
+                            onPressed: _loading ? null : _signIn,
+                            style: ElevatedButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: _loading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Log In'),
+                          ),
+                          const SizedBox(height: 20),
+
+                          AuthOrDivider(
+                              mutedText: mutedText, borderColor: borderColor),
+                          const SizedBox(height: 16),
+
+                          // Google
+                          AuthSocialButton(
+                            onTap: () {},
+                            borderColor: borderColor,
+                            cardColor: cardColor,
+                            mutedBg: mutedBg,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const AuthGoogleLogo(),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Continue with Google',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Apple
+                          AuthSocialButton(
+                            onTap: () {},
+                            borderColor: borderColor,
+                            cardColor: cardColor,
+                            mutedBg: mutedBg,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.apple,
+                                    size: 20,
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Continue with Apple ID',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Create account link
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account? ",
+                                style: TextStyle(
+                                    fontSize: 13, color: mutedText),
+                              ),
+                              GestureDetector(
+                                onTap: () => context.go('/register'),
+                                child: Text(
+                                  'Create an account',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: cs.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          AuthUniversityNote(
+                            mutedBg: mutedBg,
+                            borderColor: borderColor,
+                            mutedText: mutedText,
+                          ),
+                          const SizedBox(height: 16),
+
+                          Text(
+                            'Demo wallet only. Real payments coming after security and payment review.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 11, color: mutedText, height: 1.5),
+                          ),
+                        ],
+                      ),
                     ),
-                    TextButton(
-                      onPressed: () => context.go('/register'),
-                      child: const Text('Register'),
-                    ),
-                  ],
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+
+          // Dark mode toggle
+          AuthDarkToggle(mutedBg: mutedBg, isDark: isDark),
+        ],
       ),
+    );
+  }
+
+  InputDecoration _inputDec({
+    required String hint,
+    required IconData icon,
+    required Color fill,
+    required Color border,
+    required ColorScheme cs,
+    Widget? suffix,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      prefixIcon: Icon(icon, size: 20),
+      suffixIcon: suffix,
+      filled: true,
+      fillColor: fill,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: border),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: cs.primary, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: cs.error),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: cs.error, width: 2),
+      ),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
   }
 }
