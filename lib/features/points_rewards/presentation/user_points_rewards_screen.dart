@@ -1,0 +1,114 @@
+import 'package:flutter/material.dart';
+
+class UserPointsRewardsScreen extends StatelessWidget {
+  const UserPointsRewardsScreen({super.key});
+
+  final List<Map<String, dynamic>> rewards = const [
+    {'title': 'Free Coffee', 'points': 300, 'icon': Icons.local_cafe, 'available': false},
+    {'title': '\$5 Off Any Purchase', 'points': 500, 'icon': Icons.discount, 'available': false},
+    {'title': 'Free Meal Swipe', 'points': 750, 'icon': Icons.restaurant, 'available': false},
+    {'title': '\$10 Bonus Dollars', 'points': 1000, 'icon': Icons.card_giftcard, 'available': false},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    const int currentPoints = 250;
+    const int nextRewardPoints = 300;
+    const double progress = currentPoints / nextRewardPoints;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF8B1A2E),
+        foregroundColor: Colors.white,
+        title: const Text('Points & Rewards'),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade700,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.stars, color: Colors.white, size: 40),
+                  const SizedBox(height: 8),
+                  const Text('Your Points', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const Text('250', style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  const Text('Next reward at 300 points', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: Colors.white.withValues(alpha: 0.3),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                      minHeight: 10,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text('50 more points to go', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Available Rewards', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 12),
+            ...rewards.map((reward) => Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade100),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF0F0),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(reward['icon'] as IconData, color: const Color(0xFF8B1A2E), size: 22),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(reward['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('${reward['points']} points required', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: reward['available'] as bool ? () {} : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF8B1A2E),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.grey.shade200,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('Redeem', style: TextStyle(fontSize: 12)),
+                  ),
+                ],
+              ),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+}
