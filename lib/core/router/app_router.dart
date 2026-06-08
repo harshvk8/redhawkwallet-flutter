@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
+import '../../features/auth/screens/email_verification_screen.dart';
 import '../../features/student/screens/student_dashboard_screen.dart';
 import '../../features/student/screens/account_profile_screen.dart';
 import '../../features/student/screens/university_verification_screen.dart';
@@ -17,15 +18,25 @@ class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
 
   static final router = GoRouter(
-    initialLocation: '/login',
+    // Determine initial location based on current auth state so a logged-in
+    // user skips the login screen on cold start.
+    initialLocation:
+        FirebaseAuth.instance.currentUser != null ? '/home' : '/login',
     refreshListenable: _authNotifier,
     redirect: (BuildContext context, GoRouterState state) {
       final isLoggedIn = FirebaseAuth.instance.currentUser != null;
       final loc = state.matchedLocation;
-      final isAuthRoute = loc == '/login' || loc == '/register';
 
-      if (!isLoggedIn && !isAuthRoute) return '/login';
-      if (isLoggedIn && isAuthRoute) return '/home';
+      // Public routes that don't require auth
+      final isPublicRoute = loc == '/login' ||
+          loc == '/register' ||
+          loc == '/email-verification';
+
+      // Not logged in and trying to reach a protected route → login
+      if (!isLoggedIn && !isPublicRoute) return '/login';
+
+      // Logged in and at a protected route → no redirect; screens handle
+      // post-login navigation themselves so role-based routing works.
       return null;
     },
     routes: [
@@ -36,6 +47,10 @@ class AppRouter {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/email-verification',
+        builder: (context, state) => const EmailVerificationScreen(),
       ),
       GoRoute(
         path: '/home',
