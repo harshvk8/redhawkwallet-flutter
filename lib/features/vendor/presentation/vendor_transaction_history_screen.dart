@@ -4,60 +4,88 @@ class VendorTransactionHistoryScreen extends StatefulWidget {
   const VendorTransactionHistoryScreen({super.key});
 
   @override
-  State<VendorTransactionHistoryScreen> createState() => _VendorTransactionHistoryScreenState();
+  State<VendorTransactionHistoryScreen> createState() =>
+      _VendorTransactionHistoryScreenState();
 }
 
-class _VendorTransactionHistoryScreenState extends State<VendorTransactionHistoryScreen> {
+class _VendorTransactionHistoryScreenState
+    extends State<VendorTransactionHistoryScreen> {
   String selectedFilter = 'All';
   final List<String> filters = ['All', 'Paid', 'Pending', 'Failed'];
+  bool _isLoading = true;
+  bool _hasError = false;
+  List<Map<String, dynamic>> transactions = [];
 
-  final List<Map<String, dynamic>> transactions = [
-    {
-      'name': 'Alex Johnson',
-      'amount': '\$12.50',
-      'date': 'May 21, 2026',
-      'time': '3:45 PM',
-      'status': 'Paid',
-      'note': 'Coffee order',
-      'points': '12',
-    },
-    {
-      'name': 'Sara Lee',
-      'amount': '\$8.00',
-      'date': 'May 21, 2026',
-      'time': '2:30 PM',
-      'status': 'Paid',
-      'note': 'Sandwich',
-      'points': '8',
-    },
-    {
-      'name': 'Mike Chen',
-      'amount': '\$22.00',
-      'date': 'May 21, 2026',
-      'time': '1:15 PM',
-      'status': 'Pending',
-      'note': 'Lunch combo',
-      'points': '0',
-    },
-    {
-      'name': 'Priya Patel',
-      'amount': '\$5.00',
-      'date': 'May 20, 2026',
-      'time': '4:00 PM',
-      'status': 'Failed',
-      'note': 'Snack',
-      'points': '0',
-    },
-    {
-      'name': 'James Wu',
-      'amount': '\$18.75',
-      'date': 'May 20, 2026',
-      'time': '12:00 PM',
-      'status': 'Paid',
-      'note': 'Pizza slice + drink',
-      'points': '18',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+    try {
+      await Future.delayed(const Duration(seconds: 1));
+      setState(() {
+        transactions = [
+          {
+            'name': 'Alex Johnson',
+            'amount': '\$12.50',
+            'date': 'May 21, 2026',
+            'time': '3:45 PM',
+            'status': 'Paid',
+            'note': 'Coffee order',
+            'points': '12',
+          },
+          {
+            'name': 'Sara Lee',
+            'amount': '\$8.00',
+            'date': 'May 21, 2026',
+            'time': '2:30 PM',
+            'status': 'Paid',
+            'note': 'Sandwich',
+            'points': '8',
+          },
+          {
+            'name': 'Mike Chen',
+            'amount': '\$22.00',
+            'date': 'May 21, 2026',
+            'time': '1:15 PM',
+            'status': 'Pending',
+            'note': 'Lunch combo',
+            'points': '0',
+          },
+          {
+            'name': 'Priya Patel',
+            'amount': '\$5.00',
+            'date': 'May 20, 2026',
+            'time': '4:00 PM',
+            'status': 'Failed',
+            'note': 'Snack',
+            'points': '0',
+          },
+          {
+            'name': 'James Wu',
+            'amount': '\$18.75',
+            'date': 'May 20, 2026',
+            'time': '12:00 PM',
+            'status': 'Paid',
+            'note': 'Pizza slice + drink',
+            'points': '18',
+          },
+        ];
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    }
+  }
 
   Color _statusColor(String status) {
     if (status == 'Paid') return Colors.green;
@@ -72,10 +100,6 @@ class _VendorTransactionHistoryScreenState extends State<VendorTransactionHistor
 
   @override
   Widget build(BuildContext context) {
-    final totalSales = transactions
-        .where((t) => t['status'] == 'Paid')
-        .fold(0.0, (sum, t) => sum + double.parse(t['amount'].replaceAll('\$', '')));
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transaction History'),
@@ -86,16 +110,6 @@ class _VendorTransactionHistoryScreenState extends State<VendorTransactionHistor
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Row(
-              children: [
-                _summaryCard('Total Sales', '\$${totalSales.toStringAsFixed(2)}', Icons.attach_money),
-                const SizedBox(width: 10),
-                _summaryCard('Transactions', '${transactions.length}', Icons.receipt_long),
-                const SizedBox(width: 10),
-                _summaryCard('Pending', '${transactions.where((t) => t['status'] == 'Pending').length}', Icons.pending_actions),
-              ],
-            ),
-            const SizedBox(height: 12),
             SizedBox(
               height: 36,
               child: ListView.separated(
@@ -108,9 +122,14 @@ class _VendorTransactionHistoryScreenState extends State<VendorTransactionHistor
                   return GestureDetector(
                     onTap: () => setState(() => selectedFilter = filter),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFFC8102E) : Colors.grey.shade100,
+                        color: selected
+                            ? const Color(0xFFC8102E)
+                            : Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -127,106 +146,187 @@ class _VendorTransactionHistoryScreenState extends State<VendorTransactionHistor
               ),
             ),
             const SizedBox(height: 12),
-            Expanded(
-              child: ListView.builder(
-                itemCount: filteredTransactions.length,
-                itemBuilder: (context, index) {
-                  final tx = filteredTransactions[index];
-                  final statusColor = _statusColor(tx['status']);
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: const Color(0xFFFFF0F0),
-                                  child: Text(
-                                    tx['name'][0],
-                                    style: const TextStyle(color: Color(0xFFC8102E), fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(tx['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                    Text(tx['note'], style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(tx['amount'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: statusColor.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(tx['status'], style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('${tx['date']} at ${tx['time']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                            if (tx['status'] == 'Paid')
-                              Row(
-                                children: [
-                                  const Icon(Icons.stars, size: 14, color: Colors.amber),
-                                  const SizedBox(width: 4),
-                                  Text('+${tx['points']} pts', style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
+            Expanded(child: _buildBody()),
           ],
         ),
       ),
     );
   }
 
-  Widget _summaryCard(String label, String value, IconData icon) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFF0F0),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFC8102E), width: 0.5),
-        ),
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFC8102E)),
+      );
+    }
+
+    if (_hasError) {
+      return Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: const Color(0xFFC8102E), size: 20),
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 12),
+            const Text(
+              'Something went wrong.',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+            const Text(
+              'Could not load transactions.',
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFC8102E),
+                foregroundColor: Colors.white,
+              ),
+            ),
           ],
         ),
-      ),
+      );
+    }
+
+    if (filteredTransactions.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.receipt_long, color: Colors.grey, size: 48),
+            const SizedBox(height: 12),
+            const Text(
+              'No transactions yet',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Transactions will appear here once customers pay.',
+              style: TextStyle(color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: filteredTransactions.length,
+      itemBuilder: (context, index) {
+        final tx = filteredTransactions[index];
+        final statusColor = _statusColor(tx['status']);
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: const Color(0xFFFFF0F0),
+                        child: Text(
+                          tx['name'][0],
+                          style: const TextStyle(
+                            color: Color(0xFFC8102E),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            tx['name'],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            tx['note'],
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        tx['amount'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          tx['status'],
+                          style: TextStyle(
+                            color: statusColor,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${tx['date']} at ${tx['time']}',
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                  if (tx['status'] == 'Paid')
+                    Row(
+                      children: [
+                        const Icon(Icons.stars, size: 14, color: Colors.amber),
+                        const SizedBox(width: 4),
+                        Text(
+                          '+${tx['points']} pts',
+                          style: const TextStyle(
+                            color: Colors.amber,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

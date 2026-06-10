@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class VendorDashboardScreen extends StatelessWidget {
   const VendorDashboardScreen({super.key});
@@ -18,6 +19,10 @@ class VendorDashboardScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         actions: [
           IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => context.go('/login'),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -59,11 +64,17 @@ class VendorDashboardScreen extends StatelessWidget {
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: _quickAction(Icons.qr_code, 'Request Payment')),
+                Expanded(
+                  child: _quickAction(context, Icons.qr_code, 'Request Payment', '/vendor/payment-request'),
+                ),
                 const SizedBox(width: 10),
-                Expanded(child: _quickAction(Icons.local_offer, 'My Offers')),
+                Expanded(
+                  child: _quickAction(context, Icons.local_offer, 'My Offers', '/vendor/offers'),
+                ),
                 const SizedBox(width: 10),
-                Expanded(child: _quickAction(Icons.history, 'History')),
+                Expanded(
+                  child: _quickAction(context, Icons.history, 'History', '/vendor/transactions'),
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -140,19 +151,22 @@ class VendorDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _quickAction(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFC8102E),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.white, size: 22),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 11), textAlign: TextAlign.center),
-        ],
+  Widget _quickAction(BuildContext context, IconData icon, String label, String route) {
+    return GestureDetector(
+      onTap: () => context.go(route),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFC8102E),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: Colors.white, size: 22),
+            const SizedBox(height: 4),
+            Text(label, style: const TextStyle(color: Colors.white, fontSize: 11), textAlign: TextAlign.center),
+          ],
+        ),
       ),
     );
   }
