@@ -1,30 +1,108 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:redhawkwallet_flutter/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  Future<void> openRouteAndReturn(
+    WidgetTester tester,
+    String actionLabel,
+    String expectedTitle,
+  ) async {
+    await tester.tap(find.widgetWithText(ElevatedButton, actionLabel));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text(expectedTitle),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Student Dashboard'),
+      ),
+      findsOneWidget,
+    );
+  }
+
+  testWidgets('dashboard routes push and pop correctly', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Student Dashboard'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await openRouteAndReturn(tester, 'My QR', 'My QR Code');
+    await openRouteAndReturn(tester, 'Scan', 'Scan QR Code');
+    await openRouteAndReturn(tester, 'Transactions', 'Transaction History');
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    await tester.tap(find.byType(ElevatedButton).first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Account Profile'),
+      ),
+      findsOneWidget,
+    );
+
+    final verificationButton = find.widgetWithText(
+      FilledButton,
+      'Open University Verification',
+    );
+    await tester.ensureVisible(verificationButton);
+    await tester.tap(verificationButton);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('University Verification'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Account Profile'),
+      ),
+      findsOneWidget,
+    );
+
+    final logoutButton = find.widgetWithText(OutlinedButton, 'Logout');
+    await tester.ensureVisible(logoutButton);
+    await tester.tap(logoutButton);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Login')),
+      findsOneWidget,
+    );
+
+    final signInButton = find.widgetWithText(FilledButton, 'Sign in');
+    await tester.ensureVisible(signInButton);
+    await tester.tap(signInButton);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Student Dashboard'),
+      ),
+      findsOneWidget,
+    );
   });
 }
