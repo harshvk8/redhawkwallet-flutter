@@ -20,6 +20,11 @@ class UserService {
             updatedAt: now,
           ).toMap(),
         );
+    await _db.collection('wallets').doc(firebaseUser.uid).set({
+      'balance': 0.0,
+      'points': 0,
+      'updatedAt': Timestamp.fromDate(now),
+    });
   }
 
   Future<UserModel?> getUserDocument(String uid) async {
@@ -37,11 +42,11 @@ class UserService {
 
   Future<void> updateUniversityVerification(
       String uid, String universityEmail) async {
-    await _db.collection('users').doc(uid).update({
+    await _db.collection('users').doc(uid).set({
       'universityEmail': universityEmail,
       'isUniversityVerified': true,
       'role': UserRole.verifiedStudent,
       'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
+    }, SetOptions(merge: true));
   }
 }

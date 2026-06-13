@@ -3,6 +3,7 @@ class UniversityEmailValidator {
 
   static bool isUniversityEmail(String email) {
     final domain = email.split('@').last.toLowerCase();
-    return _knownDomains.any((suffix) => domain.endsWith(suffix));
+    return domain == 'montclair.edu' ||
+        _knownDomains.any((suffix) => domain.endsWith(suffix));
   }
 }
