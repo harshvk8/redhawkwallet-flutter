@@ -29,7 +29,12 @@ class DemoScreenScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leadingWidth: showBackButton ? 56 : 0,
         leading: showBackButton
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -37,7 +42,8 @@ class DemoScreenScaffold extends StatelessWidget {
               )
             : null,
         title: Text(title),
-        centerTitle: true,
+        centerTitle: false,
+        titleSpacing: showBackButton ? 0 : 16,
         actions: actions,
       ),
       body: SafeArea(child: body),

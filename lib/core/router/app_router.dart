@@ -1,11 +1,13 @@
 import 'package:go_router/go_router.dart';
 
 import 'package:redhawkwallet_flutter/features/student/screens/account_profile_screen.dart';
+import 'package:redhawkwallet_flutter/features/student/models/demo_transaction.dart';
 import 'package:redhawkwallet_flutter/features/student/screens/student_dashboard_screen.dart';
 import 'package:redhawkwallet_flutter/features/student/screens/login_screen.dart';
 import 'package:redhawkwallet_flutter/features/student/screens/university_verification_screen.dart';
 import 'package:redhawkwallet_flutter/features/student/screens/qr_id_screen.dart';
 import 'package:redhawkwallet_flutter/features/student/screens/qr_scanner_screen.dart';
+import 'package:redhawkwallet_flutter/features/student/screens/transaction_detail_screen.dart';
 import 'package:redhawkwallet_flutter/features/student/screens/transaction_history_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -32,6 +34,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/transactions',
       builder: (context, state) => const TransactionHistoryScreen(),
+    ),
+    GoRoute(
+      path: '/transaction-detail',
+      builder: (context, state) =>
+          TransactionDetailScreen(transaction: state.extra! as DemoTransaction),
     ),
   ],
 );
