@@ -21,23 +21,20 @@ import '../../features/admin/presentation/admin_manage_vendors_screen.dart';
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
   static final router = GoRouter(
-    initialLocation:
-        FirebaseAuth.instance.currentUser != null ? '/home' : '/login',
+    initialLocation: FirebaseAuth.instance.currentUser != null
+        ? '/home'
+        : '/login',
     refreshListenable: _authNotifier,
     redirect: (BuildContext context, GoRouterState state) {
       final isLoggedIn = FirebaseAuth.instance.currentUser != null;
       final loc = state.matchedLocation;
-      final isPublicRoute = loc == '/login' ||
-          loc == '/register' ||
-          loc == '/email-verification';
+      final isPublicRoute =
+          loc == '/login' || loc == '/register' || loc == '/email-verification';
       if (!isLoggedIn && !isPublicRoute) return '/login';
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
@@ -58,10 +55,7 @@ class AppRouter {
         path: '/verify',
         builder: (context, state) => const UniversityVerificationScreen(),
       ),
-      GoRoute(
-        path: '/qr-id',
-        builder: (context, state) => const QrIdScreen(),
-      ),
+      GoRoute(path: '/qr-id', builder: (context, state) => const QrIdScreen()),
       GoRoute(
         path: '/qr-scanner',
         builder: (context, state) => const QrScannerScreen(),

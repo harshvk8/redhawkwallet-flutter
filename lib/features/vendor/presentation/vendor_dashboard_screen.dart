@@ -1,13 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-class VendorDashboardScreen extends StatelessWidget {
+class VendorDashboardScreen extends StatefulWidget {
   const VendorDashboardScreen({super.key});
 
-  final List<Map<String, String>> recentTransactions = const [
-    {'name': 'Alex Johnson', 'amount': '\$12.50', 'time': '2 min ago', 'status': 'Paid'},
-    {'name': 'Sara Lee', 'amount': '\$8.00', 'time': '15 min ago', 'status': 'Paid'},
-    {'name': 'Mike Chen', 'amount': '\$22.00', 'time': '1 hr ago', 'status': 'Paid'},
-  ];
+  @override
+  State<VendorDashboardScreen> createState() => _VendorDashboardScreenState();
+}
+
+class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
+  bool _isLoading = true;
+  bool _hasError = false;
+  List<Map<String, String>> recentTransactions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+    try {
+      await Future.delayed(const Duration(seconds: 1));
+      setState(() {
+        recentTransactions = [
+          {'name': 'Alex Johnson', 'amount': '\$12.50', 'time': '2 min ago', 'status': 'Paid'},
+          {'name': 'Sara Lee', 'amount': '\$8.00', 'time': '15 min ago', 'status': 'Paid'},
+          {'name': 'Mike Chen', 'amount': '\$22.00', 'time': '1 hr ago', 'status': 'Paid'},
+        ];
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +51,10 @@ class VendorDashboardScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         actions: [
           IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => context.go('/login'),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -59,63 +96,117 @@ class VendorDashboardScreen extends StatelessWidget {
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: _quickAction(Icons.qr_code, 'Request Payment')),
+                Expanded(child: _quickAction(context, Icons.qr_code, 'Request Payment', '/vendor/payment-request')),
                 const SizedBox(width: 10),
-                Expanded(child: _quickAction(Icons.local_offer, 'My Offers')),
+                Expanded(child: _quickAction(context, Icons.local_offer, 'My Offers', '/vendor/offers')),
                 const SizedBox(width: 10),
-                Expanded(child: _quickAction(Icons.history, 'History')),
+                Expanded(child: _quickAction(context, Icons.history, 'History', '/vendor/transactions')),
               ],
             ),
             const SizedBox(height: 20),
             const Text('Recent Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            ...recentTransactions.map((tx) => Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: const Color(0xFFFFF0F0),
-                        child: Text(tx['name']![0], style: const TextStyle(color: Color(0xFFC8102E), fontWeight: FontWeight.bold)),
-                      ),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(tx['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          Text(tx['time']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(tx['amount']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(tx['status']!, style: TextStyle(color: Colors.green.shade700, fontSize: 11)),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            )),
+            _buildTransactionsSection(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTransactionsSection() {
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: CircularProgressIndicator(color: Color(0xFFC8102E)),
+        ),
+      );
+    }
+    if (_hasError) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.red.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.red.shade200),
+        ),
+        child: Column(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 40),
+            const SizedBox(height: 8),
+            const Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC8102E), foregroundColor: Colors.white),
+            ),
+          ],
+        ),
+      );
+    }
+    if (recentTransactions.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: const Column(
+          children: [
+            Icon(Icons.receipt_long, color: Colors.grey, size: 40),
+            SizedBox(height: 8),
+            Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 4),
+            Text('Your transactions will appear here.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+          ],
+        ),
+      );
+    }
+    return Column(
+      children: recentTransactions.map((tx) => Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: const Color(0xFFFFF0F0),
+                  child: Text(tx['name']![0], style: const TextStyle(color: Color(0xFFC8102E), fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tx['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text(tx['time']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(tx['amount']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(20)),
+                  child: Text(tx['status']!, style: TextStyle(color: Colors.green.shade700, fontSize: 11)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      )).toList(),
     );
   }
 
@@ -140,19 +231,22 @@ class VendorDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _quickAction(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFC8102E),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.white, size: 22),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 11), textAlign: TextAlign.center),
-        ],
+  Widget _quickAction(BuildContext context, IconData icon, String label, String route) {
+    return GestureDetector(
+      onTap: () => context.push(route),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFC8102E),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: Colors.white, size: 22),
+            const SizedBox(height: 4),
+            Text(label, style: const TextStyle(color: Colors.white, fontSize: 11), textAlign: TextAlign.center),
+          ],
+        ),
       ),
     );
   }
