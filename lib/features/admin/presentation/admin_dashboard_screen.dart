@@ -39,13 +39,13 @@ class AdminDashboardScreen extends StatelessWidget {
                 color: const Color(0xFFC8102E),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Red Hawk Wallet', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
-                  Text('Admin Control Panel', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  SizedBox(height: 16),
+                  const Text('Red Hawk Wallet', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  const Text('Admin Control Panel', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
