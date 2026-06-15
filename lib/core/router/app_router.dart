@@ -17,81 +17,47 @@ import '../../features/vendor/presentation/vendor_offers_screen.dart';
 import '../../features/vendor/presentation/vendor_transaction_history_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/admin_manage_vendors_screen.dart';
+import '../../features/wallet/presentation/user_wallet_screen.dart';
+import '../../features/offers/presentation/user_offers_screen.dart';
+import '../../features/points_rewards/presentation/user_points_rewards_screen.dart';
+import '../../features/settings/presentation/user_settings_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
   static final router = GoRouter(
-    initialLocation: FirebaseAuth.instance.currentUser != null
-        ? '/home'
-        : '/login',
+    initialLocation:
+        FirebaseAuth.instance.currentUser != null ? '/home' : '/login',
     refreshListenable: _authNotifier,
     redirect: (BuildContext context, GoRouterState state) {
       final isLoggedIn = FirebaseAuth.instance.currentUser != null;
       final loc = state.matchedLocation;
-      final isPublicRoute =
-          loc == '/login' || loc == '/register' || loc == '/email-verification';
+      final isPublicRoute = loc == '/login' ||
+          loc == '/register' ||
+          loc == '/email-verification';
       if (!isLoggedIn && !isPublicRoute) return '/login';
       return null;
     },
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(
-        path: '/register',
-        builder: (context, state) => const RegisterScreen(),
-      ),
-      GoRoute(
-        path: '/email-verification',
-        builder: (context, state) => const EmailVerificationScreen(),
-      ),
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const StudentDashboardScreen(),
-      ),
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) => const AccountProfileScreen(),
-      ),
-      GoRoute(
-        path: '/verify',
-        builder: (context, state) => const UniversityVerificationScreen(),
-      ),
+      GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
+      GoRoute(path: '/email-verification', builder: (context, state) => const EmailVerificationScreen()),
+      GoRoute(path: '/home', builder: (context, state) => const StudentDashboardScreen()),
+      GoRoute(path: '/profile', builder: (context, state) => const AccountProfileScreen()),
+      GoRoute(path: '/verify', builder: (context, state) => const UniversityVerificationScreen()),
       GoRoute(path: '/qr-id', builder: (context, state) => const QrIdScreen()),
-      GoRoute(
-        path: '/qr-scanner',
-        builder: (context, state) => const QrScannerScreen(),
-      ),
-      GoRoute(
-        path: '/transactions',
-        builder: (context, state) => const TransactionHistoryScreen(),
-      ),
-      GoRoute(
-        path: '/vendor',
-        builder: (context, state) => const VendorDashboardScreen(),
-      ),
-      GoRoute(
-        path: '/vendor/payment-request',
-        builder: (context, state) => const VendorCreatePaymentRequestScreen(),
-      ),
-      GoRoute(
-        path: '/vendor/qr',
-        builder: (context, state) => const VendorQrPaymentScreen(),
-      ),
-      GoRoute(
-        path: '/vendor/offers',
-        builder: (context, state) => const VendorOffersScreen(),
-      ),
-      GoRoute(
-        path: '/vendor/transactions',
-        builder: (context, state) => const VendorTransactionHistoryScreen(),
-      ),
-      GoRoute(
-        path: '/admin',
-        builder: (context, state) => const AdminDashboardScreen(),
-      ),
-      GoRoute(
-        path: '/admin/vendors',
-        builder: (context, state) => const AdminManageVendorsScreen(),
-      ),
+      GoRoute(path: '/qr-scanner', builder: (context, state) => const QrScannerScreen()),
+      GoRoute(path: '/transactions', builder: (context, state) => const TransactionHistoryScreen()),
+      GoRoute(path: '/wallet', builder: (context, state) => const UserWalletScreen()),
+      GoRoute(path: '/offers', builder: (context, state) => const UserOffersScreen()),
+      GoRoute(path: '/rewards', builder: (context, state) => const UserPointsRewardsScreen()),
+      GoRoute(path: '/settings', builder: (context, state) => const UserSettingsScreen()),
+      GoRoute(path: '/vendor', builder: (context, state) => const VendorDashboardScreen()),
+      GoRoute(path: '/vendor/payment-request', builder: (context, state) => const VendorCreatePaymentRequestScreen()),
+      GoRoute(path: '/vendor/qr', builder: (context, state) => const VendorQrPaymentScreen()),
+      GoRoute(path: '/vendor/offers', builder: (context, state) => const VendorOffersScreen()),
+      GoRoute(path: '/vendor/transactions', builder: (context, state) => const VendorTransactionHistoryScreen()),
+      GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),
+      GoRoute(path: '/admin/vendors', builder: (context, state) => const AdminManageVendorsScreen()),
     ],
   );
 }
