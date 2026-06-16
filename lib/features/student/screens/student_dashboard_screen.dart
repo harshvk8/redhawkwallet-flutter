@@ -1,267 +1,319 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:redhawkwallet_flutter/core/data/demo_identity.dart';
-import 'package:redhawkwallet_flutter/core/widgets/demo_screen_state_view.dart';
-import 'package:redhawkwallet_flutter/features/student/models/demo_transaction.dart';
-import 'package:redhawkwallet_flutter/core/widgets/demo_screen_scaffold.dart';
 
-class StudentDashboardScreen extends StatefulWidget {
+class StudentDashboardScreen extends StatelessWidget {
   const StudentDashboardScreen({super.key});
 
-  @override
-  State<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
-}
-
-class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
-  DemoScreenStatus _status = DemoScreenStatus.loading;
-
-  static const List<DemoTransaction> _recentTransactions = [
-    DemoTransaction(
-      vendor: 'Bookstore purchase',
-      amount: '-\$8.50',
-      date: 'Today · 10:14 AM',
-      status: 'Approved',
-      statusColor: Colors.green,
-      category: 'Retail',
-      location: 'Campus Bookstore',
-      paymentMethod: 'RedHawk Wallet',
-      note: 'Class supplies and notebook set purchased before lecture.',
-    ),
-    DemoTransaction(
-      vendor: 'Dining hall refund',
-      amount: '+\$3.25',
-      date: 'Yesterday · 4:02 PM',
-      status: 'Refunded',
-      statusColor: Colors.blue,
-      category: 'Dining',
-      location: 'Freeman Dining Hall',
-      paymentMethod: 'Dining plan',
-      note: 'Meal refund credited after a duplicate swipe was resolved.',
-    ),
+  final List<Map<String, dynamic>> recentTransactions = const [
+    {
+      'name': 'Campus Coffee House',
+      'date': 'May 27, 2026 • 9:45 AM',
+      'amount': '-\$5.50',
+      'isDebit': true,
+      'icon': Icons.local_cafe,
+    },
+    {
+      'name': 'Added Funds',
+      'date': 'May 26, 2026 • 2:30 PM',
+      'amount': '+\$25.00',
+      'isDebit': false,
+      'icon': Icons.add_circle_outline,
+    },
+    {
+      'name': 'Student Bookstore',
+      'date': 'May 25, 2026 • 11:20 AM',
+      'amount': '-\$42.99',
+      'isDebit': true,
+      'icon': Icons.menu_book,
+    },
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _loadDashboard();
-  }
-
-  Future<void> _loadDashboard() async {
-    setState(() {
-      _status = DemoScreenStatus.loading;
-    });
-
-    await Future<void>.delayed(const Duration(milliseconds: 350));
-
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      _status = _recentTransactions.isEmpty
-          ? DemoScreenStatus.empty
-          : DemoScreenStatus.ready;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return DemoScreenScaffold(
-      title: 'Student Dashboard',
-      showBackButton: false,
-      body: DemoScreenStateView(
-        status: _status,
-        onRetry: _loadDashboard,
-        emptyIcon: Icons.timeline_outlined,
-        emptyTitle: 'No recent activity yet',
-        emptyMessage: 'Your dashboard will show campus wallet activity here.',
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: SafeArea(
+        child: Column(
           children: [
-            _HeroCard(displayName: DemoIdentity.displayName),
-            const SizedBox(height: 20),
-            Text(
-              'Quick Actions',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                _NavButton(
-                  label: 'Profile',
-                  icon: Icons.person_outline,
-                  onTap: () => context.push('/profile'),
-                ),
-                _NavButton(
-                  label: 'Verify',
-                  icon: Icons.verified_user_outlined,
-                  onTap: () => context.push('/verify'),
-                ),
-                _NavButton(
-                  label: 'My QR',
-                  icon: Icons.qr_code_2,
-                  onTap: () => context.push('/qr-id'),
-                ),
-                _NavButton(
-                  label: 'Scan',
-                  icon: Icons.qr_code_scanner,
-                  onTap: () => context.push('/qr-scanner'),
-                ),
-                _NavButton(
-                  label: 'Transactions',
-                  icon: Icons.receipt_long_outlined,
-                  onTap: () => context.push('/transactions'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Recent Activity',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            Card(
-              child: Column(
-                children: [
-                  for (
-                    var index = 0;
-                    index < _recentTransactions.length;
-                    index++
-                  ) ...[
-                    _ActivityTile(
-                      transaction: _recentTransactions[index],
-                      onTap: () => context.push(
-                        '/transaction-detail',
-                        extra: _recentTransactions[index],
-                      ),
-                    ),
-                    if (index < _recentTransactions.length - 1)
-                      const Divider(height: 0),
+            _buildHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildWalletCard(context),
+                    const SizedBox(height: 24),
+                    _buildQuickActions(context),
+                    const SizedBox(height: 24),
+                    _buildRecentTransactions(context),
+                    const SizedBox(height: 16),
+                    _buildDemoNote(),
                   ],
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        'Tap a row for details',
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
+              ),
+            ),
+            _buildBottomNav(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      color: const Color(0xFF8B1A2E),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Welcome back,', style: TextStyle(color: Colors.white70, fontSize: 14)),
+              Text('Student Name', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.notifications_none, color: Colors.white, size: 22),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWalletCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF8B1A2E),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Demo Wallet Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const Text('\$0.00', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text('USD', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Add Funds'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF8B1A2E),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(BuildContext context) {
+    final actions = [
+      {'icon': Icons.qr_code, 'label': 'QR ID', 'route': '/qr-id'},
+      {'icon': Icons.qr_code_scanner, 'label': 'Scan', 'route': '/qr-scanner'},
+      {'icon': Icons.local_offer, 'label': 'Offers', 'route': '/offers'},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            GestureDetector(
+              onTap: () {},
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF8B1A2E),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.add, color: Colors.white, size: 18),
               ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 12),
+        Row(
+          children: actions.map((action) {
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => context.push(action['route'] as String),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF0F0),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(action['icon'] as IconData, color: const Color(0xFF8B1A2E), size: 22),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(action['label'] as String, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
-}
 
-class _HeroCard extends StatelessWidget {
-  final String displayName;
-
-  const _HeroCard({required this.displayName});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildRecentTransactions(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Welcome back',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              displayName,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 4),
-            const Text('jordan.hawke@redhawks.edu'),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                _StatChip(label: 'Wallet balance', value: '\$42.18'),
-                _StatChip(label: 'Status', value: 'Verified student'),
-              ],
+            const Text('Recent Transactions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            TextButton(
+              onPressed: () => context.push('/transactions'),
+              child: const Text('View All', style: TextStyle(color: Color(0xFF8B1A2E))),
             ),
           ],
         ),
+        const SizedBox(height: 8),
+        ...recentTransactions.map((tx) => Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade100),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: tx['isDebit'] as bool ? const Color(0xFFFFF0F0) : const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(tx['icon'] as IconData, color: tx['isDebit'] as bool ? const Color(0xFF8B1A2E) : Colors.green, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tx['name'] as String, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const SizedBox(height: 2),
+                    Text(tx['date'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(tx['amount'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: tx['isDebit'] as bool ? Colors.black : Colors.green)),
+                  const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
+                ],
+              ),
+            ],
+          ),
+        )),
+      ],
+    );
+  }
+
+  Widget _buildDemoNote() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Text(
+        'This is a demo wallet. Start using Red Hawk Wallet to see your real transactions here!',
+        style: TextStyle(color: Colors.grey, fontSize: 13),
+        textAlign: TextAlign.center,
       ),
     );
   }
-}
 
-class _StatChip extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _StatChip({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Chip(
-      avatar: const Icon(Icons.circle, size: 12),
-      label: Text('$label: $value'),
-    );
-  }
-}
-
-class _NavButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _NavButton({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 140,
-      height: 56,
-      child: ElevatedButton.icon(
-        onPressed: onTap,
-        icon: Icon(icon),
-        label: Text(label),
+  Widget _buildBottomNav(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _navItem(context, Icons.home, 'Home', '/home', true),
+          _navItem(context, Icons.account_balance_wallet, 'Wallet', '/wallet', false),
+          _navItemQR(context),
+          _navItem(context, Icons.person, 'Account', '/profile', false),
+        ],
       ),
     );
   }
-}
 
-class _ActivityTile extends StatelessWidget {
-  final DemoTransaction transaction;
-  final VoidCallback onTap;
-
-  const _ActivityTile({required this.transaction, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: onTap,
-      leading: Icon(
-        transaction.amount.startsWith('+')
-            ? Icons.south_east
-            : Icons.north_west,
+  Widget _navItem(BuildContext context, IconData icon, String label, String route, bool isActive) {
+    return GestureDetector(
+      onTap: () => context.push(route),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: isActive ? const Color(0xFF8B1A2E) : Colors.grey, size: 24),
+          const SizedBox(height: 2),
+          Text(label, style: TextStyle(fontSize: 11, color: isActive ? const Color(0xFF8B1A2E) : Colors.grey, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
+        ],
       ),
-      title: Text(transaction.vendor),
-      subtitle: Text('${transaction.date} · ${transaction.status}'),
-      trailing: Text(transaction.amount),
+    );
+  }
+
+  Widget _navItemQR(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/qr-id'),
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: const BoxDecoration(color: Color(0xFF8B1A2E), shape: BoxShape.circle),
+        child: const Icon(Icons.qr_code, color: Colors.white, size: 26),
+      ),
     );
   }
 }
