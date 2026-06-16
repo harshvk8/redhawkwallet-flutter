@@ -9,7 +9,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return DemoScreenScaffold(
       title: 'Login',
-      fallbackRoute: '/',
+      fallbackRoute: '/home',
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -56,7 +56,7 @@ class LoginScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
-            onPressed: () => context.go('/'),
+            onPressed: () => context.go('/home'),
             icon: const Icon(Icons.login),
             label: const Text('Sign in'),
           ),

@@ -14,7 +14,7 @@ class DemoScreenScaffold extends StatelessWidget {
     required this.body,
     this.actions,
     this.showBackButton = true,
-    this.fallbackRoute = '/',
+    this.fallbackRoute = '/home',
   });
 
   void _handleBack(BuildContext context) {
