@@ -44,7 +44,7 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
             const Text('Apply Offer or Discount', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: selectedDiscount,
+              initialValue: selectedDiscount,
               decoration: InputDecoration(
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(

@@ -114,7 +114,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         child: Icon(icon, color: const Color(0xFF8B1A2E), size: 20),
       ),
       title: Text(label, style: const TextStyle(fontSize: 14)),
-      trailing: Switch(value: value, onChanged: onChanged, activeColor: const Color(0xFF8B1A2E)),
+      trailing: Switch(value: value, onChanged: onChanged, activeThumbColor: const Color(0xFF8B1A2E)),
     );
   }
 }

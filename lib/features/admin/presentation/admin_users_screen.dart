@@ -61,7 +61,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: roles.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final role = roles[index];
                   final selected = role == selectedRole;
