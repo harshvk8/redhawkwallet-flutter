@@ -10,41 +10,68 @@ class AdminManageVendorsScreen extends StatefulWidget {
 class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
   String selectedFilter = 'All';
   final List<String> filters = ['All', 'Active', 'Pending', 'Suspended'];
+  bool _isLoading = true;
+  bool _hasError = false;
 
-  final List<Map<String, dynamic>> vendors = [
-    {
-      'name': 'Red Hawk Cafe',
-      'email': 'cafe@redhawk.edu',
-      'category': 'Food & Drinks',
-      'status': 'Active',
-      'joined': 'May 10, 2026',
-      'transactions': 42,
-    },
-    {
-      'name': 'Campus Bookstore',
-      'email': 'books@redhawk.edu',
-      'category': 'Books & Supplies',
-      'status': 'Pending',
-      'joined': 'May 18, 2026',
-      'transactions': 0,
-    },
-    {
-      'name': 'Hawks Pizza',
-      'email': 'pizza@redhawk.edu',
-      'category': 'Food & Drinks',
-      'status': 'Suspended',
-      'joined': 'May 12, 2026',
-      'transactions': 15,
-    },
-    {
-      'name': 'Campus Prints',
-      'email': 'prints@redhawk.edu',
-      'category': 'Services',
-      'status': 'Active',
-      'joined': 'May 14, 2026',
-      'transactions': 28,
-    },
-  ];
+  List<Map<String, dynamic>> vendors = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+    try {
+      await Future.delayed(const Duration(seconds: 1));
+      setState(() {
+        vendors = [
+          {
+            'name': 'Red Hawk Cafe',
+            'email': 'cafe@redhawk.edu',
+            'category': 'Food & Drinks',
+            'status': 'Active',
+            'joined': 'May 10, 2026',
+            'transactions': 42,
+          },
+          {
+            'name': 'Campus Bookstore',
+            'email': 'books@redhawk.edu',
+            'category': 'Books & Supplies',
+            'status': 'Pending',
+            'joined': 'May 18, 2026',
+            'transactions': 0,
+          },
+          {
+            'name': 'Hawks Pizza',
+            'email': 'pizza@redhawk.edu',
+            'category': 'Food & Drinks',
+            'status': 'Suspended',
+            'joined': 'May 12, 2026',
+            'transactions': 15,
+          },
+          {
+            'name': 'Campus Prints',
+            'email': 'prints@redhawk.edu',
+            'category': 'Services',
+            'status': 'Active',
+            'joined': 'May 14, 2026',
+            'transactions': 28,
+          },
+        ];
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    }
+  }
 
   Color _statusColor(String status) {
     if (status == 'Active') return Colors.green;
@@ -81,7 +108,14 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      final realIndex = vendors.indexOf(vendor);
+                      setState(() => vendors[realIndex]['status'] = 'Active');
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${vendor['name']} approved')),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
@@ -94,7 +128,14 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      final realIndex = vendors.indexOf(vendor);
+                      setState(() => vendors[realIndex]['status'] = 'Suspended');
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${vendor['name']} suspended')),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
@@ -152,7 +193,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: filters.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final filter = filters[index];
                   final selected = filter == selectedFilter;
@@ -178,8 +219,57 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            Expanded(
-              child: ListView.builder(
+            Expanded(child: _buildVendorList(context)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVendorList(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFC8102E)),
+      );
+    }
+    if (_hasError) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 8),
+            const Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFC8102E),
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    if (filteredVendors.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.store_mall_directory_outlined, color: Colors.grey, size: 48),
+            const SizedBox(height: 8),
+            Text(
+              selectedFilter == 'All' ? 'No vendors yet.' : 'No $selectedFilter vendors.',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
                 itemCount: filteredVendors.length,
                 itemBuilder: (context, index) {
                   final vendor = filteredVendors[index];
@@ -204,7 +294,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: statusColor.withOpacity(0.1),
+                                  color: statusColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(vendor['status'], style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
@@ -219,7 +309,13 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                           Row(
                             children: [
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  final realIndex = vendors.indexOf(vendor);
+                                  setState(() => vendors[realIndex]['status'] = 'Active');
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('${vendor['name']} approved')),
+                                  );
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                   foregroundColor: Colors.white,
@@ -230,7 +326,13 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                               ),
                               const SizedBox(width: 8),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  final realIndex = vendors.indexOf(vendor);
+                                  setState(() => vendors[realIndex]['status'] = 'Suspended');
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('${vendor['name']} suspended')),
+                                  );
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red,
                                   foregroundColor: Colors.white,
@@ -257,11 +359,6 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                     ),
                   );
                 },
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

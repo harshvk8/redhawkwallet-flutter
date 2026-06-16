@@ -40,8 +40,8 @@ class UserModel {
       isEmailVerified: data['isEmailVerified'] as bool? ?? false,
       isUniversityVerified: data['isUniversityVerified'] as bool? ?? false,
       universityEmail: data['universityEmail'] as String?,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 

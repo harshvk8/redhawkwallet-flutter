@@ -2,7 +2,7 @@
 
 ## Tester
 Name: Elijah  
-Date: 06/05/26
+Date: 06/14/26
 Branch: feature/elijah-testing-bug-report
 
 ## Test Cases
@@ -18,12 +18,15 @@ Branch: feature/elijah-testing-bug-report
 | 6 | Login — empty fields | ✅ | Works |
 | 7 | Register — invalid email format | ✅ | Works |
 | 8 | Register — existing email | ✅ | Works - Shows error saying account already linked to email|
-| 9 | Navigation after login (role-based) | ✅ | Very Smooth|
-| 10 | Navigation after logout | ✅ | Very Smooth |
-| 11 | Dashboard loads without crash | ✅ | Works |
-| 12 | Account/Profile screen opens | ✅ | Works |
-| 13 | QR screen opens | ✅ | Works |
-| 14 | Transaction screen opens | ✅ | Works |
+| 9 | Navigation after login (role-based) | ❌ | None of the buttons work AFTER I LOG IN|
+| 10 | Navigation after logout | ❌ | Can't click account button to then log out |
+| 11 | Dashboard loads without crash | ❌ |  Can't click to open it |
+| 12 | Account/Profile screen opens | ❌ |  Can't click to open it |
+| 13 | QR screen opens | ❌ | Can't click to open it |
+| 14 | Transaction screen opens | ❌ | Can't click to open it |
+| 15 | ALL BUTTONS | ❌ | NOT WORKING |
+
 
 ## Status Key
 - ✅ Pass
+- ❌ Fail
