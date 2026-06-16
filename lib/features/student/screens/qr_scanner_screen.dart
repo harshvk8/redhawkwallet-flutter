@@ -1,74 +1,78 @@
 import 'package:flutter/material.dart';
-import 'package:redhawkwallet_flutter/core/widgets/demo_screen_scaffold.dart';
 
 class QrScannerScreen extends StatelessWidget {
   const QrScannerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return DemoScreenScaffold(
-      title: 'Scan QR Code',
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: const [
-          _ScannerPreview(),
-          SizedBox(height: 24),
-          Text(
-            'Recent scan targets',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-          SizedBox(height: 12),
-          Card(
-            child: Column(
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: const Text('Scan QR Code'),
+        elevation: 0,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                ListTile(
-                  leading: Icon(Icons.storefront_outlined),
-                  title: Text('Campus Cafe'),
-                  subtitle: Text('Accepted payment QR'),
+                Container(color: Colors.black),
+                Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xFF8B1A2E), width: 3),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.qr_code_scanner, color: Colors.white54, size: 100),
+                  ),
                 ),
-                Divider(height: 0),
-                ListTile(
-                  leading: Icon(Icons.local_mall_outlined),
-                  title: Text('Bookstore'),
-                  subtitle: Text('Balance top-up'),
+                Positioned(
+                  bottom: 60,
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Point camera at vendor QR code',
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text('Demo Mode', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+          Container(
+            padding: const EdgeInsets.all(20),
+            color: Colors.black,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+                label: const Text('Cancel'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white12,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          ),
         ],
-      ),
-    );
-  }
-}
-
-class _ScannerPreview extends StatelessWidget {
-  const _ScannerPreview();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.secondaryContainer,
-      child: const Padding(
-        padding: EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Icon(Icons.qr_code_scanner, size: 120),
-            SizedBox(height: 16),
-            Text(
-              'Camera preview unavailable in demo mode',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'The live scanner will be connected later. This placeholder keeps the screen functional right now.',
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }

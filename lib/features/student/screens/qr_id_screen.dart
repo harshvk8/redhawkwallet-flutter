@@ -1,106 +1,99 @@
 import 'package:flutter/material.dart';
-import 'package:redhawkwallet_flutter/core/data/demo_identity.dart';
-import 'package:redhawkwallet_flutter/core/widgets/demo_screen_state_view.dart';
-import 'package:redhawkwallet_flutter/core/widgets/demo_screen_scaffold.dart';
 
-class QrIdScreen extends StatefulWidget {
+class QrIdScreen extends StatelessWidget {
   const QrIdScreen({super.key});
 
   @override
-  State<QrIdScreen> createState() => _QrIdScreenState();
-}
-
-class _QrIdScreenState extends State<QrIdScreen> {
-  DemoScreenStatus _status = DemoScreenStatus.loading;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadQrId();
-  }
-
-  Future<void> _loadQrId() async {
-    setState(() {
-      _status = DemoScreenStatus.loading;
-    });
-
-    await Future<void>.delayed(const Duration(milliseconds: 350));
-
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      _status = DemoIdentity.displayName.trim().isEmpty
-          ? DemoScreenStatus.empty
-          : DemoScreenStatus.ready;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return DemoScreenScaffold(
-      title: 'My QR Code',
-      body: DemoScreenStateView(
-        status: _status,
-        onRetry: _loadQrId,
-        emptyIcon: Icons.qr_code_2_outlined,
-        emptyTitle: 'No QR ID yet',
-        emptyMessage: 'Set a student name to generate the demo QR ID.',
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF8B1A2E),
+        foregroundColor: Colors.white,
+        title: const Text('QR Student ID'),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
           children: [
-            _QrCard(),
-            const SizedBox(height: 20),
-            Card(
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade100),
+              ),
               child: Column(
                 children: [
-                  ListTile(
-                    leading: Icon(Icons.badge_outlined),
-                    title: Text('Student ID'),
-                    subtitle: Text('RHW-20481'),
+                  const CircleAvatar(
+                    radius: 36,
+                    backgroundColor: Color(0xFFFFF0F0),
+                    child: Icon(Icons.person, color: Color(0xFF8B1A2E), size: 40),
                   ),
-                  Divider(height: 0),
-                  ListTile(
-                    leading: Icon(Icons.schedule_outlined),
-                    title: Text('Updated'),
-                    subtitle: Text('Just now'),
+                  const SizedBox(height: 12),
+                  const Text('Student Name', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  const Text('student@montclair.edu', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF0F0),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text('Verified Student', style: TextStyle(color: Color(0xFF8B1A2E), fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFF8B1A2E), width: 3),
+                      borderRadius: BorderRadius.circular(16),
+                      color: const Color(0xFFFFF0F0),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.qr_code_2, size: 160, color: Color(0xFF8B1A2E)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Scan to verify student status', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  const Text('ID: RHW-2026-DEMO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _QrCard extends StatelessWidget {
-  const _QrCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const Icon(Icons.qr_code_2_outlined, size: 140),
-            const SizedBox(height: 16),
-            Text(
-              DemoIdentity.displayName,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.share),
+                label: const Text('Share QR Code'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF8B1A2E),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Present this code at campus checkout points.',
-              textAlign: TextAlign.center,
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.refresh, color: Color(0xFF8B1A2E)),
+                label: const Text('Refresh QR', style: TextStyle(color: Color(0xFF8B1A2E))),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: const BorderSide(color: Color(0xFF8B1A2E)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
             ),
           ],
         ),
