@@ -10,6 +10,8 @@ import '../../features/student/screens/university_verification_screen.dart';
 import '../../features/student/screens/qr_id_screen.dart';
 import '../../features/student/screens/qr_scanner_screen.dart';
 import '../../features/student/screens/transaction_history_screen.dart';
+import '../../features/student/screens/transaction_detail_screen.dart';
+import '../../features/student/models/demo_transaction.dart';
 import '../../features/vendor/presentation/vendor_dashboard_screen.dart';
 import '../../features/vendor/presentation/vendor_create_payment_request_screen.dart';
 import '../../features/vendor/presentation/vendor_qr_payment_screen.dart';
@@ -47,6 +49,11 @@ class AppRouter {
       GoRoute(path: '/qr-id', builder: (context, state) => const QrIdScreen()),
       GoRoute(path: '/qr-scanner', builder: (context, state) => const QrScannerScreen()),
       GoRoute(path: '/transactions', builder: (context, state) => const TransactionHistoryScreen()),
+      GoRoute(
+        path: '/transaction-detail',
+        builder: (context, state) =>
+            TransactionDetailScreen(transaction: state.extra! as DemoTransaction),
+      ),
       GoRoute(path: '/wallet', builder: (context, state) => const UserWalletScreen()),
       GoRoute(path: '/offers', builder: (context, state) => const UserOffersScreen()),
       GoRoute(path: '/rewards', builder: (context, state) => const UserPointsRewardsScreen()),
