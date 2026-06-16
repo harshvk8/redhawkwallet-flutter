@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,7 +24,10 @@ class AdminDashboardScreen extends StatelessWidget {
           IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => context.go('/login'),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              if (context.mounted) context.go('/login');
+            },
           ),
         ],
       ),
