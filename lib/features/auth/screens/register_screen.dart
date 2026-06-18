@@ -19,11 +19,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _businessNameController = TextEditingController();
   final _authService = AuthService();
   bool _loading = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _agreedToTerms = false;
   String _selectedRole = UserRole.normalUser;
+  String? _selectedCategory;
+
+  bool get _isVendor => _selectedRole == UserRole.vendor;
+
+  static const _categories = [
+    'Food & Beverage',
+    'Bookstore',
+    'Clothing & Apparel',
+    'Health & Wellness',
+    'Technology',
+    'Services',
+    'Entertainment',
+    'Other',
+  ];
 
   @override
   void dispose() {
@@ -31,11 +47,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _businessNameController.dispose();
     super.dispose();
   }
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please agree to the Terms of Service and Privacy Policy.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
     setState(() => _loading = true);
     try {
       await _authService.register(
@@ -43,6 +69,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _passwordController.text,
         _nameController.text.trim(),
         role: _selectedRole,
+        vendorData: _isVendor
+            ? {
+                'businessName': _businessNameController.text.trim(),
+                'businessCategory': _selectedCategory,
+              }
+            : null,
       );
       await _authService.sendEmailVerification();
       if (!mounted) return;
@@ -126,9 +158,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 24),
 
-                          // Title
                           Text(
-                            'Create Your Account',
+                            'Create your Red Hawk Wallet\naccount',
                             textAlign: TextAlign.center,
                             style: Theme.of(context)
                                 .textTheme
@@ -140,7 +171,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Join Red Hawk Wallet and bring your campus life together.',
+                            'Join as a user or vendor and start using campus-friendly offers, rewards, and wallet features.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13,
@@ -150,24 +181,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 24),
 
-                          // Role selector
+                          // Role toggle
                           Container(
                             decoration: BoxDecoration(
                               color: inputFill,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(30),
                               border: Border.all(color: borderColor),
                             ),
                             padding: const EdgeInsets.all(4),
                             child: Row(
                               children: [
                                 _roleOption(
-                                  label: 'Student',
-                                  icon: Icons.school,
+                                  label: 'User',
+                                  icon: Icons.person_outline,
                                   value: UserRole.normalUser,
                                   cs: cs,
                                   isDark: isDark,
                                 ),
-                                const SizedBox(width: 4),
                                 _roleOption(
                                   label: 'Vendor',
                                   icon: Icons.storefront,
@@ -178,10 +208,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
 
-                          // Full Name
-                          AuthInputLabel('Full Name'),
+                          // Vendor-specific fields
+                          if (_isVendor) ...[
+                            AuthInputLabel('Business Name'),
+                            const SizedBox(height: 6),
+                            TextFormField(
+                              controller: _businessNameController,
+                              keyboardType: TextInputType.name,
+                              textCapitalization: TextCapitalization.words,
+                              textInputAction: TextInputAction.next,
+                              style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black),
+                              decoration: _inputDec(
+                                hint: 'Campus Coffee House',
+                                icon: Icons.storefront,
+                                fill: inputFill,
+                                border: borderColor,
+                                cs: cs,
+                              ),
+                              validator: (v) =>
+                                  (v == null || v.trim().isEmpty)
+                                      ? 'Enter your business name'
+                                      : null,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+
+                          // Name field
+                          AuthInputLabel(_isVendor ? 'Owner/Manager Full Name' : 'Full Name'),
                           const SizedBox(height: 6),
                           TextFormField(
                             controller: _nameController,
@@ -191,7 +247,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             style: TextStyle(
                                 color: isDark ? Colors.white : Colors.black),
                             decoration: _inputDec(
-                              hint: 'Your full name',
+                              hint: _isVendor ? 'Jane Smith' : 'Your full name',
                               icon: Icons.person_outlined,
                               fill: inputFill,
                               border: borderColor,
@@ -205,7 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 16),
 
                           // Email
-                          AuthInputLabel('Email'),
+                          AuthInputLabel(_isVendor ? 'Business Email' : 'Email'),
                           const SizedBox(height: 6),
                           TextFormField(
                             controller: _emailController,
@@ -214,7 +270,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             style: TextStyle(
                                 color: isDark ? Colors.white : Colors.black),
                             decoration: _inputDec(
-                              hint: 'you@university.edu',
+                              hint: _isVendor ? 'contact@business.com' : 'you@university.edu',
                               icon: Icons.mail_outlined,
                               fill: inputFill,
                               border: borderColor,
@@ -227,6 +283,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 16),
 
+                          // Category dropdown (vendor only)
+                          if (_isVendor) ...[
+                            AuthInputLabel('Business Category'),
+                            const SizedBox(height: 6),
+                            DropdownButtonFormField<String>(
+                              initialValue: _selectedCategory,
+                              decoration: _inputDec(
+                                hint: 'Select a category',
+                                icon: Icons.category_outlined,
+                                fill: inputFill,
+                                border: borderColor,
+                                cs: cs,
+                              ),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                              dropdownColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                              items: _categories
+                                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                                  .toList(),
+                              onChanged: (v) => setState(() => _selectedCategory = v),
+                              validator: (v) =>
+                                  v == null ? 'Select a business category' : null,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+
                           // Password
                           AuthInputLabel('Password'),
                           const SizedBox(height: 6),
@@ -237,7 +321,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             style: TextStyle(
                                 color: isDark ? Colors.white : Colors.black),
                             decoration: _inputDec(
-                              hint: 'Create a password',
+                              hint: 'Enter password',
                               icon: Icons.lock_outlined,
                               fill: inputFill,
                               border: borderColor,
@@ -254,9 +338,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     _obscurePassword = !_obscurePassword),
                               ),
                             ),
-                            validator: (v) => (v == null || v.length < 6)
-                                ? 'Password must be at least 6 characters'
+                            validator: (v) => (v == null || v.length < 8)
+                                ? 'Password must be at least 8 characters'
                                 : null,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4, left: 4),
+                            child: Text(
+                              'Use at least 8 characters',
+                              style: TextStyle(fontSize: 11, color: mutedText),
+                            ),
                           ),
                           const SizedBox(height: 16),
 
@@ -271,7 +362,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             style: TextStyle(
                                 color: isDark ? Colors.white : Colors.black),
                             decoration: _inputDec(
-                              hint: 'Repeat your password',
+                              hint: 'Confirm password',
                               icon: Icons.lock_outlined,
                               fill: inputFill,
                               border: borderColor,
@@ -293,6 +384,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     ? 'Passwords do not match'
                                     : null,
                           ),
+                          const SizedBox(height: 20),
+
+                          // Terms checkbox
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  value: _agreedToTerms,
+                                  onChanged: (v) =>
+                                      setState(() => _agreedToTerms = v ?? false),
+                                  activeColor: cs.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setState(
+                                      () => _agreedToTerms = !_agreedToTerms),
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: isDark ? Colors.white70 : Colors.black87,
+                                        height: 1.4,
+                                      ),
+                                      children: [
+                                        const TextSpan(text: 'I agree to the '),
+                                        TextSpan(
+                                          text: 'Terms of Service',
+                                          style: TextStyle(
+                                            color: cs.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const TextSpan(text: ' and '),
+                                        TextSpan(
+                                          text: 'Privacy Policy',
+                                          style: TextStyle(
+                                            color: cs.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 24),
 
                           // Create Account button
@@ -311,67 +457,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text('Create Account'),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Divider
-                          AuthOrDivider(
-                              mutedText: mutedText, borderColor: borderColor),
-                          const SizedBox(height: 16),
-
-                          // Social buttons
-                          AuthSocialButton(
-                            onTap: () {},
-                            borderColor: borderColor,
-                            cardColor: cardColor,
-                            mutedBg: mutedBg,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const AuthGoogleLogo(),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Continue with Google',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: isDark
-                                        ? Colors.white
-                                        : Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          AuthSocialButton(
-                            onTap: () {},
-                            borderColor: borderColor,
-                            cardColor: cardColor,
-                            mutedBg: mutedBg,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.apple,
-                                  size: 20,
-                                  color:
-                                      isDark ? Colors.white : Colors.black,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Continue with Apple ID',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: isDark
-                                        ? Colors.white
-                                        : Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
+                                : Text(_isVendor
+                                    ? 'Create Vendor Account'
+                                    : 'Create Account'),
                           ),
                           const SizedBox(height: 20),
 
@@ -396,14 +484,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                               ),
                             ],
-                          ),
-                          const SizedBox(height: 16),
-
-                          // University note
-                          AuthUniversityNote(
-                            mutedBg: mutedBg,
-                            borderColor: borderColor,
-                            mutedText: mutedText,
                           ),
                           const SizedBox(height: 16),
 
@@ -445,7 +525,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: selected ? cs.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(26),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
