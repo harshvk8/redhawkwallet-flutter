@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../features/auth/models/user_model.dart';
+import '../../features/auth/services/user_service.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/email_verification_screen.dart';
@@ -31,17 +34,25 @@ import '../../features/admin/presentation/admin_vendor_details_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
+  static final _userService = UserService();
   static final router = GoRouter(
-    initialLocation:
-        FirebaseAuth.instance.currentUser != null ? '/home' : '/login',
+    initialLocation: '/login',
     refreshListenable: _authNotifier,
-    redirect: (BuildContext context, GoRouterState state) {
-      final isLoggedIn = FirebaseAuth.instance.currentUser != null;
+    redirect: (BuildContext context, GoRouterState state) async {
+      final user = FirebaseAuth.instance.currentUser;
+      final isLoggedIn = user != null;
       final loc = state.matchedLocation;
       final isPublicRoute = loc == '/login' ||
           loc == '/register' ||
           loc == '/email-verification';
       if (!isLoggedIn && !isPublicRoute) return '/login';
+      if (isLoggedIn && isPublicRoute && loc != '/email-verification') {
+        final userModel = await _userService.getUserDocument(user.uid);
+        final role = userModel?.role ?? UserRole.normalUser;
+        if (role == UserRole.vendor) return '/vendor';
+        if (role == UserRole.admin) return '/admin';
+        return '/home';
+      }
       return null;
     },
     routes: [

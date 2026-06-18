@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/user_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -60,7 +61,16 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       if (user?.emailVerified == true) {
         await _userService.updateEmailVerified(user!.uid);
         if (!mounted) return;
-        context.go('/home');
+        final userModel = await _userService.getUserDocument(user.uid);
+        if (!mounted) return;
+        final role = userModel?.role ?? UserRole.normalUser;
+        if (role == UserRole.vendor) {
+          context.go('/vendor');
+        } else if (role == UserRole.admin) {
+          context.go('/admin');
+        } else {
+          context.go('/home');
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
