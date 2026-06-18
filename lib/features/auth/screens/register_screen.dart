@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../widgets/auth_widgets.dart';
 
@@ -22,6 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _loading = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  String _selectedRole = UserRole.normalUser;
 
   @override
   void dispose() {
@@ -40,6 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _emailController.text.trim(),
         _passwordController.text,
         _nameController.text.trim(),
+        role: _selectedRole,
       );
       await _authService.sendEmailVerification();
       if (!mounted) return;
@@ -145,7 +148,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               height: 1.5,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
+
+                          // Role selector
+                          Container(
+                            decoration: BoxDecoration(
+                              color: inputFill,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: borderColor),
+                            ),
+                            padding: const EdgeInsets.all(4),
+                            child: Row(
+                              children: [
+                                _roleOption(
+                                  label: 'Student',
+                                  icon: Icons.school,
+                                  value: UserRole.normalUser,
+                                  cs: cs,
+                                  isDark: isDark,
+                                ),
+                                const SizedBox(width: 4),
+                                _roleOption(
+                                  label: 'Vendor',
+                                  icon: Icons.storefront,
+                                  value: UserRole.vendor,
+                                  cs: cs,
+                                  isDark: isDark,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
 
                           // Full Name
                           AuthInputLabel('Full Name'),
@@ -392,6 +425,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
           AuthDarkToggle(mutedBg: mutedBg, isDark: isDark),
         ],
+      ),
+    );
+  }
+
+  Widget _roleOption({
+    required String label,
+    required IconData icon,
+    required String value,
+    required ColorScheme cs,
+    required bool isDark,
+  }) {
+    final selected = _selectedRole == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedRole = value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? cs.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: selected ? Colors.white : (isDark ? Colors.white70 : Colors.grey)),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  color: selected ? Colors.white : (isDark ? Colors.white70 : Colors.grey.shade700),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

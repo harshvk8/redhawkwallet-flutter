@@ -6,14 +6,14 @@ import '../models/user_model.dart';
 class UserService {
   final _db = FirebaseFirestore.instance;
 
-  Future<void> createUserDocument(User firebaseUser, String name) async {
+  Future<void> createUserDocument(User firebaseUser, String name, {String role = UserRole.normalUser}) async {
     final now = DateTime.now();
     await _db.collection('users').doc(firebaseUser.uid).set(
           UserModel(
             uid: firebaseUser.uid,
             name: name,
             email: firebaseUser.email ?? '',
-            role: UserRole.normalUser,
+            role: role,
             isEmailVerified: false,
             isUniversityVerified: false,
             createdAt: now,

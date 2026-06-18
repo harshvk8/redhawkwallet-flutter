@@ -14,13 +14,17 @@ class AuthService {
       _auth.signInWithEmailAndPassword(email: email, password: password);
 
   Future<UserCredential> register(
-      String email, String password, String name) async {
+      String email, String password, String name, {String? role}) async {
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
     await credential.user?.updateDisplayName(name);
-    await _userService.createUserDocument(credential.user!, name);
+    if (role != null) {
+      await _userService.createUserDocument(credential.user!, name, role: role);
+    } else {
+      await _userService.createUserDocument(credential.user!, name);
+    }
     return credential;
   }
 
