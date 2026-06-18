@@ -519,6 +519,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final selected = _selectedRole == value;
     return Expanded(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => setState(() => _selectedRole = value),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
