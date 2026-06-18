@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserSettingsScreen extends StatefulWidget {
   const UserSettingsScreen({super.key});
@@ -26,9 +28,9 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         child: Column(
           children: [
             _buildSection('Account', [
-              _settingsTile(Icons.person_outline, 'Edit Profile', onTap: () {}),
+              _settingsTile(Icons.person_outline, 'Edit Profile', onTap: () => context.push('/profile')),
               _settingsTile(Icons.lock_outline, 'Change Password', onTap: () {}),
-              _settingsTile(Icons.school_outlined, 'University Verification', onTap: () {}),
+              _settingsTile(Icons.school_outlined, 'University Verification', onTap: () => context.push('/verify')),
             ]),
             const SizedBox(height: 16),
             _buildSection('Preferences', [
@@ -49,7 +51,10 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  if (context.mounted) context.go('/login');
+                },
                 icon: const Icon(Icons.logout, color: Color(0xFF8B1A2E)),
                 label: const Text('Logout', style: TextStyle(color: Color(0xFF8B1A2E), fontSize: 15)),
                 style: OutlinedButton.styleFrom(

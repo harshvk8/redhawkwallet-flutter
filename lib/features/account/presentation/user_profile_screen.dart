@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserProfileScreen extends StatelessWidget {
   const UserProfileScreen({super.key});
@@ -16,11 +18,11 @@ class UserProfileScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildVerificationCard(),
+                    _buildVerificationCard(context),
                     const SizedBox(height: 16),
                     _buildInfoCard(),
                     const SizedBox(height: 16),
-                    _buildLogoutButton(),
+                    _buildLogoutButton(context),
                   ],
                 ),
               ),
@@ -71,7 +73,7 @@ class UserProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildVerificationCard() {
+  Widget _buildVerificationCard(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -92,7 +94,7 @@ class UserProfileScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () => context.push('/verify'),
               icon: const Icon(Icons.school_outlined, size: 18),
               label: const Text('Verify University Email'),
               style: ElevatedButton.styleFrom(
@@ -168,11 +170,14 @@ class UserProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton() {
+  Widget _buildLogoutButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {},
+        onPressed: () async {
+          await FirebaseAuth.instance.signOut();
+          if (context.mounted) context.go('/login');
+        },
         icon: const Icon(Icons.logout, color: Color(0xFF8B1A2E)),
         label: const Text('Logout', style: TextStyle(color: Color(0xFF8B1A2E), fontSize: 15)),
         style: OutlinedButton.styleFrom(

@@ -21,6 +21,13 @@ import '../../features/wallet/presentation/user_wallet_screen.dart';
 import '../../features/offers/presentation/user_offers_screen.dart';
 import '../../features/points_rewards/presentation/user_points_rewards_screen.dart';
 import '../../features/settings/presentation/user_settings_screen.dart';
+import '../../features/events/presentation/user_events_screen.dart';
+import '../../features/admin/presentation/admin_settings_screen.dart';
+import '../../features/admin/presentation/admin_users_screen.dart';
+import '../../features/admin/presentation/admin_transactions_screen.dart';
+import '../../features/admin/presentation/admin_offers_screen.dart';
+import '../../features/admin/presentation/admin_events_screen.dart';
+import '../../features/admin/presentation/admin_vendor_details_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
@@ -56,8 +63,15 @@ class AppRouter {
       GoRoute(path: '/vendor/qr', builder: (context, state) => const VendorQrPaymentScreen()),
       GoRoute(path: '/vendor/offers', builder: (context, state) => const VendorOffersScreen()),
       GoRoute(path: '/vendor/transactions', builder: (context, state) => const VendorTransactionHistoryScreen()),
+      GoRoute(path: '/events', builder: (context, state) => const UserEventsScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),
       GoRoute(path: '/admin/vendors', builder: (context, state) => const AdminManageVendorsScreen()),
+      GoRoute(path: '/admin/users', builder: (context, state) => const AdminUsersScreen()),
+      GoRoute(path: '/admin/transactions', builder: (context, state) => const AdminTransactionsScreen()),
+      GoRoute(path: '/admin/offers', builder: (context, state) => const AdminOffersScreen()),
+      GoRoute(path: '/admin/events', builder: (context, state) => const AdminEventsScreen()),
+      GoRoute(path: '/admin/settings', builder: (context, state) => const AdminSettingsScreen()),
+      GoRoute(path: '/admin/vendor-details', builder: (context, state) => const AdminVendorDetailsScreen()),
     ],
   );
 }
