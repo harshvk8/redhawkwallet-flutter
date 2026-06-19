@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserHomeScreen extends StatelessWidget {
   const UserHomeScreen({super.key});
@@ -23,7 +24,7 @@ class UserHomeScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     _buildQuickAccessGrid(context),
                     const SizedBox(height: 20),
-                    _buildRecentTransaction(),
+                    _buildRecentTransaction(context),
                   ],
                 ),
               ),
@@ -156,7 +157,7 @@ class UserHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentTransaction() {
+  Widget _buildRecentTransaction(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -171,7 +172,7 @@ class UserHomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Recent Transaction', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-              TextButton(onPressed: () {}, child: const Text('View All', style: TextStyle(color: Color(0xFF8B1A2E)))),
+              TextButton(onPressed: () => context.push('/transactions'), child: const Text('View All', style: TextStyle(color: Color(0xFF8B1A2E)))),
             ],
           ),
           const Divider(),

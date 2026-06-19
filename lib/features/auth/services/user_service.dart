@@ -6,20 +6,24 @@ import '../models/user_model.dart';
 class UserService {
   final _db = FirebaseFirestore.instance;
 
-  Future<void> createUserDocument(User firebaseUser, String name) async {
+  Future<void> createUserDocument(User firebaseUser, String name,
+      {String role = UserRole.normalUser,
+      Map<String, dynamic>? vendorData}) async {
     final now = DateTime.now();
-    await _db.collection('users').doc(firebaseUser.uid).set(
-          UserModel(
-            uid: firebaseUser.uid,
-            name: name,
-            email: firebaseUser.email ?? '',
-            role: UserRole.normalUser,
-            isEmailVerified: false,
-            isUniversityVerified: false,
-            createdAt: now,
-            updatedAt: now,
-          ).toMap(),
-        );
+    final data = UserModel(
+      uid: firebaseUser.uid,
+      name: name,
+      email: firebaseUser.email ?? '',
+      role: role,
+      isEmailVerified: false,
+      isUniversityVerified: false,
+      createdAt: now,
+      updatedAt: now,
+    ).toMap();
+    if (vendorData != null) {
+      data.addAll(vendorData);
+    }
+    await _db.collection('users').doc(firebaseUser.uid).set(data);
   }
 
   Future<UserModel?> getUserDocument(String uid) async {

@@ -81,7 +81,14 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      final realIndex = vendors.indexOf(vendor);
+                      setState(() => vendors[realIndex]['status'] = 'Active');
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${vendor['name']} approved')),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
@@ -94,7 +101,14 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      final realIndex = vendors.indexOf(vendor);
+                      setState(() => vendors[realIndex]['status'] = 'Suspended');
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${vendor['name']} suspended')),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
@@ -204,7 +218,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: statusColor.withOpacity(0.1),
+                                  color: statusColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(vendor['status'], style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
@@ -219,7 +233,13 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                           Row(
                             children: [
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  final realIndex = vendors.indexOf(vendor);
+                                  setState(() => vendors[realIndex]['status'] = 'Active');
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('${vendor['name']} approved')),
+                                  );
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                   foregroundColor: Colors.white,
@@ -230,7 +250,13 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                               ),
                               const SizedBox(width: 8),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  final realIndex = vendors.indexOf(vendor);
+                                  setState(() => vendors[realIndex]['status'] = 'Suspended');
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('${vendor['name']} suspended')),
+                                  );
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red,
                                   foregroundColor: Colors.white,
