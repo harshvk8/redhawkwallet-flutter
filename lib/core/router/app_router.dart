@@ -46,12 +46,21 @@ class AppRouter {
           loc == '/register' ||
           loc == '/email-verification';
       if (!isLoggedIn && !isPublicRoute) return '/login';
-      if (isLoggedIn && isPublicRoute && loc != '/email-verification') {
+      if (!isLoggedIn) return null;
+      if (isPublicRoute && loc != '/email-verification') {
         final userModel = await _userService.getUserDocument(user.uid);
         final role = userModel?.role ?? UserRole.normalUser;
         if (role == UserRole.vendor) return '/vendor';
         if (role == UserRole.admin) return '/admin';
         return '/home';
+      }
+      final isVendorRoute = loc.startsWith('/vendor');
+      final isAdminRoute = loc.startsWith('/admin');
+      if (isVendorRoute || isAdminRoute) {
+        final userModel = await _userService.getUserDocument(user.uid);
+        final role = userModel?.role ?? UserRole.normalUser;
+        if (isVendorRoute && role != UserRole.vendor) return '/home';
+        if (isAdminRoute && role != UserRole.admin) return '/home';
       }
       return null;
     },

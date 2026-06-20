@@ -5,11 +5,9 @@ class AdminVendorDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('Vendor Details'),
         elevation: 0,
       ),
@@ -17,11 +15,11 @@ class AdminVendorDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildVendorHeader(),
+            _buildVendorHeader(cs),
             const SizedBox(height: 16),
-            _buildDetailsCard(),
+            _buildDetailsCard(cs),
             const SizedBox(height: 16),
-            _buildDocumentsCard(),
+            _buildDocumentsCard(cs),
             const SizedBox(height: 16),
             _buildActionButtons(context),
           ],
@@ -30,12 +28,12 @@ class AdminVendorDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildVendorHeader() {
+  Widget _buildVendorHeader(ColorScheme cs) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade100),
       ),
@@ -45,10 +43,10 @@ class AdminVendorDetailsScreen extends StatelessWidget {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF0F0),
+              color: cs.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.store, color: Color(0xFF8B1A2E), size: 36),
+            child: Icon(Icons.store, color: cs.primary, size: 36),
           ),
           const SizedBox(height: 12),
           const Text('Red Hawk Cafe', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
@@ -68,12 +66,12 @@ class AdminVendorDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailsCard() {
+  Widget _buildDetailsCard(ColorScheme cs) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade100),
       ),
@@ -82,23 +80,23 @@ class AdminVendorDetailsScreen extends StatelessWidget {
         children: [
           const Text('Business Information', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          _detailRow(Icons.person_outline, 'Owner', 'John Smith'),
-          _detailRow(Icons.email_outlined, 'Email', 'cafe@redhawk.edu'),
-          _detailRow(Icons.phone_outlined, 'Phone', '+1 (973) 555-0101'),
-          _detailRow(Icons.category_outlined, 'Category', 'Food & Drinks'),
-          _detailRow(Icons.location_on_outlined, 'Location', 'Student Center, Floor 1'),
-          _detailRow(Icons.calendar_today_outlined, 'Applied', 'May 18, 2026'),
+          _detailRow(cs, Icons.person_outline, 'Owner', 'John Smith'),
+          _detailRow(cs, Icons.email_outlined, 'Email', 'cafe@redhawk.edu'),
+          _detailRow(cs, Icons.phone_outlined, 'Phone', '+1 (973) 555-0101'),
+          _detailRow(cs, Icons.category_outlined, 'Category', 'Food & Drinks'),
+          _detailRow(cs, Icons.location_on_outlined, 'Location', 'Student Center, Floor 1'),
+          _detailRow(cs, Icons.calendar_today_outlined, 'Applied', 'May 18, 2026'),
         ],
       ),
     );
   }
 
-  Widget _detailRow(IconData icon, String label, String value) {
+  Widget _detailRow(ColorScheme cs, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF8B1A2E), size: 20),
+          Icon(icon, color: cs.primary, size: 20),
           const SizedBox(width: 12),
           Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 13)),
           Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
@@ -107,12 +105,12 @@ class AdminVendorDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDocumentsCard() {
+  Widget _buildDocumentsCard(ColorScheme cs) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade100),
       ),

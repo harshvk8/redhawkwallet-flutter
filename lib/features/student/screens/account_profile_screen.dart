@@ -155,6 +155,7 @@ class AccountProfileScreen extends StatelessWidget {
       {'icon': Icons.person_outline, 'label': 'Edit Profile', 'route': null},
       {'icon': Icons.history, 'label': 'Transaction History', 'route': '/transactions'},
       {'icon': Icons.star_outline, 'label': 'Points and Rewards', 'route': '/rewards'},
+      {'icon': Icons.settings, 'label': 'Settings', 'route': '/settings'},
       {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': null},
       {'icon': Icons.help_outline, 'label': 'Help and Support', 'route': null},
     ];
