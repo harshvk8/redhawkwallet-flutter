@@ -116,7 +116,7 @@ class StudentDashboardScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () => context.push('/wallet'),
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Add Funds'),
               style: ElevatedButton.styleFrom(
@@ -147,7 +147,11 @@ class StudentDashboardScreen extends StatelessWidget {
           children: [
             const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Custom quick actions coming soon')),
+                );
+              },
               child: Container(
                 width: 28,
                 height: 28,

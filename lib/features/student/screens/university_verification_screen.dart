@@ -1,7 +1,60 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class UniversityVerificationScreen extends StatelessWidget {
+import '../../auth/services/user_service.dart';
+import '../../../core/utils/university_email_validator.dart';
+
+class UniversityVerificationScreen extends StatefulWidget {
   const UniversityVerificationScreen({super.key});
+
+  @override
+  State<UniversityVerificationScreen> createState() => _UniversityVerificationScreenState();
+}
+
+class _UniversityVerificationScreenState extends State<UniversityVerificationScreen> {
+  final _emailController = TextEditingController();
+  final _userService = UserService();
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _verify() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+    if (!UniversityEmailValidator.isUniversityEmail(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please use a valid .edu email address'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      await _userService.updateUniversityVerification(uid, email);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('University email verified successfully!'), backgroundColor: Colors.green),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Verification failed: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +98,8 @@ class UniversityVerificationScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 hintText: 'yourname@university.edu',
                 prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
@@ -60,14 +115,16 @@ class UniversityVerificationScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _loading ? null : _verify,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B1A2E),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Verify Email', style: TextStyle(fontSize: 16)),
+                child: _loading
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Text('Verify Email', style: TextStyle(fontSize: 16)),
               ),
             ),
             const SizedBox(height: 28),

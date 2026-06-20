@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class VendorCreatePaymentRequestScreen extends StatefulWidget {
   const VendorCreatePaymentRequestScreen({super.key});
@@ -8,8 +9,17 @@ class VendorCreatePaymentRequestScreen extends StatefulWidget {
 }
 
 class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRequestScreen> {
+  final _amountController = TextEditingController();
+  final _noteController = TextEditingController();
   String selectedDiscount = 'No Discount';
   final List<String> discounts = ['No Discount', '10% Student Discount', 'Buy 1 Get 1', 'Free Delivery'];
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +37,8 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
             const Text('Amount', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
-              keyboardType: TextInputType.number,
+              controller: _amountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 prefixText: '\$ ',
@@ -59,6 +70,7 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
             const Text('Note (optional)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
+              controller: _noteController,
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: 'e.g. Table 4 coffee order',
@@ -73,7 +85,20 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  final amount = _amountController.text.trim();
+                  if (amount.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please enter an amount'), backgroundColor: Colors.orange),
+                    );
+                    return;
+                  }
+                  context.push('/vendor/qr', extra: {
+                    'amount': amount,
+                    'note': _noteController.text.trim(),
+                    'discount': selectedDiscount,
+                  });
+                },
                 icon: const Icon(Icons.qr_code, size: 24),
                 label: const Text('Generate QR Code', style: TextStyle(fontSize: 16)),
                 style: ElevatedButton.styleFrom(

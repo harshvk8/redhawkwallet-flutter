@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class VendorQrPaymentScreen extends StatelessWidget {
   const VendorQrPaymentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+    final amount = extra?['amount'] as String? ?? '0.00';
+    final note = extra?['note'] as String? ?? '';
+    final discount = extra?['discount'] as String? ?? 'No Discount';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Payment QR Code'),
@@ -32,9 +38,15 @@ class VendorQrPaymentScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text('\$12.50', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Color(0xFFC8102E))),
-              const SizedBox(height: 4),
-              const Text('Coffee order', style: TextStyle(fontSize: 14, color: Colors.grey)),
+              Text('\$$amount', style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Color(0xFFC8102E))),
+              if (note.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(note, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+              ],
+              if (discount != 'No Discount') ...[
+                const SizedBox(height: 4),
+                Text(discount, style: const TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.w600)),
+              ],
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -49,7 +61,11 @@ class VendorQrPaymentScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('QR code regenerated'), backgroundColor: Color(0xFFC8102E)),
+                        );
+                      },
                       icon: const Icon(Icons.refresh),
                       label: const Text('Regenerate'),
                       style: ElevatedButton.styleFrom(
@@ -63,7 +79,7 @@ class VendorQrPaymentScreen extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () => context.pop(),
                       icon: const Icon(Icons.cancel_outlined),
                       label: const Text('Cancel'),
                       style: ElevatedButton.styleFrom(

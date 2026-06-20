@@ -14,6 +14,62 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
     {'title': 'Free Delivery', 'description': 'Orders above \$15', 'discount': 'FREE', 'used': 5, 'active': false},
   ];
 
+  void _showOfferDialog(BuildContext context, {int? existingIndex}) {
+    final isEdit = existingIndex != null;
+    final titleCtrl = TextEditingController(text: isEdit ? offers[existingIndex]['title'] : '');
+    final descCtrl = TextEditingController(text: isEdit ? offers[existingIndex]['description'] : '');
+    final discountCtrl = TextEditingController(text: isEdit ? offers[existingIndex]['discount'] : '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(isEdit ? 'Edit Offer' : 'New Offer'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Title')),
+            const SizedBox(height: 8),
+            TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'Description')),
+            const SizedBox(height: 8),
+            TextField(controller: discountCtrl, decoration: const InputDecoration(labelText: 'Discount (e.g. 10%, BOGO, FREE)')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (titleCtrl.text.trim().isEmpty) return;
+              setState(() {
+                if (isEdit) {
+                  offers[existingIndex]['title'] = titleCtrl.text.trim();
+                  offers[existingIndex]['description'] = descCtrl.text.trim();
+                  offers[existingIndex]['discount'] = discountCtrl.text.trim();
+                } else {
+                  offers.add({
+                    'title': titleCtrl.text.trim(),
+                    'description': descCtrl.text.trim(),
+                    'discount': discountCtrl.text.trim(),
+                    'used': 0,
+                    'active': true,
+                  });
+                }
+              });
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(isEdit ? 'Offer updated' : 'Offer added'),
+                  backgroundColor: const Color(0xFFC8102E),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC8102E), foregroundColor: Colors.white),
+            child: Text(isEdit ? 'Save' : 'Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,7 +85,7 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () => _showOfferDialog(context),
                 icon: const Icon(Icons.add),
                 label: const Text('Add New Offer'),
                 style: ElevatedButton.styleFrom(
@@ -90,8 +146,19 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
                             Text('Used ${offer['used']} times', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                             Row(
                               children: [
-                                TextButton(onPressed: () {}, child: const Text('Edit', style: TextStyle(color: Color(0xFFC8102E)))),
-                                TextButton(onPressed: () {}, child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                                TextButton(
+                                  onPressed: () => _showOfferDialog(context, existingIndex: index),
+                                  child: const Text('Edit', style: TextStyle(color: Color(0xFFC8102E))),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    setState(() => offers.removeAt(index));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Offer deleted'), backgroundColor: Colors.red),
+                                    );
+                                  },
+                                  child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                ),
                               ],
                             ),
                           ],

@@ -69,7 +69,14 @@ class UserOffersScreen extends StatelessWidget {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Redeemed: ${offer['title']}!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF8B1A2E),
                             foregroundColor: Colors.white,

@@ -51,7 +51,14 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
         backgroundColor: const Color(0xFFC8102E),
         foregroundColor: Colors.white,
         actions: [
-          IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.notifications_none),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('No new notifications')),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {

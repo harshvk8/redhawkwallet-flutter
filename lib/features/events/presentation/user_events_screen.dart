@@ -70,7 +70,14 @@ class UserEventsScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Checked in to ${event['title']}!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
                       icon: const Icon(Icons.check_circle_outline, size: 18),
                       label: const Text('Check In'),
                       style: ElevatedButton.styleFrom(
