@@ -6,17 +6,14 @@ class VendorQrPaymentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
     final amount = extra?['amount'] as String? ?? '0.00';
     final note = extra?['note'] as String? ?? '';
     final discount = extra?['discount'] as String? ?? 'No Discount';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Payment QR Code'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(title: const Text('Payment QR Code')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -29,16 +26,16 @@ class VendorQrPaymentScreen extends StatelessWidget {
                 width: 220,
                 height: 220,
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFC8102E), width: 3),
+                  border: Border.all(color: cs.primary, width: 3),
                   borderRadius: BorderRadius.circular(16),
-                  color: const Color(0xFFFFF0F0),
+                  color: cs.primary.withValues(alpha: 0.1),
                 ),
-                child: const Center(
-                  child: Icon(Icons.qr_code_2, size: 160, color: Color(0xFFC8102E)),
+                child: Center(
+                  child: Icon(Icons.qr_code_2, size: 160, color: cs.primary),
                 ),
               ),
               const SizedBox(height: 24),
-              Text('\$$amount', style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Color(0xFFC8102E))),
+              Text('\$$amount', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: cs.primary)),
               if (note.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(note, style: const TextStyle(fontSize: 14, color: Colors.grey)),
@@ -63,17 +60,11 @@ class VendorQrPaymentScreen extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('QR code regenerated'), backgroundColor: Color(0xFFC8102E)),
+                          SnackBar(content: const Text('QR code regenerated'), backgroundColor: cs.primary),
                         );
                       },
                       icon: const Icon(Icons.refresh),
                       label: const Text('Regenerate'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC8102E),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -85,8 +76,6 @@ class VendorQrPaymentScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey.shade200,
                         foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),

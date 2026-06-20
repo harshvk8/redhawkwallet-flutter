@@ -12,11 +12,10 @@ class UserEventsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('Campus Events'),
         elevation: 0,
       ),
@@ -30,7 +29,7 @@ class UserEventsScreen extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: Colors.grey.shade100),
               ),
@@ -41,12 +40,12 @@ class UserEventsScreen extends StatelessWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(color: const Color(0xFFFFF0F0), borderRadius: BorderRadius.circular(10)),
-                        child: const Icon(Icons.event, color: Color(0xFF8B1A2E), size: 22),
+                        decoration: BoxDecoration(color: cs.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                        child: Icon(Icons.event, color: cs.primary, size: 22),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(event['title']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        child: Text(event['title']!, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: cs.onSurface)),
                       ),
                     ],
                   ),
@@ -81,7 +80,7 @@ class UserEventsScreen extends StatelessWidget {
                       icon: const Icon(Icons.check_circle_outline, size: 18),
                       label: const Text('Check In'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF8B1A2E),
+                        backgroundColor: cs.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

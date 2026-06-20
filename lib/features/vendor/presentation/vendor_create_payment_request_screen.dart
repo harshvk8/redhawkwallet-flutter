@@ -23,12 +23,10 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Payment Request'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(title: const Text('Create Payment Request')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -42,13 +40,8 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 prefixText: '\$ ',
-                prefixStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFC8102E)),
+                prefixStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: cs.primary),
                 hintText: '0.00',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFC8102E), width: 2),
-                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -56,13 +49,6 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: selectedDiscount,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFC8102E), width: 2),
-                ),
-              ),
               items: discounts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
               onChanged: (val) => setState(() => selectedDiscount = val!),
             ),
@@ -72,14 +58,7 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
             TextField(
               controller: _noteController,
               maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'e.g. Table 4 coffee order',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFC8102E), width: 2),
-                ),
-              ),
+              decoration: const InputDecoration(hintText: 'e.g. Table 4 coffee order'),
             ),
             const SizedBox(height: 32),
             SizedBox(
@@ -100,13 +79,7 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
                   });
                 },
                 icon: const Icon(Icons.qr_code, size: 24),
-                label: const Text('Generate QR Code', style: TextStyle(fontSize: 16)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC8102E),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
+                label: const Text('Generate QR Code'),
               ),
             ),
           ],
