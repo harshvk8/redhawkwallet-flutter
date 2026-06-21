@@ -1,15 +1,67 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class UniversityVerificationScreen extends StatelessWidget {
+import '../../auth/services/user_service.dart';
+import '../../../core/utils/university_email_validator.dart';
+
+class UniversityVerificationScreen extends StatefulWidget {
   const UniversityVerificationScreen({super.key});
 
   @override
+  State<UniversityVerificationScreen> createState() => _UniversityVerificationScreenState();
+}
+
+class _UniversityVerificationScreenState extends State<UniversityVerificationScreen> {
+  final _emailController = TextEditingController();
+  final _userService = UserService();
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _verify() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+    if (!UniversityEmailValidator.isUniversityEmail(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please use a valid .edu email address'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      await _userService.updateUniversityVerification(uid, email);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('University email verified successfully!'), backgroundColor: Colors.green),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Verification failed: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('University Verification'),
         elevation: 0,
       ),
@@ -20,16 +72,16 @@ class UniversityVerificationScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFF0F0),
+              decoration: BoxDecoration(
+                color: cs.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.shield_outlined, color: Color(0xFF8B1A2E), size: 60),
+              child: Icon(Icons.shield_outlined, color: cs.primary, size: 60),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Verify Your University Email',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: cs.onSurface),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -39,12 +91,14 @@ class UniversityVerificationScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
-              child: Text('University Email', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              child: Text('University Email', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
             ),
             const SizedBox(height: 8),
             TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 hintText: 'yourname@university.edu',
                 prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
@@ -52,7 +106,7 @@ class UniversityVerificationScreen extends StatelessWidget {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF8B1A2E), width: 2),
+                  borderSide: BorderSide(color: cs.primary, width: 2),
                 ),
               ),
             ),
@@ -60,26 +114,28 @@ class UniversityVerificationScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _loading ? null : _verify,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B1A2E),
+                  backgroundColor: cs.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Verify Email', style: TextStyle(fontSize: 16)),
+                child: _loading
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Text('Verify Email', style: TextStyle(fontSize: 16)),
               ),
             ),
             const SizedBox(height: 28),
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
-              child: Text('Benefits You Will Unlock', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              child: Text('Benefits You Will Unlock', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
             ),
             const SizedBox(height: 12),
-            _benefitItem(Icons.local_offer, Colors.amber, 'Student Discounts', 'Get exclusive discounts at campus and local vendors'),
-            _benefitItem(Icons.confirmation_number, const Color(0xFF8B1A2E), 'Campus Offers', 'Access special deals and promotions available only on campus'),
-            _benefitItem(Icons.qr_code, const Color(0xFF8B1A2E), 'QR Student ID', 'Use your digital student ID for quick verification and access'),
-            _benefitItem(Icons.star, Colors.amber, 'Exclusive Rewards', 'Earn bonus points and unlock student-only reward tiers'),
+            _benefitItem(Icons.local_offer, Colors.amber, 'Student Discounts', 'Get exclusive discounts at campus and local vendors', cs),
+            _benefitItem(Icons.confirmation_number, cs.primary, 'Campus Offers', 'Access special deals and promotions available only on campus', cs),
+            _benefitItem(Icons.qr_code, cs.primary, 'QR Student ID', 'Use your digital student ID for quick verification and access', cs),
+            _benefitItem(Icons.star, Colors.amber, 'Exclusive Rewards', 'Earn bonus points and unlock student-only reward tiers', cs),
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -91,12 +147,12 @@ class UniversityVerificationScreen extends StatelessWidget {
     );
   }
 
-  Widget _benefitItem(IconData icon, Color color, String title, String description) {
+  Widget _benefitItem(IconData icon, Color color, String title, String description, ColorScheme cs) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade100),
       ),
@@ -115,7 +171,7 @@ class UniversityVerificationScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
                 const SizedBox(height: 2),
                 Text(description, style: const TextStyle(color: Colors.grey, fontSize: 12)),
               ],

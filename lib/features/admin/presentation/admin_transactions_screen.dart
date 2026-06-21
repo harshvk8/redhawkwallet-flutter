@@ -32,11 +32,9 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('All Transactions'),
         elevation: 0,
       ),
@@ -58,11 +56,11 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFF8B1A2E) : Colors.white,
+                        color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? const Color(0xFF8B1A2E) : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
                       ),
-                      child: Text(filter, style: TextStyle(color: selected ? Colors.white : Colors.black, fontSize: 13, fontWeight: FontWeight.w500)),
+                      child: Text(filter, style: TextStyle(color: selected ? Colors.white : cs.onSurface, fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
                   );
                 },
@@ -79,7 +77,7 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.grey.shade100),
                     ),
@@ -89,7 +87,7 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(tx['id'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF8B1A2E))),
+                            Text(tx['id'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cs.primary)),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(

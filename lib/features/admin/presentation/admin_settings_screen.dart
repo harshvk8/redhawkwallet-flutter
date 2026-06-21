@@ -7,11 +7,9 @@ class AdminSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('Admin Settings'),
         elevation: 0,
       ),
@@ -19,23 +17,23 @@ class AdminSettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildProfileCard(),
+            _buildProfileCard(cs),
             const SizedBox(height: 16),
-            _buildPermissionsCard(),
+            _buildPermissionsCard(cs),
             const SizedBox(height: 16),
-            _buildLogoutButton(context),
+            _buildLogoutButton(context, cs),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileCard() {
+  Widget _buildProfileCard(ColorScheme cs) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade100),
       ),
@@ -44,17 +42,17 @@ class AdminSettingsScreen extends StatelessWidget {
           Container(
             width: 60,
             height: 60,
-            decoration: const BoxDecoration(color: Color(0xFFFFF0F0), shape: BoxShape.circle),
-            child: const Icon(Icons.admin_panel_settings, color: Color(0xFF8B1A2E), size: 32),
+            decoration: BoxDecoration(color: cs.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+            child: Icon(Icons.admin_panel_settings, color: cs.primary, size: 32),
           ),
           const SizedBox(width: 16),
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Admin User', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Text('admin@redhawk.edu', style: TextStyle(color: Colors.grey, fontSize: 13)),
-              SizedBox(height: 4),
-              Text('Role: Admin', style: TextStyle(color: Color(0xFF8B1A2E), fontSize: 12, fontWeight: FontWeight.bold)),
+              const Text('Admin User', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text('admin@redhawk.edu', style: TextStyle(color: Colors.grey, fontSize: 13)),
+              const SizedBox(height: 4),
+              Text('Role: Admin', style: TextStyle(color: cs.primary, fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),
         ],
@@ -62,7 +60,7 @@ class AdminSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPermissionsCard() {
+  Widget _buildPermissionsCard(ColorScheme cs) {
     final permissions = [
       'Manage Vendors',
       'Manage Users',
@@ -76,7 +74,7 @@ class AdminSettingsScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade100),
       ),
@@ -100,7 +98,7 @@ class AdminSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context) {
+  Widget _buildLogoutButton(BuildContext context, ColorScheme cs) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
@@ -108,11 +106,11 @@ class AdminSettingsScreen extends StatelessWidget {
           await FirebaseAuth.instance.signOut();
           if (context.mounted) context.go('/login');
         },
-        icon: const Icon(Icons.logout, color: Color(0xFF8B1A2E)),
-        label: const Text('Logout', style: TextStyle(color: Color(0xFF8B1A2E), fontSize: 15)),
+        icon: Icon(Icons.logout, color: cs.primary),
+        label: Text('Logout', style: TextStyle(color: cs.primary, fontSize: 15)),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          side: const BorderSide(color: Color(0xFF8B1A2E)),
+          side: BorderSide(color: cs.primary),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),

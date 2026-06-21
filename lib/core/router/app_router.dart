@@ -50,13 +50,20 @@ class AppRouter {
       // Role not yet fetched — stay on splash while Firestore loads
       if (_authNotifier.role == null) return '/splash';
 
-      // Once role is known, redirect off splash or public routes
+      final role = _authNotifier.role!;
+
+      // Once role is known, redirect off splash or public routes to correct dashboard
       if (loc == '/splash' || isPublicRoute) {
-        final role = _authNotifier.role!;
         if (role == UserRole.vendor) return '/vendor';
         if (role == UserRole.admin) return '/admin';
         return '/home';
       }
+
+      // Prevent cross-role access
+      final isVendorRoute = loc.startsWith('/vendor');
+      final isAdminRoute = loc.startsWith('/admin');
+      if (isVendorRoute && role != UserRole.vendor) return '/home';
+      if (isAdminRoute && role != UserRole.admin) return '/home';
 
       return null;
     },
@@ -80,6 +87,7 @@ class AppRouter {
       GoRoute(path: '/vendor/qr', builder: (context, state) => const VendorQrPaymentScreen()),
       GoRoute(path: '/vendor/offers', builder: (context, state) => const VendorOffersScreen()),
       GoRoute(path: '/vendor/transactions', builder: (context, state) => const VendorTransactionHistoryScreen()),
+      GoRoute(path: '/vendor/profile', builder: (context, state) => const AccountProfileScreen()),
       GoRoute(path: '/events', builder: (context, state) => const UserEventsScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),
       GoRoute(path: '/admin/vendors', builder: (context, state) => const AdminManageVendorsScreen()),

@@ -11,11 +11,9 @@ class AdminEventsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('Manage Events'),
         elevation: 0,
         actions: [
@@ -33,7 +31,7 @@ class AdminEventsScreen extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey.shade100),
               ),
@@ -86,7 +84,7 @@ class AdminEventsScreen extends StatelessWidget {
                         icon: const Icon(Icons.edit, size: 16),
                         label: const Text('Edit', style: TextStyle(fontSize: 13)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8B1A2E),
+                          backgroundColor: cs.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -99,7 +97,7 @@ class AdminEventsScreen extends StatelessWidget {
                         label: const Text('Disable', style: TextStyle(fontSize: 13)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey.shade200,
-                          foregroundColor: Colors.black,
+                          foregroundColor: cs.onSurface,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),

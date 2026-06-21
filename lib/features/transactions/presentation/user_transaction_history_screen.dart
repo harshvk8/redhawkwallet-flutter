@@ -32,11 +32,10 @@ class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScr
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('Transaction History'),
         elevation: 0,
       ),
@@ -58,11 +57,11 @@ class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScr
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFF8B1A2E) : Colors.white,
+                        color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? const Color(0xFF8B1A2E) : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
                       ),
-                      child: Text(filter, style: TextStyle(color: selected ? Colors.white : Colors.black, fontSize: 13, fontWeight: FontWeight.w500)),
+                      child: Text(filter, style: TextStyle(color: selected ? cs.onPrimary : cs.onSurface, fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
                   );
                 },
@@ -80,7 +79,7 @@ class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScr
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.grey.shade100),
                     ),
@@ -90,10 +89,10 @@ class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScr
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: isDebit ? const Color(0xFFFFF0F0) : const Color(0xFFE8F5E9),
+                            color: isDebit ? cs.primary.withValues(alpha: 0.1) : const Color(0xFFE8F5E9),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(tx['icon'] as IconData, color: isDebit ? const Color(0xFF8B1A2E) : Colors.green, size: 22),
+                          child: Icon(tx['icon'] as IconData, color: isDebit ? cs.primary : Colors.green, size: 22),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -109,7 +108,7 @@ class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScr
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(tx['amount'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDebit ? Colors.black : Colors.green)),
+                            Text(tx['amount'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDebit ? cs.onSurface : Colors.green)),
                             const SizedBox(height: 4),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
