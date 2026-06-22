@@ -15,11 +15,10 @@ class AdminDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
         actions: [
           IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
           IconButton(
@@ -40,7 +39,7 @@ class AdminDashboardScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFC8102E),
+                color: cs.primary,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Column(
@@ -76,13 +75,15 @@ class AdminDashboardScreen extends StatelessWidget {
             const SizedBox(height: 10),
             _actionButton(context, Icons.manage_accounts, 'Manage Vendors', '/admin/vendors'),
             const SizedBox(height: 8),
-            _actionButton(context, Icons.bar_chart, 'View All Transactions', null),
+            _actionButton(context, Icons.bar_chart, 'View All Transactions', '/admin/transactions'),
             const SizedBox(height: 8),
-            _actionButton(context, Icons.local_offer, 'Manage Offers', null),
+            _actionButton(context, Icons.local_offer, 'Manage Offers', '/admin/offers'),
             const SizedBox(height: 8),
-            _actionButton(context, Icons.school, 'Student Verifications', null),
+            _actionButton(context, Icons.event, 'Manage Events', '/admin/events'),
             const SizedBox(height: 8),
-            _actionButton(context, Icons.people, 'Manage Users', null),
+            _actionButton(context, Icons.people, 'Manage Users', '/admin/users'),
+            const SizedBox(height: 8),
+            _actionButton(context, Icons.settings, 'Admin Settings', '/admin/settings'),
             const SizedBox(height: 20),
             const Text('Recent Activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
@@ -90,7 +91,7 @@ class AdminDashboardScreen extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey.shade200),
               ),
@@ -99,7 +100,7 @@ class AdminDashboardScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.circle, size: 8, color: Color(0xFFC8102E)),
+                      Icon(Icons.circle, size: 8, color: cs.primary),
                       const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,6 +152,7 @@ class AdminDashboardScreen extends StatelessWidget {
   }
 
   Widget _actionButton(BuildContext context, IconData icon, String label, String? route) {
+    final cs = Theme.of(context).colorScheme;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -166,7 +168,7 @@ class AdminDashboardScreen extends StatelessWidget {
         icon: Icon(icon),
         label: Text(label),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFC8102E),
+          backgroundColor: cs.primary,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

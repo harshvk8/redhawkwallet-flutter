@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../models/user_model.dart';
 import 'user_service.dart';
 
 class AuthService {
@@ -14,13 +15,19 @@ class AuthService {
       _auth.signInWithEmailAndPassword(email: email, password: password);
 
   Future<UserCredential> register(
-      String email, String password, String name) async {
+      String email, String password, String name,
+      {String? role, Map<String, dynamic>? vendorData}) async {
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
     await credential.user?.updateDisplayName(name);
-    await _userService.createUserDocument(credential.user!, name);
+    await _userService.createUserDocument(
+      credential.user!,
+      name,
+      role: role ?? UserRole.normalUser,
+      vendorData: vendorData,
+    );
     return credential;
   }
 

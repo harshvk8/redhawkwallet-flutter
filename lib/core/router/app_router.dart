@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/models/user_model.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/email_verification_screen.dart';
@@ -23,12 +25,18 @@ import '../../features/wallet/presentation/user_wallet_screen.dart';
 import '../../features/offers/presentation/user_offers_screen.dart';
 import '../../features/points_rewards/presentation/user_points_rewards_screen.dart';
 import '../../features/settings/presentation/user_settings_screen.dart';
+import '../../features/events/presentation/user_events_screen.dart';
+import '../../features/admin/presentation/admin_settings_screen.dart';
+import '../../features/admin/presentation/admin_users_screen.dart';
+import '../../features/admin/presentation/admin_transactions_screen.dart';
+import '../../features/admin/presentation/admin_offers_screen.dart';
+import '../../features/admin/presentation/admin_events_screen.dart';
+import '../../features/admin/presentation/admin_vendor_details_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
   static final router = GoRouter(
-    initialLocation:
-        FirebaseAuth.instance.currentUser != null ? '/home' : '/login',
+    initialLocation: '/splash',
     refreshListenable: _authNotifier,
     redirect: (BuildContext context, GoRouterState state) {
       final isLoggedIn = FirebaseAuth.instance.currentUser != null;
@@ -36,10 +44,33 @@ class AppRouter {
       final isPublicRoute = loc == '/login' ||
           loc == '/register' ||
           loc == '/email-verification';
-      if (!isLoggedIn && !isPublicRoute) return '/login';
+
+      if (!isLoggedIn) {
+        return isPublicRoute ? null : '/login';
+      }
+
+      // Role not yet fetched — stay on splash while Firestore loads
+      if (_authNotifier.role == null) return '/splash';
+
+      final role = _authNotifier.role!;
+
+      // Once role is known, redirect off splash or public routes to correct dashboard
+      if (loc == '/splash' || isPublicRoute) {
+        if (role == UserRole.vendor) return '/vendor';
+        if (role == UserRole.admin) return '/admin';
+        return '/home';
+      }
+
+      // Prevent cross-role access
+      final isVendorRoute = loc.startsWith('/vendor');
+      final isAdminRoute = loc.startsWith('/admin');
+      if (isVendorRoute && role != UserRole.vendor) return '/home';
+      if (isAdminRoute && role != UserRole.admin) return '/home';
+
       return null;
     },
     routes: [
+      GoRoute(path: '/splash', builder: (context, state) => const _SplashScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
       GoRoute(path: '/email-verification', builder: (context, state) => const EmailVerificationScreen()),
@@ -63,14 +94,48 @@ class AppRouter {
       GoRoute(path: '/vendor/qr', builder: (context, state) => const VendorQrPaymentScreen()),
       GoRoute(path: '/vendor/offers', builder: (context, state) => const VendorOffersScreen()),
       GoRoute(path: '/vendor/transactions', builder: (context, state) => const VendorTransactionHistoryScreen()),
+      GoRoute(path: '/vendor/profile', builder: (context, state) => const AccountProfileScreen()),
+      GoRoute(path: '/events', builder: (context, state) => const UserEventsScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),
       GoRoute(path: '/admin/vendors', builder: (context, state) => const AdminManageVendorsScreen()),
+      GoRoute(path: '/admin/users', builder: (context, state) => const AdminUsersScreen()),
+      GoRoute(path: '/admin/transactions', builder: (context, state) => const AdminTransactionsScreen()),
+      GoRoute(path: '/admin/offers', builder: (context, state) => const AdminOffersScreen()),
+      GoRoute(path: '/admin/events', builder: (context, state) => const AdminEventsScreen()),
+      GoRoute(path: '/admin/settings', builder: (context, state) => const AdminSettingsScreen()),
+      GoRoute(path: '/admin/vendor-details', builder: (context, state) => const AdminVendorDetailsScreen()),
     ],
   );
 }
 
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+
 class _AuthStateNotifier extends ChangeNotifier {
+  String? _role;
+  String? get role => _role;
+
   _AuthStateNotifier() {
-    FirebaseAuth.instance.authStateChanges().listen((_) => notifyListeners());
+    FirebaseAuth.instance.authStateChanges().listen((user) async {
+      if (user == null) {
+        _role = null;
+        notifyListeners();
+        return;
+      }
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      _role = doc.data()?['role'] as String? ?? UserRole.normalUser;
+      notifyListeners();
+    });
   }
 }

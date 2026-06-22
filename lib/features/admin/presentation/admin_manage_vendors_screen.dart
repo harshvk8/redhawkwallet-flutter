@@ -154,11 +154,12 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
   }
 
   Widget _detailRow(IconData icon, String label, String value) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: const Color(0xFFC8102E)),
+          Icon(icon, size: 18, color: cs.primary),
           const SizedBox(width: 10),
           Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 13)),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
@@ -169,11 +170,10 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Vendors'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -202,13 +202,13 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFFC8102E) : Colors.grey.shade100,
+                        color: selected ? cs.primary : Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         filter,
                         style: TextStyle(
-                          color: selected ? Colors.white : Colors.black,
+                          color: selected ? Colors.white : cs.onSurface,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -280,7 +280,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: cs.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.grey.shade200),
                       ),
@@ -345,8 +345,8 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                               OutlinedButton(
                                 onPressed: () => _showVendorDetails(context, vendor),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: const Color(0xFFC8102E),
-                                  side: const BorderSide(color: Color(0xFFC8102E)),
+                                  foregroundColor: cs.primary,
+                                  side: BorderSide(color: cs.primary),
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 ),

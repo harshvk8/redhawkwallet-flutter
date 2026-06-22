@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class VendorQrPaymentScreen extends StatelessWidget {
   const VendorQrPaymentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+    final amount = extra?['amount'] as String? ?? '0.00';
+    final note = extra?['note'] as String? ?? '';
+    final discount = extra?['discount'] as String? ?? 'No Discount';
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Payment QR Code'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(title: const Text('Payment QR Code')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -23,18 +26,24 @@ class VendorQrPaymentScreen extends StatelessWidget {
                 width: 220,
                 height: 220,
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFC8102E), width: 3),
+                  border: Border.all(color: cs.primary, width: 3),
                   borderRadius: BorderRadius.circular(16),
-                  color: const Color(0xFFFFF0F0),
+                  color: cs.primary.withValues(alpha: 0.1),
                 ),
-                child: const Center(
-                  child: Icon(Icons.qr_code_2, size: 160, color: Color(0xFFC8102E)),
+                child: Center(
+                  child: Icon(Icons.qr_code_2, size: 160, color: cs.primary),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text('\$12.50', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Color(0xFFC8102E))),
-              const SizedBox(height: 4),
-              const Text('Coffee order', style: TextStyle(fontSize: 14, color: Colors.grey)),
+              Text('\$$amount', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: cs.primary)),
+              if (note.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(note, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+              ],
+              if (discount != 'No Discount') ...[
+                const SizedBox(height: 4),
+                Text(discount, style: const TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.w600)),
+              ],
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -49,28 +58,24 @@ class VendorQrPaymentScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: const Text('QR code regenerated'), backgroundColor: cs.primary),
+                        );
+                      },
                       icon: const Icon(Icons.refresh),
                       label: const Text('Regenerate'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC8102E),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () => context.pop(),
                       icon: const Icon(Icons.cancel_outlined),
                       label: const Text('Cancel'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey.shade200,
                         foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),
