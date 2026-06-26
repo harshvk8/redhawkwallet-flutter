@@ -11,6 +11,8 @@ class StudentDashboardScreen extends StatelessWidget {
       'amount': '-\$5.50',
       'isDebit': true,
       'icon': Icons.local_cafe,
+      'category': 'Food & Drink',
+      'status': 'Paid',
     },
     {
       'name': 'Added Funds',
@@ -18,6 +20,8 @@ class StudentDashboardScreen extends StatelessWidget {
       'amount': '+\$25.00',
       'isDebit': false,
       'icon': Icons.add_circle_outline,
+      'category': 'Top Up',
+      'status': 'Completed',
     },
     {
       'name': 'Student Bookstore',
@@ -25,6 +29,8 @@ class StudentDashboardScreen extends StatelessWidget {
       'amount': '-\$42.99',
       'isDebit': true,
       'icon': Icons.menu_book,
+      'category': 'Books & Supplies',
+      'status': 'Paid',
     },
   ];
 
@@ -36,7 +42,7 @@ class StudentDashboardScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(cs),
+            _buildHeader(context, cs),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -61,7 +67,7 @@ class StudentDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(ColorScheme cs) {
+  Widget _buildHeader(BuildContext context, ColorScheme cs) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       color: cs.primary,
@@ -82,7 +88,11 @@ class StudentDashboardScreen extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.notifications_none, color: Colors.white, size: 22),
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.notifications_none, color: Colors.white, size: 22),
+              onPressed: () => context.push('/notifications'),
+            ),
           ),
         ],
       ),
@@ -244,6 +254,14 @@ class StudentDashboardScreen extends StatelessWidget {
                     Text(tx['name'] as String, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: cs.onSurface)),
                     const SizedBox(height: 2),
                     Text(tx['date'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        _detailChip(tx['category'] as String, cs),
+                        const SizedBox(width: 6),
+                        _detailChip(tx['status'] as String, cs),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -319,6 +337,24 @@ class StudentDashboardScreen extends StatelessWidget {
         height: 52,
         decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
         child: const Icon(Icons.qr_code, color: Colors.white, size: 26),
+      ),
+    );
+  }
+
+  Widget _detailChip(String text, ColorScheme cs) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: cs.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: cs.primary,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

@@ -52,6 +52,10 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
         title: const Text('Vendor Dashboard'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => context.push('/vendor/profile'),
+          ),
+          IconButton(
             icon: const Icon(Icons.notifications_none),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(

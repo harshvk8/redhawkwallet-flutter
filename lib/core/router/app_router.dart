@@ -24,6 +24,7 @@ import '../../features/wallet/presentation/user_wallet_screen.dart';
 import '../../features/offers/presentation/user_offers_screen.dart';
 import '../../features/points_rewards/presentation/user_points_rewards_screen.dart';
 import '../../features/settings/presentation/user_settings_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/events/presentation/user_events_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';
 import '../../features/admin/presentation/admin_users_screen.dart';
@@ -50,17 +51,15 @@ class AppRouter {
       if (isPublicRoute && loc != '/email-verification') {
         final userModel = await _userService.getUserDocument(user.uid);
         final role = userModel?.role ?? UserRole.normalUser;
-        if (role == UserRole.vendor) return '/vendor';
-        if (role == UserRole.admin) return '/admin';
-        return '/home';
+        return _homeForRole(role);
       }
-      final isVendorRoute = loc.startsWith('/vendor');
-      final isAdminRoute = loc.startsWith('/admin');
-      if (isVendorRoute || isAdminRoute) {
+      if (_isRoleRestrictedRoute(loc)) {
         final userModel = await _userService.getUserDocument(user.uid);
         final role = userModel?.role ?? UserRole.normalUser;
-        if (isVendorRoute && role != UserRole.vendor) return '/home';
-        if (isAdminRoute && role != UserRole.admin) return '/home';
+        if (loc.startsWith('/vendor') && role != UserRole.vendor) return _homeForRole(role);
+        if (loc.startsWith('/admin') && role != UserRole.admin) return _homeForRole(role);
+        if (_isStudentRoute(loc) && role == UserRole.vendor) return '/vendor';
+        if (_isStudentRoute(loc) && role == UserRole.admin) return '/admin';
       }
       return null;
     },
@@ -78,6 +77,7 @@ class AppRouter {
       GoRoute(path: '/offers', builder: (context, state) => const UserOffersScreen()),
       GoRoute(path: '/rewards', builder: (context, state) => const UserPointsRewardsScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const UserSettingsScreen()),
+      GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/vendor', builder: (context, state) => const VendorDashboardScreen()),
       GoRoute(path: '/vendor/payment-request', builder: (context, state) => const VendorCreatePaymentRequestScreen()),
       GoRoute(path: '/vendor/qr', builder: (context, state) => const VendorQrPaymentScreen()),
@@ -95,6 +95,28 @@ class AppRouter {
       GoRoute(path: '/admin/vendor-details', builder: (context, state) => const AdminVendorDetailsScreen()),
     ],
   );
+
+  static bool _isRoleRestrictedRoute(String location) => _isStudentRoute(location) || location.startsWith('/vendor') || location.startsWith('/admin');
+
+  static bool _isStudentRoute(String location) {
+    return location == '/home' ||
+        location == '/profile' ||
+        location == '/verify' ||
+        location == '/qr-id' ||
+        location == '/qr-scanner' ||
+        location == '/transactions' ||
+        location == '/wallet' ||
+        location == '/offers' ||
+        location == '/rewards' ||
+        location == '/settings' ||
+        location == '/events';
+  }
+
+  static String _homeForRole(String role) {
+    if (role == UserRole.vendor) return '/vendor';
+    if (role == UserRole.admin) return '/admin';
+    return '/home';
+  }
 }
 
 class _AuthStateNotifier extends ChangeNotifier {
