@@ -2,7 +2,7 @@
 
 ## Tester
 Name: Elijah  
-Date: 06/05/26
+Date: 06/18/26
 Branch: feature/elijah-testing-bug-report
 
 ## Test Cases
@@ -18,12 +18,16 @@ Branch: feature/elijah-testing-bug-report
 | 6 | Login — empty fields | ✅ | Works |
 | 7 | Register — invalid email format | ✅ | Works |
 | 8 | Register — existing email | ✅ | Works - Shows error saying account already linked to email|
-| 9 | Navigation after login (role-based) | ✅ | Very Smooth|
-| 10 | Navigation after logout | ✅ | Very Smooth |
-| 11 | Dashboard loads without crash | ✅ | Works |
-| 12 | Account/Profile screen opens | ✅ | Works |
-| 13 | QR screen opens | ✅ | Works |
-| 14 | Transaction screen opens | ✅ | Works |
+| 9 | Navigation after login (role-based) | ✅ | Good |
+| 10 | Navigation after logout | ✅ | good |
+| 11 | Dashboard loads without crash | ✅ |  good |
+| 12 | Account/Profile screen opens | ✅ |  excellent |
+| 13 | QR screen opens | ✅ | good |
+| 14 | Transaction screen opens | ✅ | good |
+| 15 | Responsive on Mobile devices  | ✅ | good |
+
+
 
 ## Status Key
 - ✅ Pass
+- ❌ Fail

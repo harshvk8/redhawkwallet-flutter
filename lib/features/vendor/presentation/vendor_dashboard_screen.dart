@@ -107,7 +107,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: cs.onSurface)),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -119,7 +119,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            const Text('Recent Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('Recent Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: cs.onSurface)),
             const SizedBox(height: 10),
             _buildTransactionsSection(cs),
           ],
@@ -141,15 +141,15 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.red.shade50,
+          color: cs.errorContainer,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.red.shade200),
+          border: Border.all(color: cs.error),
         ),
         child: Column(
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 40),
+            Icon(Icons.error_outline, color: cs.onErrorContainer, size: 40),
             const SizedBox(height: 8),
-            const Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold, color: cs.onErrorContainer)),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: _loadData,
@@ -166,15 +166,15 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
         decoration: BoxDecoration(
           color: cs.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: cs.outlineVariant),
         ),
-        child: const Column(
+        child: Column(
           children: [
-            Icon(Icons.receipt_long, color: Colors.grey, size: 40),
-            SizedBox(height: 8),
-            Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text('Your transactions will appear here.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+            Icon(Icons.receipt_long, color: cs.onSurfaceVariant, size: 40),
+            const SizedBox(height: 8),
+            const Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text('Your transactions will appear here.', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
           ],
         ),
       );
@@ -186,7 +186,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
         decoration: BoxDecoration(
           color: cs.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -202,7 +202,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(tx['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text(tx['time']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(tx['time']!, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                   ],
                 ),
               ],
@@ -213,8 +213,8 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                 Text(tx['amount']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(20)),
-                  child: Text(tx['status']!, style: TextStyle(color: Colors.green.shade700, fontSize: 11)),
+                  decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
+                  child: Text(tx['status']!, style: const TextStyle(color: Colors.green, fontSize: 11)),
                 ),
               ],
             ),
@@ -238,7 +238,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
             Icon(icon, color: cs.primary, size: 20),
             const SizedBox(height: 4),
             Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+            Text(label, style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
           ],
         ),
       ),

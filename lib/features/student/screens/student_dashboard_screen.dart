@@ -55,7 +55,7 @@ class StudentDashboardScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     _buildRecentTransactions(context, cs),
                     const SizedBox(height: 16),
-                    _buildDemoNote(),
+                    _buildDemoNote(cs),
                   ],
                 ),
               ),
@@ -187,7 +187,7 @@ class StudentDashboardScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: cs.surface,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
+                    border: Border.all(color: cs.outlineVariant),
                   ),
                   child: Column(
                     children: [
@@ -233,7 +233,7 @@ class StudentDashboardScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: cs.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade100),
+            border: Border.all(color: cs.outlineVariant),
           ),
           child: Row(
             children: [
@@ -241,7 +241,7 @@ class StudentDashboardScreen extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: tx['isDebit'] as bool ? cs.primary.withValues(alpha: 0.1) : const Color(0xFFE8F5E9),
+                  color: tx['isDebit'] as bool ? cs.primary.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(tx['icon'] as IconData, color: tx['isDebit'] as bool ? cs.primary : Colors.green, size: 22),
@@ -253,7 +253,7 @@ class StudentDashboardScreen extends StatelessWidget {
                   children: [
                     Text(tx['name'] as String, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: cs.onSurface)),
                     const SizedBox(height: 2),
-                    Text(tx['date'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(tx['date'] as String, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -269,7 +269,7 @@ class StudentDashboardScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(tx['amount'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: tx['isDebit'] as bool ? cs.onSurface : Colors.green)),
-                  const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
+                  Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 18),
                 ],
               ),
             ],
@@ -279,17 +279,17 @@ class StudentDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDemoNote() {
+  Widget _buildDemoNote(ColorScheme cs) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Text(
+      child: Text(
         'This is a demo wallet. Start using Red Hawk Wallet to see your real transactions here!',
-        style: TextStyle(color: Colors.grey, fontSize: 13),
+        style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
         textAlign: TextAlign.center,
       ),
     );
@@ -300,7 +300,7 @@ class StudentDashboardScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         color: cs.surface,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        border: Border(top: BorderSide(color: cs.outlineVariant)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -321,9 +321,9 @@ class StudentDashboardScreen extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isActive ? cs.primary : Colors.grey, size: 24),
+          Icon(icon, color: isActive ? cs.primary : cs.onSurfaceVariant, size: 24),
           const SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 11, color: isActive ? cs.primary : Colors.grey, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
+          Text(label, style: TextStyle(fontSize: 11, color: isActive ? cs.primary : cs.onSurfaceVariant, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
         ],
       ),
     );

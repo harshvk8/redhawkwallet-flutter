@@ -61,10 +61,7 @@ class _UniversityVerificationScreenState extends State<UniversityVerificationScr
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('University Verification'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('University Verification'), elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -85,9 +82,9 @@ class _UniversityVerificationScreenState extends State<UniversityVerificationScr
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Verify your university email to unlock student discounts, campus offers, QR student ID, and exclusive rewards.',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              style: TextStyle(color: cs.onSurfaceVariant, fontSize: 14),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
@@ -101,7 +98,7 @@ class _UniversityVerificationScreenState extends State<UniversityVerificationScr
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 hintText: 'yourname@university.edu',
-                prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
+                prefixIcon: const Icon(Icons.email_outlined),
                 helperText: 'Use your official .edu email address',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(
@@ -139,7 +136,7 @@ class _UniversityVerificationScreenState extends State<UniversityVerificationScr
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Skip for now', style: TextStyle(color: Colors.grey)),
+              child: Text('Skip for now', style: TextStyle(color: cs.onSurfaceVariant)),
             ),
           ],
         ),
@@ -154,7 +151,7 @@ class _UniversityVerificationScreenState extends State<UniversityVerificationScr
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: [
@@ -173,7 +170,7 @@ class _UniversityVerificationScreenState extends State<UniversityVerificationScr
               children: [
                 Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
                 const SizedBox(height: 2),
-                Text(description, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(description, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
               ],
             ),
           ),

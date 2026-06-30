@@ -10,41 +10,68 @@ class AdminManageVendorsScreen extends StatefulWidget {
 class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
   String selectedFilter = 'All';
   final List<String> filters = ['All', 'Active', 'Pending', 'Suspended'];
+  bool _isLoading = true;
+  bool _hasError = false;
 
-  final List<Map<String, dynamic>> vendors = [
-    {
-      'name': 'Red Hawk Cafe',
-      'email': 'cafe@redhawk.edu',
-      'category': 'Food & Drinks',
-      'status': 'Active',
-      'joined': 'May 10, 2026',
-      'transactions': 42,
-    },
-    {
-      'name': 'Campus Bookstore',
-      'email': 'books@redhawk.edu',
-      'category': 'Books & Supplies',
-      'status': 'Pending',
-      'joined': 'May 18, 2026',
-      'transactions': 0,
-    },
-    {
-      'name': 'Hawks Pizza',
-      'email': 'pizza@redhawk.edu',
-      'category': 'Food & Drinks',
-      'status': 'Suspended',
-      'joined': 'May 12, 2026',
-      'transactions': 15,
-    },
-    {
-      'name': 'Campus Prints',
-      'email': 'prints@redhawk.edu',
-      'category': 'Services',
-      'status': 'Active',
-      'joined': 'May 14, 2026',
-      'transactions': 28,
-    },
-  ];
+  List<Map<String, dynamic>> vendors = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+    try {
+      await Future.delayed(const Duration(seconds: 1));
+      setState(() {
+        vendors = [
+          {
+            'name': 'Red Hawk Cafe',
+            'email': 'cafe@redhawk.edu',
+            'category': 'Food & Drinks',
+            'status': 'Active',
+            'joined': 'May 10, 2026',
+            'transactions': 42,
+          },
+          {
+            'name': 'Campus Bookstore',
+            'email': 'books@redhawk.edu',
+            'category': 'Books & Supplies',
+            'status': 'Pending',
+            'joined': 'May 18, 2026',
+            'transactions': 0,
+          },
+          {
+            'name': 'Hawks Pizza',
+            'email': 'pizza@redhawk.edu',
+            'category': 'Food & Drinks',
+            'status': 'Suspended',
+            'joined': 'May 12, 2026',
+            'transactions': 15,
+          },
+          {
+            'name': 'Campus Prints',
+            'email': 'prints@redhawk.edu',
+            'category': 'Services',
+            'status': 'Active',
+            'joined': 'May 14, 2026',
+            'transactions': 28,
+          },
+        ];
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    }
+  }
 
   Color _statusColor(String status) {
     if (status == 'Active') return Colors.green;
@@ -192,8 +219,57 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            Expanded(
-              child: ListView.builder(
+            Expanded(child: _buildVendorList(context)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVendorList(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFC8102E)),
+      );
+    }
+    if (_hasError) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 8),
+            const Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFC8102E),
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    if (filteredVendors.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.store_mall_directory_outlined, color: Colors.grey, size: 48),
+            const SizedBox(height: 8),
+            Text(
+              selectedFilter == 'All' ? 'No vendors yet.' : 'No $selectedFilter vendors.',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
                 itemCount: filteredVendors.length,
                 itemBuilder: (context, index) {
                   final vendor = filteredVendors[index];
@@ -283,11 +359,6 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                     ),
                   );
                 },
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
