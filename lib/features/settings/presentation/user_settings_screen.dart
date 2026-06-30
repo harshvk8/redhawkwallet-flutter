@@ -35,7 +35,10 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             const SizedBox(height: 16),
             _buildSection('Preferences', [
               _settingsTileSwitch(Icons.notifications_none, 'Notifications', notificationsEnabled, (val) => setState(() => notificationsEnabled = val), cs),
-              _settingsTileSwitch(Icons.dark_mode_outlined, 'Dark Mode (Coming Soon)', darkModeEnabled, (val) => setState(() => ThemeNotifier.instance.toggle()), cs),
+              _settingsTileSwitch(Icons.dark_mode_outlined, 'Dark Mode (Coming Soon)', darkModeEnabled, (val) {
+                ThemeNotifier.instance.value = val ? ThemeMode.dark : ThemeMode.light;
+                setState(() {});
+              }, cs),
             ], cs),
             const SizedBox(height: 16),
             _buildSection('Privacy & Security', [

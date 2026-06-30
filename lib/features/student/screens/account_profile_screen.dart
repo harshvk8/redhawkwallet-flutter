@@ -10,10 +10,29 @@ class AccountProfileScreen extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Account Profile'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+
+            final location = GoRouterState.of(context).matchedLocation;
+            if (location.startsWith('/vendor')) {
+              context.go('/vendor');
+            } else {
+              context.go('/settings');
+            }
+          },
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(context, cs),
+            _buildHeader(cs),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -36,58 +55,46 @@ class AccountProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, ColorScheme cs) {
+  Widget _buildHeader(ColorScheme cs) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       color: cs.primary,
-      child: Stack(
+      child: Column(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
-            ),
-          ),
-          Column(
+          Stack(
             children: [
-              Stack(
-                children: [
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.white24,
-                    child: Icon(Icons.person, color: Colors.white, size: 44),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: Icon(Icons.camera_alt, color: cs.primary, size: 16),
-                    ),
-                  ),
-                ],
+              const CircleAvatar(
+                radius: 40,
+                backgroundColor: Colors.white24,
+                child: Icon(Icons.person, color: Colors.white, size: 44),
               ),
-              const SizedBox(height: 12),
-              Text(
-                FirebaseAuth.instance.currentUser?.displayName ?? 'Student Name',
-                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                FirebaseAuth.instance.currentUser?.email ?? 'student@example.com',
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
-                child: const Text('Normal User', style: TextStyle(color: Colors.white, fontSize: 12)),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  child: Icon(Icons.camera_alt, color: cs.primary, size: 16),
+                ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            FirebaseAuth.instance.currentUser?.displayName ?? 'Student Name',
+            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            FirebaseAuth.instance.currentUser?.email ?? 'student@example.com',
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
+            child: const Text('Normal User', style: TextStyle(color: Colors.white, fontSize: 12)),
           ),
         ],
       ),
@@ -156,7 +163,7 @@ class AccountProfileScreen extends StatelessWidget {
       {'icon': Icons.history, 'label': 'Transaction History', 'route': '/transactions'},
       {'icon': Icons.star_outline, 'label': 'Points and Rewards', 'route': '/rewards'},
       {'icon': Icons.settings, 'label': 'Settings', 'route': '/settings'},
-      {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': null},
+      {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': '/notifications'},
       {'icon': Icons.help_outline, 'label': 'Help and Support', 'route': null},
     ];
 
@@ -194,10 +201,6 @@ class AccountProfileScreen extends StatelessWidget {
                     final route = setting['route'] as String?;
                     if (route != null) {
                       context.push(route);
-                    } else if (setting['label'] == 'Notifications') {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('No new notifications')),
-                      );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('${setting['label']} coming in MVP')),

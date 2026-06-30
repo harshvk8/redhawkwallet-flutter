@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserOffersScreen extends StatelessWidget {
   const UserOffersScreen({super.key});
@@ -15,12 +16,12 @@ class UserOffersScreen extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Offers'),
+      appBar: AppBar(title: const Text('Offers'),
         elevation: 0,
       ),
+        
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

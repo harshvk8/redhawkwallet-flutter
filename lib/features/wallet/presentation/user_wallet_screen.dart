@@ -20,6 +20,7 @@ class UserWalletScreen extends StatelessWidget {
         title: const Text('My Wallet'),
         elevation: 0,
       ),
+  
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
