@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:redhawkwallet_flutter/main.dart';
+import 'package:redhawkwallet_flutter/app.dart';
 
 void main() {
   Future<void> openRouteAndReturn(
@@ -35,7 +35,7 @@ void main() {
   testWidgets('dashboard routes push and pop correctly', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const RedHawkWalletApp());
     await tester.pumpAndSettle();
 
     expect(find.text('Student Dashboard'), findsOneWidget);

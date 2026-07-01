@@ -227,6 +227,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
   }
 
   Widget _buildVendorList(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFFC8102E)),
