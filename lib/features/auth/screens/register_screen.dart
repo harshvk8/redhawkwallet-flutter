@@ -75,6 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 'businessCategory': _selectedCategory,
               }
             : null,
+        termsAcceptedAt: DateTime.now(),
       );
       await _authService.sendEmailVerification();
       if (!mounted) return;
