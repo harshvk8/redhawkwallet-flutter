@@ -33,6 +33,16 @@ import '../../features/admin/presentation/admin_transactions_screen.dart';
 import '../../features/admin/presentation/admin_offers_screen.dart';
 import '../../features/admin/presentation/admin_events_screen.dart';
 import '../../features/admin/presentation/admin_vendor_details_screen.dart';
+import '../../features/admin/presentation/admin_reports_screen.dart';
+import '../../features/admin/presentation/admin_transaction_details_screen.dart';
+import '../../features/admin/presentation/reported_issues_screen.dart';
+import '../../features/vendor/presentation/vendor_waiting_approval_screen.dart';
+import '../../features/vendor/presentation/vendor_profile_screen.dart';
+import '../../features/vendor/presentation/edit_vendor_profile_screen.dart';
+import '../../features/vendor/presentation/vendor_sales_report_screen.dart';
+import '../../features/wallet/presentation/add_money_screen.dart';
+import '../../features/legal/presentation/terms_screen.dart';
+import '../../features/legal/presentation/privacy_policy_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
@@ -92,20 +102,29 @@ class AppRouter {
       GoRoute(path: '/settings', builder: (context, state) => const UserSettingsScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/vendor', builder: (context, state) => const VendorDashboardScreen()),
+      GoRoute(path: '/vendor/waiting', builder: (context, state) => const VendorWaitingApprovalScreen()),
+      GoRoute(path: '/vendor/profile', builder: (context, state) => const VendorProfileScreen()),
+      GoRoute(path: '/vendor/profile/edit', builder: (context, state) => const EditVendorProfileScreen()),
+      GoRoute(path: '/vendor/sales-report', builder: (context, state) => const VendorSalesReportScreen()),
       GoRoute(path: '/vendor/payment-request', builder: (context, state) => const VendorCreatePaymentRequestScreen()),
       GoRoute(path: '/vendor/qr', builder: (context, state) => const VendorQrPaymentScreen()),
       GoRoute(path: '/vendor/offers', builder: (context, state) => const VendorOffersScreen()),
       GoRoute(path: '/vendor/transactions', builder: (context, state) => const VendorTransactionHistoryScreen()),
-      GoRoute(path: '/vendor/profile', builder: (context, state) => const AccountProfileScreen()),
       GoRoute(path: '/events', builder: (context, state) => const UserEventsScreen()),
+      GoRoute(path: '/wallet/add-money', builder: (context, state) => const AddMoneyScreen()),
+      GoRoute(path: '/terms', builder: (context, state) => const TermsScreen()),
+      GoRoute(path: '/privacy', builder: (context, state) => const PrivacyPolicyScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),
       GoRoute(path: '/admin/vendors', builder: (context, state) => const AdminManageVendorsScreen()),
       GoRoute(path: '/admin/users', builder: (context, state) => const AdminUsersScreen()),
       GoRoute(path: '/admin/transactions', builder: (context, state) => const AdminTransactionsScreen()),
+      GoRoute(path: '/admin/transaction-details', builder: (context, state) => const AdminTransactionDetailsScreen()),
       GoRoute(path: '/admin/offers', builder: (context, state) => const AdminOffersScreen()),
       GoRoute(path: '/admin/events', builder: (context, state) => const AdminEventsScreen()),
       GoRoute(path: '/admin/settings', builder: (context, state) => const AdminSettingsScreen()),
       GoRoute(path: '/admin/vendor-details', builder: (context, state) => const AdminVendorDetailsScreen()),
+      GoRoute(path: '/admin/reports', builder: (context, state) => const AdminReportsScreen()),
+      GoRoute(path: '/admin/reported-issues', builder: (context, state) => const ReportedIssuesScreen()),
     ],
   );
 

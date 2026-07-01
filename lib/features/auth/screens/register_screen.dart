@@ -417,19 +417,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ),
                                       children: [
                                         const TextSpan(text: 'I agree to the '),
-                                        TextSpan(
-                                          text: 'Terms of Service',
-                                          style: TextStyle(
-                                            color: cs.primary,
-                                            fontWeight: FontWeight.w600,
+                                        WidgetSpan(
+                                          child: GestureDetector(
+                                            onTap: () => context.push('/terms', extra: 'register'),
+                                            child: Text(
+                                              'Terms of Service',
+                                              style: TextStyle(fontSize: 13, color: cs.primary, fontWeight: FontWeight.w600, height: 1.4),
+                                            ),
                                           ),
                                         ),
                                         const TextSpan(text: ' and '),
-                                        TextSpan(
-                                          text: 'Privacy Policy',
-                                          style: TextStyle(
-                                            color: cs.primary,
-                                            fontWeight: FontWeight.w600,
+                                        WidgetSpan(
+                                          child: GestureDetector(
+                                            onTap: () => context.push('/privacy', extra: 'register'),
+                                            child: Text(
+                                              'Privacy Policy',
+                                              style: TextStyle(fontSize: 13, color: cs.primary, fontWeight: FontWeight.w600, height: 1.4),
+                                            ),
                                           ),
                                         ),
                                       ],

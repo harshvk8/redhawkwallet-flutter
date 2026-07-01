@@ -1,0 +1,22 @@
+# Red Hawk Wallet — Splash Screen Config
+# Run: dart run flutter_native_splash:create
+# After Harsh merges assets, replace color_dark/#8B1A2E with the logo:
+#   image: assets/images/logo_white.png
+#   image_dark: assets/images/logo_white.png
+
+flutter_native_splash:
+  color: "#8B1A2E"
+  color_dark: "#8B1A2E"
+
+  # Uncomment after Harsh's assets branch merges:
+  # image: assets/images/logo_white.png
+  # image_dark: assets/images/logo_white.png
+
+  android_12:
+    color: "#8B1A2E"
+    color_dark: "#8B1A2E"
+    icon_background_color: "#8B1A2E"
+    icon_background_color_dark: "#8B1A2E"
+    # image: assets/images/logo_white.png
+
+  web: false
