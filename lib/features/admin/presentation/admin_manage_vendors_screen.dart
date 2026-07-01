@@ -227,6 +227,8 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
   }
 
   Widget _buildVendorList(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFFC8102E)),
@@ -294,7 +296,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: statusColor.withValues(alpha: 0.1),
+                                  color: statusColor.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(vendor['status'], style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
