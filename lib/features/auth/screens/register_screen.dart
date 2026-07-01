@@ -339,14 +339,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     _obscurePassword = !_obscurePassword),
                               ),
                             ),
-                            validator: (v) => (v == null || v.length < 8)
-                                ? 'Password must be at least 8 characters'
-                                : null,
+                            validator: (v) {
+                              if (v == null || v.length < 8) return 'Password must be at least 8 characters';
+                              if (!RegExp(r'\d').hasMatch(v)) return 'Password must contain at least 1 number';
+                              return null;
+                            },
                           ),
                           Padding(
                             padding: const EdgeInsets.only(top: 4, left: 4),
                             child: Text(
-                              'Use at least 8 characters',
+                              'Use 8+ characters with at least 1 number',
                               style: TextStyle(fontSize: 11, color: mutedText),
                             ),
                           ),

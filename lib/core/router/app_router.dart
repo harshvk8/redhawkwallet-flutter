@@ -43,6 +43,7 @@ import '../../features/vendor/presentation/vendor_sales_report_screen.dart';
 import '../../features/wallet/presentation/add_money_screen.dart';
 import '../../features/legal/presentation/terms_screen.dart';
 import '../../features/legal/presentation/privacy_policy_screen.dart';
+import '../../features/legal/presentation/vendor_terms_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
@@ -64,6 +65,16 @@ class AppRouter {
       if (_authNotifier.role == null) return '/splash';
 
       final role = _authNotifier.role!;
+
+      // Suspended accounts can't proceed past login
+      if (_authNotifier.accountStatus == 'suspended') return '/login';
+
+      // Vendor status gate — pending vendors only reach /vendor/waiting
+      if (role == UserRole.vendor) {
+        final vStatus = _authNotifier.vendorStatus;
+        if (vStatus != 'approved' && loc != '/vendor/waiting') return '/vendor/waiting';
+        if (vStatus == 'approved' && loc == '/vendor/waiting') return '/vendor';
+      }
 
       // Once role is known, redirect off splash or public routes to correct dashboard
       if (loc == '/splash' || isPublicRoute) {
@@ -114,6 +125,7 @@ class AppRouter {
       GoRoute(path: '/wallet/add-money', builder: (context, state) => const AddMoneyScreen()),
       GoRoute(path: '/terms', builder: (context, state) => const TermsScreen()),
       GoRoute(path: '/privacy', builder: (context, state) => const PrivacyPolicyScreen()),
+      GoRoute(path: '/vendor-terms', builder: (context, state) => const VendorTermsScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),
       GoRoute(path: '/admin/vendors', builder: (context, state) => const AdminManageVendorsScreen()),
       GoRoute(path: '/admin/users', builder: (context, state) => const AdminUsersScreen()),
@@ -164,12 +176,19 @@ class _SplashScreen extends StatelessWidget {
 
 class _AuthStateNotifier extends ChangeNotifier {
   String? _role;
+  String? _vendorStatus;
+  String? _accountStatus;
+
   String? get role => _role;
+  String? get vendorStatus => _vendorStatus;
+  String? get accountStatus => _accountStatus;
 
   _AuthStateNotifier() {
     FirebaseAuth.instance.authStateChanges().listen((user) async {
       if (user == null) {
         _role = null;
+        _vendorStatus = null;
+        _accountStatus = null;
         notifyListeners();
         return;
       }
@@ -177,7 +196,10 @@ class _AuthStateNotifier extends ChangeNotifier {
           .collection('users')
           .doc(user.uid)
           .get();
-      _role = doc.data()?['role'] as String? ?? UserRole.normalUser;
+      final data = doc.data() ?? {};
+      _role = data['role'] as String? ?? UserRole.normalUser;
+      _vendorStatus = data['vendorStatus'] as String?;
+      _accountStatus = data['accountStatus'] as String?;
       notifyListeners();
     });
   }
