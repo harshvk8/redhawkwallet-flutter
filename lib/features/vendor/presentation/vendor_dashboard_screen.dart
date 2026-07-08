@@ -45,13 +45,24 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Vendor Dashboard'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
         actions: [
-          IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => context.push('/vendor/profile'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_none),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('No new notifications')),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -70,7 +81,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFC8102E),
+                color: cs.primary,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Column(
@@ -88,41 +99,41 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                _statCard('Orders', '0', Icons.receipt_long),
+                _statCard('Orders', '0', Icons.receipt_long, cs),
                 const SizedBox(width: 10),
-                _statCard('Offers', '3', Icons.local_offer),
+                _statCard('Offers', '3', Icons.local_offer, cs),
                 const SizedBox(width: 10),
-                _statCard('Points Given', '0', Icons.stars),
+                _statCard('Points Given', '0', Icons.stars, cs),
               ],
             ),
             const SizedBox(height: 20),
-            const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: cs.onSurface)),
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: _quickAction(context, Icons.qr_code, 'Request Payment', '/vendor/payment-request')),
+                Expanded(child: _quickAction(context, Icons.qr_code, 'Request Payment', '/vendor/payment-request', cs)),
                 const SizedBox(width: 10),
-                Expanded(child: _quickAction(context, Icons.local_offer, 'My Offers', '/vendor/offers')),
+                Expanded(child: _quickAction(context, Icons.local_offer, 'My Offers', '/vendor/offers', cs)),
                 const SizedBox(width: 10),
-                Expanded(child: _quickAction(context, Icons.history, 'History', '/vendor/transactions')),
+                Expanded(child: _quickAction(context, Icons.history, 'History', '/vendor/transactions', cs)),
               ],
             ),
             const SizedBox(height: 20),
-            const Text('Recent Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('Recent Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: cs.onSurface)),
             const SizedBox(height: 10),
-            _buildTransactionsSection(),
+            _buildTransactionsSection(cs),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTransactionsSection() {
+  Widget _buildTransactionsSection(ColorScheme cs) {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: CircularProgressIndicator(color: Color(0xFFC8102E)),
+          padding: const EdgeInsets.all(24.0),
+          child: CircularProgressIndicator(color: cs.primary),
         ),
       );
     }
@@ -130,21 +141,20 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.red.shade50,
+          color: cs.errorContainer,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.red.shade200),
+          border: Border.all(color: cs.error),
         ),
         child: Column(
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 40),
+            Icon(Icons.error_outline, color: cs.onErrorContainer, size: 40),
             const SizedBox(height: 8),
-            const Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold, color: cs.onErrorContainer)),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: _loadData,
               icon: const Icon(Icons.refresh),
               label: const Text('Try Again'),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC8102E), foregroundColor: Colors.white),
             ),
           ],
         ),
@@ -154,17 +164,17 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: cs.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: cs.outlineVariant),
         ),
-        child: const Column(
+        child: Column(
           children: [
-            Icon(Icons.receipt_long, color: Colors.grey, size: 40),
-            SizedBox(height: 8),
-            Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text('Your transactions will appear here.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+            Icon(Icons.receipt_long, color: cs.onSurfaceVariant, size: 40),
+            const SizedBox(height: 8),
+            const Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text('Your transactions will appear here.', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
           ],
         ),
       );
@@ -174,9 +184,9 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cs.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -184,15 +194,15 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: const Color(0xFFFFF0F0),
-                  child: Text(tx['name']![0], style: const TextStyle(color: Color(0xFFC8102E), fontWeight: FontWeight.bold)),
+                  backgroundColor: cs.primary.withValues(alpha: 0.1),
+                  child: Text(tx['name']![0], style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(tx['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text(tx['time']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(tx['time']!, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                   ],
                 ),
               ],
@@ -203,8 +213,8 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                 Text(tx['amount']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(20)),
-                  child: Text(tx['status']!, style: TextStyle(color: Colors.green.shade700, fontSize: 11)),
+                  decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
+                  child: Text(tx['status']!, style: const TextStyle(color: Colors.green, fontSize: 11)),
                 ),
               ],
             ),
@@ -214,34 +224,34 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
     );
   }
 
-  Widget _statCard(String label, String value, IconData icon) {
+  Widget _statCard(String label, String value, IconData icon, ColorScheme cs) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF0F0),
+          color: cs.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFC8102E), width: 0.5),
+          border: Border.all(color: cs.primary, width: 0.5),
         ),
         child: Column(
           children: [
-            Icon(icon, color: const Color(0xFFC8102E), size: 20),
+            Icon(icon, color: cs.primary, size: 20),
             const SizedBox(height: 4),
             Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+            Text(label, style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
           ],
         ),
       ),
     );
   }
 
-  Widget _quickAction(BuildContext context, IconData icon, String label, String route) {
+  Widget _quickAction(BuildContext context, IconData icon, String label, String route, ColorScheme cs) {
     return GestureDetector(
       onTap: () => context.push(route),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFFC8102E),
+          color: cs.primary,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(

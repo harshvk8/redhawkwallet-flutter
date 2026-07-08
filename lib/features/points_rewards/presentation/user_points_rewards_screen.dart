@@ -12,15 +12,14 @@ class UserPointsRewardsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     const int currentPoints = 250;
     const int nextRewardPoints = 300;
     const double progress = currentPoints / nextRewardPoints;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('Points & Rewards'),
         elevation: 0,
       ),
@@ -59,16 +58,16 @@ class UserPointsRewardsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
-              child: Text('Available Rewards', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+              child: Text('Available Rewards', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
             ),
             const SizedBox(height: 12),
             ...rewards.map((reward) => Container(
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey.shade100),
               ),
@@ -77,17 +76,17 @@ class UserPointsRewardsScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF0F0),
+                      color: cs.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(reward['icon'] as IconData, color: const Color(0xFF8B1A2E), size: 22),
+                    child: Icon(reward['icon'] as IconData, color: cs.primary, size: 22),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(reward['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text(reward['title'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
                         Text('${reward['points']} points required', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                       ],
                     ),
@@ -95,7 +94,7 @@ class UserPointsRewardsScreen extends StatelessWidget {
                   ElevatedButton(
                     onPressed: reward['available'] as bool ? () {} : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8B1A2E),
+                      backgroundColor: cs.primary,
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: Colors.grey.shade200,
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),

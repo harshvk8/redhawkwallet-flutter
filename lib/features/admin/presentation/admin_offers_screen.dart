@@ -18,11 +18,9 @@ class AdminOffersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('Manage Offers'),
         elevation: 0,
       ),
@@ -37,7 +35,7 @@ class AdminOffersScreen extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey.shade100),
               ),
@@ -52,10 +50,10 @@ class AdminOffersScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFF0F0),
+                              color: cs.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(offer['discount'], style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold, fontSize: 12)),
+                            child: Text(offer['discount'], style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold, fontSize: 12)),
                           ),
                           const SizedBox(width: 10),
                           Text(offer['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),

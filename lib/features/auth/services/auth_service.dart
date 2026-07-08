@@ -16,7 +16,9 @@ class AuthService {
 
   Future<UserCredential> register(
       String email, String password, String name,
-      {String? role, Map<String, dynamic>? vendorData}) async {
+      {String? role,
+      Map<String, dynamic>? vendorData,
+      DateTime? termsAcceptedAt}) async {
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
@@ -27,6 +29,7 @@ class AuthService {
       name,
       role: role ?? UserRole.normalUser,
       vendorData: vendorData,
+      termsAcceptedAt: termsAcceptedAt,
     );
     return credential;
   }

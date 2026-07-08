@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class AdminUsersScreen extends StatefulWidget {
@@ -8,143 +9,303 @@ class AdminUsersScreen extends StatefulWidget {
 }
 
 class _AdminUsersScreenState extends State<AdminUsersScreen> {
-  String selectedRole = 'All';
-  final List<String> roles = ['All', 'Normal User', 'Verified Student', 'Vendor', 'Admin'];
+  String _filter = 'All';
+  String _search = '';
+  final _filters = ['All', 'Normal User', 'Verified Student', 'Vendor', 'Admin', 'Suspended'];
+  final _db = FirebaseFirestore.instance;
 
-  final List<Map<String, dynamic>> users = [
-    {'name': 'Alex Johnson', 'email': 'alex@montclair.edu', 'role': 'Verified Student', 'emailVerified': true, 'uniVerified': true, 'created': 'May 10, 2026'},
-    {'name': 'Sara Lee', 'email': 'sara@gmail.com', 'role': 'Normal User', 'emailVerified': true, 'uniVerified': false, 'created': 'May 15, 2026'},
-    {'name': 'Mike Chen', 'email': 'mike@montclair.edu', 'role': 'Verified Student', 'emailVerified': true, 'uniVerified': true, 'created': 'May 18, 2026'},
-    {'name': 'John Smith', 'email': 'john@redhawk.edu', 'role': 'Vendor', 'emailVerified': true, 'uniVerified': false, 'created': 'May 12, 2026'},
-    {'name': 'Admin User', 'email': 'admin@redhawk.edu', 'role': 'Admin', 'emailVerified': true, 'uniVerified': false, 'created': 'May 1, 2026'},
-  ];
+  Future<void> _suspendUser(String uid, String name) async {
+    final confirmed = await _confirm(
+      'Suspend $name?',
+      'They will be redirected to the login screen and unable to access the app.',
+      confirmLabel: 'Suspend',
+      confirmColor: Colors.red,
+    );
+    if (!confirmed) return;
+    await _db.collection('users').doc(uid).update({
+      'accountStatus': 'suspended',
+      'updatedAt': Timestamp.fromDate(DateTime.now()),
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$name suspended'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _reactivateUser(String uid, String name) async {
+    await _db.collection('users').doc(uid).update({
+      'accountStatus': 'active',
+      'updatedAt': Timestamp.fromDate(DateTime.now()),
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$name reactivated'), backgroundColor: Colors.green),
+      );
+    }
+  }
+
+  Future<bool> _confirm(String title, String message, {required String confirmLabel, required Color confirmColor}) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: confirmColor, foregroundColor: Colors.white),
+            child: Text(confirmLabel),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
 
   Color _roleColor(String role) {
-    if (role == 'Admin') return Colors.purple;
-    if (role == 'Vendor') return Colors.blue;
-    if (role == 'Verified Student') return Colors.green;
+    if (role == 'admin') return Colors.purple;
+    if (role == 'vendor') return Colors.blue;
+    if (role == 'verified_student') return Colors.green;
     return Colors.grey;
   }
 
-  List<Map<String, dynamic>> get filteredUsers {
-    if (selectedRole == 'All') return users;
-    return users.where((u) => u['role'] == selectedRole).toList();
+  String _roleLabel(String role) {
+    if (role == 'admin') return 'Admin';
+    if (role == 'vendor') return 'Vendor';
+    if (role == 'verified_student') return 'Verified Student';
+    return 'Normal User';
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
-        title: const Text('Manage Users'),
-        elevation: 0,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
+      appBar: AppBar(title: const Text('Manage Users'), elevation: 0),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: TextField(
+              onChanged: (v) => setState(() => _search = v.toLowerCase()),
               decoration: InputDecoration(
                 hintText: 'Search users...',
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: cs.surface,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
-            const SizedBox(height: 12),
-            SizedBox(
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: SizedBox(
               height: 36,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: roles.length,
+                itemCount: _filters.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final role = roles[index];
-                  final selected = role == selectedRole;
+                itemBuilder: (_, i) {
+                  final f = _filters[i];
+                  final selected = f == _filter;
                   return GestureDetector(
-                    onTap: () => setState(() => selectedRole = role),
+                    onTap: () => setState(() => _filter = f),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFF8B1A2E) : Colors.white,
+                        color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? const Color(0xFF8B1A2E) : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
                       ),
-                      child: Text(role, style: TextStyle(color: selected ? Colors.white : Colors.black, fontSize: 12, fontWeight: FontWeight.w500)),
+                      child: Text(f, style: TextStyle(color: selected ? Colors.white : cs.onSurface, fontSize: 12, fontWeight: FontWeight.w500)),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: ListView.builder(
-                itemCount: filteredUsers.length,
-                itemBuilder: (context, index) {
-                  final user = filteredUsers[index];
-                  final roleColor = _roleColor(user['role']);
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade100),
-                    ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _db.collection('users').orderBy('createdAt', descending: true).snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator(color: cs.primary));
+                }
+                if (snapshot.hasError) {
+                  return Center(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: const Color(0xFFFFF0F0),
-                                  child: Text(user['name'][0], style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold)),
-                                ),
-                                const SizedBox(width: 10),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(user['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                    Text(user['email'], style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: roleColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(user['role'], style: TextStyle(color: roleColor, fontSize: 11, fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        ),
+                        const Icon(Icons.error_outline, color: Colors.red, size: 48),
                         const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            _verifiedBadge('Email', user['emailVerified']),
-                            const SizedBox(width: 8),
-                            _verifiedBadge('University', user['uniVerified']),
-                            const Spacer(),
-                            Text('Joined ${user['created']}', style: const TextStyle(color: Colors.grey, fontSize: 11)),
-                          ],
-                        ),
+                        const Text('Failed to load users', style: TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
                   );
-                },
-              ),
+                }
+
+                var docs = snapshot.data?.docs ?? [];
+
+                // Filter by role/status
+                if (_filter == 'Suspended') {
+                  docs = docs.where((d) {
+                    final data = d.data() as Map<String, dynamic>;
+                    return data['accountStatus'] == 'suspended';
+                  }).toList();
+                } else if (_filter != 'All') {
+                  final roleMap = {
+                    'Normal User': 'normal_user',
+                    'Verified Student': 'verified_student',
+                    'Vendor': 'vendor',
+                    'Admin': 'admin',
+                  };
+                  docs = docs.where((d) {
+                    final data = d.data() as Map<String, dynamic>;
+                    return data['role'] == roleMap[_filter];
+                  }).toList();
+                }
+
+                // Search
+                if (_search.isNotEmpty) {
+                  docs = docs.where((d) {
+                    final data = d.data() as Map<String, dynamic>;
+                    final name = (data['name'] as String? ?? '').toLowerCase();
+                    final email = (data['email'] as String? ?? '').toLowerCase();
+                    return name.contains(_search) || email.contains(_search);
+                  }).toList();
+                }
+
+                if (docs.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.people_outline, color: Colors.grey.shade400, size: 48),
+                        const SizedBox(height: 8),
+                        Text(_filter == 'All' ? 'No users yet.' : 'No $_filter users.',
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  itemCount: docs.length,
+                  itemBuilder: (_, i) {
+                    final doc = docs[i];
+                    final data = doc.data() as Map<String, dynamic>;
+                    final uid = doc.id;
+                    final name = data['name'] as String? ?? 'Unknown';
+                    final email = data['email'] as String? ?? '';
+                    final role = data['role'] as String? ?? 'normal_user';
+                    final isSuspended = data['accountStatus'] == 'suspended';
+                    final emailVerified = data['isEmailVerified'] as bool? ?? false;
+                    final uniVerified = data['isUniversityVerified'] as bool? ?? false;
+                    final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
+                    final joined = createdAt != null
+                        ? '${createdAt.month}/${createdAt.day}/${createdAt.year}'
+                        : '—';
+                    final roleColor = _roleColor(role);
+                    final roleLabel = _roleLabel(role);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: cs.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: isSuspended ? Colors.red.shade100 : Colors.grey.shade100),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: cs.primary.withValues(alpha: 0.1),
+                                    child: Text(name.isNotEmpty ? name[0] : '?', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
+                                      Text(email, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(color: roleColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+                                    child: Text(roleLabel, style: TextStyle(color: roleColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                  ),
+                                  if (isSuspended) ...[
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+                                      child: const Text('Suspended', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              _verifiedBadge('Email', emailVerified),
+                              const SizedBox(width: 8),
+                              _verifiedBadge('University', uniVerified),
+                              const Spacer(),
+                              Text('Joined $joined', style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                            ],
+                          ),
+                          if (role != 'admin') ...[
+                            const SizedBox(height: 10),
+                            isSuspended
+                                ? ElevatedButton(
+                                    onPressed: () => _reactivateUser(uid, name),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    child: const Text('Reactivate', style: TextStyle(fontSize: 13)),
+                                  )
+                                : ElevatedButton(
+                                    onPressed: () => _suspendUser(uid, name),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    child: const Text('Suspend', style: TextStyle(fontSize: 13)),
+                                  ),
+                          ],
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

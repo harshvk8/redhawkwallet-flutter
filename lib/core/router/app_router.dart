@@ -1,9 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../features/auth/models/user_model.dart';
-import '../../features/auth/services/user_service.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/email_verification_screen.dart';
@@ -18,41 +15,36 @@ import '../../features/vendor/presentation/vendor_create_payment_request_screen.
 import '../../features/vendor/presentation/vendor_qr_payment_screen.dart';
 import '../../features/vendor/presentation/vendor_offers_screen.dart';
 import '../../features/vendor/presentation/vendor_transaction_history_screen.dart';
+import '../../features/vendor/presentation/vendor_waiting_approval_screen.dart';
+import '../../features/vendor/presentation/vendor_profile_screen.dart';
+import '../../features/vendor/presentation/edit_vendor_profile_screen.dart';
+import '../../features/vendor/presentation/payment_received_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/admin_manage_vendors_screen.dart';
+import '../../features/admin/presentation/admin_transaction_details_screen.dart';
+import '../../features/admin/presentation/reported_issues_screen.dart';
 import '../../features/wallet/presentation/user_wallet_screen.dart';
+import '../../features/wallet/presentation/add_money_screen.dart';
+import '../../features/wallet/presentation/send_money_screen.dart';
+import '../../features/wallet/presentation/receive_money_screen.dart';
+import '../../features/wallet/presentation/pay_vendor_screen.dart';
 import '../../features/offers/presentation/user_offers_screen.dart';
 import '../../features/points_rewards/presentation/user_points_rewards_screen.dart';
 import '../../features/settings/presentation/user_settings_screen.dart';
-import '../../features/events/presentation/user_events_screen.dart';
-import '../../features/admin/presentation/admin_settings_screen.dart';
-import '../../features/admin/presentation/admin_users_screen.dart';
-import '../../features/admin/presentation/admin_transactions_screen.dart';
-import '../../features/admin/presentation/admin_offers_screen.dart';
-import '../../features/admin/presentation/admin_events_screen.dart';
-import '../../features/admin/presentation/admin_vendor_details_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
-  static final _userService = UserService();
   static final router = GoRouter(
-    initialLocation: '/login',
+    initialLocation:
+        FirebaseAuth.instance.currentUser != null ? '/home' : '/login',
     refreshListenable: _authNotifier,
-    redirect: (BuildContext context, GoRouterState state) async {
-      final user = FirebaseAuth.instance.currentUser;
-      final isLoggedIn = user != null;
+    redirect: (BuildContext context, GoRouterState state) {
+      final isLoggedIn = FirebaseAuth.instance.currentUser != null;
       final loc = state.matchedLocation;
       final isPublicRoute = loc == '/login' ||
           loc == '/register' ||
           loc == '/email-verification';
       if (!isLoggedIn && !isPublicRoute) return '/login';
-      if (isLoggedIn && isPublicRoute && loc != '/email-verification') {
-        final userModel = await _userService.getUserDocument(user.uid);
-        final role = userModel?.role ?? UserRole.normalUser;
-        if (role == UserRole.vendor) return '/vendor';
-        if (role == UserRole.admin) return '/admin';
-        return '/home';
-      }
       return null;
     },
     routes: [
@@ -66,23 +58,26 @@ class AppRouter {
       GoRoute(path: '/qr-scanner', builder: (context, state) => const QrScannerScreen()),
       GoRoute(path: '/transactions', builder: (context, state) => const TransactionHistoryScreen()),
       GoRoute(path: '/wallet', builder: (context, state) => const UserWalletScreen()),
+      GoRoute(path: '/wallet/add', builder: (context, state) => const AddMoneyScreen()),
+      GoRoute(path: '/wallet/send', builder: (context, state) => const SendMoneyScreen()),
+      GoRoute(path: '/wallet/receive', builder: (context, state) => const ReceiveMoneyScreen()),
+      GoRoute(path: '/wallet/pay', builder: (context, state) => const PayVendorScreen()),
       GoRoute(path: '/offers', builder: (context, state) => const UserOffersScreen()),
       GoRoute(path: '/rewards', builder: (context, state) => const UserPointsRewardsScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const UserSettingsScreen()),
       GoRoute(path: '/vendor', builder: (context, state) => const VendorDashboardScreen()),
+      GoRoute(path: '/vendor/waiting', builder: (context, state) => const VendorWaitingApprovalScreen()),
+      GoRoute(path: '/vendor/profile', builder: (context, state) => const VendorProfileScreen()),
+      GoRoute(path: '/vendor/edit-profile', builder: (context, state) => const EditVendorProfileScreen()),
+      GoRoute(path: '/vendor/payment-received', builder: (context, state) => const PaymentReceivedScreen()),
       GoRoute(path: '/vendor/payment-request', builder: (context, state) => const VendorCreatePaymentRequestScreen()),
       GoRoute(path: '/vendor/qr', builder: (context, state) => const VendorQrPaymentScreen()),
       GoRoute(path: '/vendor/offers', builder: (context, state) => const VendorOffersScreen()),
       GoRoute(path: '/vendor/transactions', builder: (context, state) => const VendorTransactionHistoryScreen()),
-      GoRoute(path: '/events', builder: (context, state) => const UserEventsScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),
       GoRoute(path: '/admin/vendors', builder: (context, state) => const AdminManageVendorsScreen()),
-      GoRoute(path: '/admin/users', builder: (context, state) => const AdminUsersScreen()),
-      GoRoute(path: '/admin/transactions', builder: (context, state) => const AdminTransactionsScreen()),
-      GoRoute(path: '/admin/offers', builder: (context, state) => const AdminOffersScreen()),
-      GoRoute(path: '/admin/events', builder: (context, state) => const AdminEventsScreen()),
-      GoRoute(path: '/admin/settings', builder: (context, state) => const AdminSettingsScreen()),
-      GoRoute(path: '/admin/vendor-details', builder: (context, state) => const AdminVendorDetailsScreen()),
+      GoRoute(path: '/admin/transaction-details', builder: (context, state) => const AdminTransactionDetailsScreen()),
+      GoRoute(path: '/admin/issues', builder: (context, state) => const ReportedIssuesScreen()),
     ],
   );
 }

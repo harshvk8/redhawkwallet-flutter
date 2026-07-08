@@ -73,9 +73,66 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          duration: const Duration(seconds: 8),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _showForgotPassword(BuildContext context) {
+    final resetCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reset Password'),
+        content: TextField(
+          controller: resetCtrl,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            labelText: 'Email address',
+            hintText: 'you@university.edu',
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              final email = resetCtrl.text.trim();
+              if (email.isEmpty || !email.contains('@')) return;
+              try {
+                await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Password reset email sent!'), backgroundColor: Colors.green),
+                );
+              } on FirebaseAuthException catch (e) {
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(e.message ?? 'Failed to send reset email'), backgroundColor: Colors.red),
+                );
+              }
+            },
+            child: const Text('Send Reset Link'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showComingSoon(BuildContext context, String provider) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$provider sign-in coming soon')),
+    );
   }
 
   @override
@@ -225,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: () {},
+                              onPressed: () => _showForgotPassword(context),
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: Size.zero,
@@ -267,7 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Google
                           AuthSocialButton(
-                            onTap: () {},
+                            onTap: () => _showComingSoon(context, 'Google'),
                             borderColor: borderColor,
                             cardColor: cardColor,
                             mutedBg: mutedBg,
@@ -293,7 +350,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Apple
                           AuthSocialButton(
-                            onTap: () {},
+                            onTap: () => _showComingSoon(context, 'Apple'),
                             borderColor: borderColor,
                             cardColor: cardColor,
                             mutedBg: mutedBg,
