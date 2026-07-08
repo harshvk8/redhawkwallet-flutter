@@ -14,15 +14,21 @@ import '../../features/student/screens/transaction_detail_screen.dart';
 import '../../features/student/models/demo_transaction.dart';
 import '../../features/vendor/presentation/vendor_dashboard_screen.dart';
 import '../../features/vendor/presentation/vendor_create_payment_request_screen.dart';
+import '../../features/vendor/presentation/vendor_list_screen.dart';
+import '../../features/vendor/presentation/vendor_details_screen.dart';
 import '../../features/vendor/presentation/vendor_qr_payment_screen.dart';
 import '../../features/vendor/presentation/vendor_offers_screen.dart';
 import '../../features/vendor/presentation/vendor_transaction_history_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/admin_manage_vendors_screen.dart';
 import '../../features/wallet/presentation/user_wallet_screen.dart';
+import '../../features/wallet/presentation/send_money_screen.dart';
+import '../../features/wallet/presentation/receive_money_screen.dart';
+import '../../features/wallet/presentation/pay_vendor_screen.dart';
 import '../../features/offers/presentation/user_offers_screen.dart';
 import '../../features/points_rewards/presentation/user_points_rewards_screen.dart';
 import '../../features/settings/presentation/user_settings_screen.dart';
+import '../../features/settings/presentation/security_settings_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
@@ -35,7 +41,8 @@ class AppRouter {
       final loc = state.matchedLocation;
       final isPublicRoute = loc == '/login' ||
           loc == '/register' ||
-          loc == '/email-verification';
+          loc == '/email-verification' ||
+          loc == '/settings/security';
       if (!isLoggedIn && !isPublicRoute) return '/login';
       return null;
     },
@@ -55,10 +62,16 @@ class AppRouter {
             TransactionDetailScreen(transaction: state.extra! as DemoTransaction),
       ),
       GoRoute(path: '/wallet', builder: (context, state) => const UserWalletScreen()),
+      GoRoute(path: '/wallet/send', builder: (context, state) => const SendMoneyScreen()),
+      GoRoute(path: '/wallet/receive', builder: (context, state) => const ReceiveMoneyScreen()),
+      GoRoute(path: '/wallet/pay-vendor', builder: (context, state) => PayVendorScreen(vendor: state.extra as Map<String, dynamic>?)),
       GoRoute(path: '/offers', builder: (context, state) => const UserOffersScreen()),
       GoRoute(path: '/rewards', builder: (context, state) => const UserPointsRewardsScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const UserSettingsScreen()),
+      GoRoute(path: '/settings/security', builder: (context, state) => const SecuritySettingsScreen()),
       GoRoute(path: '/vendor', builder: (context, state) => const VendorDashboardScreen()),
+      GoRoute(path: '/vendors', builder: (context, state) => const VendorListScreen()),
+      GoRoute(path: '/vendors/details', builder: (context, state) => VendorDetailsScreen(vendor: state.extra as Map<String, dynamic>?)),
       GoRoute(path: '/vendor/payment-request', builder: (context, state) => const VendorCreatePaymentRequestScreen()),
       GoRoute(path: '/vendor/qr', builder: (context, state) => const VendorQrPaymentScreen()),
       GoRoute(path: '/vendor/offers', builder: (context, state) => const VendorOffersScreen()),

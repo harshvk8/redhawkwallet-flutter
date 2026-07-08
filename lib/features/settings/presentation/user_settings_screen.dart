@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserSettingsScreen extends StatefulWidget {
   const UserSettingsScreen({super.key});
@@ -27,7 +28,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
           children: [
             _buildSection('Account', [
               _settingsTile(Icons.person_outline, 'Edit Profile', onTap: () {}),
-              _settingsTile(Icons.lock_outline, 'Change Password', onTap: () {}),
+              _settingsTile(Icons.lock_outline, 'Change Password', onTap: () => context.push('/settings/security')),
               _settingsTile(Icons.school_outlined, 'University Verification', onTap: () {}),
             ]),
             const SizedBox(height: 16),
@@ -38,7 +39,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             const SizedBox(height: 16),
             _buildSection('Privacy & Security', [
               _settingsTile(Icons.privacy_tip_outlined, 'Privacy Policy', onTap: () {}),
-              _settingsTile(Icons.security_outlined, 'Security Settings', onTap: () {}),
+              _settingsTile(Icons.security_outlined, 'Security Settings', onTap: () => context.push('/settings/security')),
             ]),
             const SizedBox(height: 16),
             _buildSection('Support', [
