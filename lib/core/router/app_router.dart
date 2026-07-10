@@ -55,6 +55,7 @@ class AppRouter {
   static final router = GoRouter(
     initialLocation: '/splash',
     refreshListenable: _authNotifier,
+    errorBuilder: (context, state) => _RouteErrorScreen(error: state.error),
     redirect: (BuildContext context, GoRouterState state) {
       final isLoggedIn = FirebaseAuth.instance.currentUser != null;
       final loc = state.matchedLocation;
@@ -198,6 +199,39 @@ class _SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  }
+}
+
+class _RouteErrorScreen extends StatelessWidget {
+  final Exception? error;
+  const _RouteErrorScreen({this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Page Not Found')),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: cs.error),
+            const SizedBox(height: 16),
+            const Text('This page doesn\'t exist.',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(error?.toString() ?? '',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => context.go('/home'),
+              child: const Text('Go Home'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
