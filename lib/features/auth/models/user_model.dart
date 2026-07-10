@@ -12,6 +12,7 @@ class UserModel {
   final String name;
   final String email;
   final String role;
+  final String accountStatus;
   final bool isEmailVerified;
   final bool isUniversityVerified;
   final String? universityEmail;
@@ -23,6 +24,7 @@ class UserModel {
     required this.name,
     required this.email,
     required this.role,
+    this.accountStatus = 'active',
     required this.isEmailVerified,
     required this.isUniversityVerified,
     this.universityEmail,
@@ -37,6 +39,7 @@ class UserModel {
       name: data['name'] as String? ?? '',
       email: data['email'] as String? ?? '',
       role: data['role'] as String? ?? UserRole.normalUser,
+      accountStatus: data['accountStatus'] as String? ?? 'active',
       isEmailVerified: data['isEmailVerified'] as bool? ?? false,
       isUniversityVerified: data['isUniversityVerified'] as bool? ?? false,
       universityEmail: data['universityEmail'] as String?,
@@ -49,6 +52,7 @@ class UserModel {
         'name': name,
         'email': email,
         'role': role,
+        'accountStatus': accountStatus,
         'isEmailVerified': isEmailVerified,
         'isUniversityVerified': isUniversityVerified,
         'universityEmail': universityEmail,
@@ -61,6 +65,7 @@ class UserModel {
     String? name,
     String? email,
     String? role,
+    String? accountStatus,
     bool? isEmailVerified,
     bool? isUniversityVerified,
     String? universityEmail,
@@ -72,6 +77,7 @@ class UserModel {
         name: name ?? this.name,
         email: email ?? this.email,
         role: role ?? this.role,
+        accountStatus: accountStatus ?? this.accountStatus,
         isEmailVerified: isEmailVerified ?? this.isEmailVerified,
         isUniversityVerified: isUniversityVerified ?? this.isUniversityVerified,
         universityEmail: universityEmail ?? this.universityEmail,

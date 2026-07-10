@@ -36,15 +36,23 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
       confirmColor: Colors.green,
     );
     if (!confirmed) return;
-    await _db.collection('users').doc(uid).update({
-      'vendorStatus': 'approved',
-      'accountStatus': 'active',
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name approved'), backgroundColor: Colors.green),
-      );
+    try {
+      await _db.collection('users').doc(uid).update({
+        'vendorStatus': 'approved',
+        'accountStatus': 'active',
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$name approved'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to approve: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -56,15 +64,23 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
       confirmColor: Colors.red,
     );
     if (!confirmed) return;
-    await _db.collection('users').doc(uid).update({
-      'vendorStatus': 'rejected',
-      'accountStatus': 'active',
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vendor application rejected')),
-      );
+    try {
+      await _db.collection('users').doc(uid).update({
+        'vendorStatus': 'rejected',
+        'accountStatus': 'active',
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vendor application rejected')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to reject: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -76,26 +92,42 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
       confirmColor: Colors.red,
     );
     if (!confirmed) return;
-    await _db.collection('users').doc(uid).update({
-      'accountStatus': 'suspended',
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name suspended'), backgroundColor: Colors.red),
-      );
+    try {
+      await _db.collection('users').doc(uid).update({
+        'accountStatus': 'suspended',
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$name suspended'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to suspend: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
   Future<void> _reactivateVendor(String uid, String name) async {
-    await _db.collection('users').doc(uid).update({
-      'accountStatus': 'active',
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name reactivated'), backgroundColor: Colors.green),
-      );
+    try {
+      await _db.collection('users').doc(uid).update({
+        'accountStatus': 'active',
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$name reactivated'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to reactivate: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
