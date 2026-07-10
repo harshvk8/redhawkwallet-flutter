@@ -130,7 +130,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: _db.collection('users').orderBy('createdAt', descending: true).snapshots(),
+              stream: _db.collection('users').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator(color: cs.primary));
@@ -148,7 +148,15 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   );
                 }
 
-                var docs = snapshot.data?.docs ?? [];
+                var docs = (snapshot.data?.docs ?? [])
+                  ..sort((a, b) {
+                    final aTs = (a.data() as Map<String, dynamic>)['createdAt'] as Timestamp?;
+                    final bTs = (b.data() as Map<String, dynamic>)['createdAt'] as Timestamp?;
+                    if (aTs == null && bTs == null) return 0;
+                    if (aTs == null) return 1;
+                    if (bTs == null) return -1;
+                    return bTs.compareTo(aTs);
+                  });
 
                 // Filter by role/status
                 if (_filter == 'Suspended') {
