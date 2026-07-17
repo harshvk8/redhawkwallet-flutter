@@ -22,26 +22,42 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       confirmColor: Colors.red,
     );
     if (!confirmed) return;
-    await _db.collection('users').doc(uid).update({
-      'accountStatus': 'suspended',
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name suspended'), backgroundColor: Colors.red),
-      );
+    try {
+      await _db.collection('users').doc(uid).update({
+        'accountStatus': 'suspended',
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$name suspended'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to suspend $name: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
   Future<void> _reactivateUser(String uid, String name) async {
-    await _db.collection('users').doc(uid).update({
-      'accountStatus': 'active',
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name reactivated'), backgroundColor: Colors.green),
-      );
+    try {
+      await _db.collection('users').doc(uid).update({
+        'accountStatus': 'active',
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$name reactivated'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to reactivate $name: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
