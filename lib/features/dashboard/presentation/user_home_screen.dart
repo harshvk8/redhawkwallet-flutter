@@ -1,29 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserHomeScreen extends StatelessWidget {
   const UserHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(cs),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSummaryRow(),
+                    _buildSummaryRow(cs),
                     const SizedBox(height: 20),
-                    const Text('Quick Access', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                    Text('Quick Access', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
                     const SizedBox(height: 12),
-                    _buildQuickAccessGrid(context),
+                    _buildQuickAccessGrid(context, cs),
                     const SizedBox(height: 20),
-                    _buildRecentTransaction(),
+                    _buildRecentTransaction(context, cs),
                   ],
                 ),
               ),
@@ -34,10 +36,10 @@ class UserHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ColorScheme cs) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      color: const Color(0xFF8B1A2E),
+      color: cs.primary,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -62,14 +64,14 @@ class UserHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryRow() {
+  Widget _buildSummaryRow(ColorScheme cs) {
     return Row(
       children: [
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFF8B1A2E),
+              color: cs.primary,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Column(
@@ -106,9 +108,9 @@ class UserHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickAccessGrid(BuildContext context) {
+  Widget _buildQuickAccessGrid(BuildContext context, ColorScheme cs) {
     final items = [
-      {'icon': Icons.account_balance_wallet, 'label': 'Wallet', 'color': const Color(0xFF8B1A2E)},
+      {'icon': Icons.account_balance_wallet, 'label': 'Wallet', 'color': cs.primary},
       {'icon': Icons.local_offer, 'label': 'Offers', 'color': Colors.orange},
       {'icon': Icons.event, 'label': 'Events', 'color': Colors.blue},
       {'icon': Icons.qr_code, 'label': 'QR ID', 'color': Colors.purple},
@@ -132,7 +134,7 @@ class UserHomeScreen extends StatelessWidget {
         final item = items[index];
         return Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.grey.shade100),
           ),
@@ -148,7 +150,7 @@ class UserHomeScreen extends StatelessWidget {
                 child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 22),
               ),
               const SizedBox(height: 6),
-              Text(item['label'] as String, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+              Text(item['label'] as String, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: cs.onSurface)),
             ],
           ),
         );
@@ -156,11 +158,11 @@ class UserHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentTransaction() {
+  Widget _buildRecentTransaction(BuildContext context, ColorScheme cs) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade100),
       ),
@@ -170,30 +172,30 @@ class UserHomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Recent Transaction', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-              TextButton(onPressed: () {}, child: const Text('View All', style: TextStyle(color: Color(0xFF8B1A2E)))),
+              Text('Recent Transaction', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
+              TextButton(onPressed: () => context.push('/transactions'), child: Text('View All', style: TextStyle(color: cs.primary))),
             ],
           ),
           const Divider(),
-          _txRow('Campus Coffee House', '-\$5.50', 'May 27'),
-          _txRow('Added Funds', '+\$25.00', 'May 26'),
-          _txRow('Student Bookstore', '-\$42.99', 'May 25'),
+          _txRow('Campus Coffee House', '-\$5.50', 'May 27', cs),
+          _txRow('Added Funds', '+\$25.00', 'May 26', cs),
+          _txRow('Student Bookstore', '-\$42.99', 'May 25', cs),
         ],
       ),
     );
   }
 
-  Widget _txRow(String name, String amount, String date) {
+  Widget _txRow(String name, String amount, String date, ColorScheme cs) {
     final isDebit = amount.startsWith('-');
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(name, style: const TextStyle(fontSize: 13)),
+          Text(name, style: TextStyle(fontSize: 13, color: cs.onSurface)),
           Row(
             children: [
-              Text(amount, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDebit ? Colors.black : Colors.green)),
+              Text(amount, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDebit ? cs.onSurface : Colors.green)),
               const SizedBox(width: 8),
               Text(date, style: const TextStyle(color: Colors.grey, fontSize: 12)),
             ],

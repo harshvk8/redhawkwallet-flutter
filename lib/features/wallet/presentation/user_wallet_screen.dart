@@ -14,20 +14,20 @@ class UserWalletScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('My Wallet'),
         elevation: 0,
       ),
+  
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Demo Wallet', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            Text('Demo Wallet', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
             const SizedBox(height: 4),
             const Text('Real balances will appear after launch', style: TextStyle(color: Colors.grey, fontSize: 13)),
             const SizedBox(height: 16),
@@ -45,7 +45,7 @@ class UserWalletScreen extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: Colors.grey.shade100),
               ),
@@ -64,7 +64,7 @@ class UserWalletScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(card['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        Text(card['name'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: cs.onSurface)),
                         Text(card['type'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                       ],
                     ),

@@ -33,11 +33,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
         title: const Text('Manage Users'),
         elevation: 0,
       ),
@@ -50,7 +48,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 hintText: 'Search users...',
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: cs.surface,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
@@ -70,11 +68,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFF8B1A2E) : Colors.white,
+                        color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? const Color(0xFF8B1A2E) : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
                       ),
-                      child: Text(role, style: TextStyle(color: selected ? Colors.white : Colors.black, fontSize: 12, fontWeight: FontWeight.w500)),
+                      child: Text(role, style: TextStyle(color: selected ? Colors.white : cs.onSurface, fontSize: 12, fontWeight: FontWeight.w500)),
                     ),
                   );
                 },
@@ -91,7 +89,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.grey.shade100),
                     ),
@@ -104,8 +102,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                             Row(
                               children: [
                                 CircleAvatar(
-                                  backgroundColor: const Color(0xFFFFF0F0),
-                                  child: Text(user['name'][0], style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold)),
+                                  backgroundColor: cs.primary.withValues(alpha: 0.1),
+                                  child: Text(user['name'][0], style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
                                 ),
                                 const SizedBox(width: 10),
                                 Column(

@@ -11,6 +11,8 @@ class StudentDashboardScreen extends StatelessWidget {
       'amount': '-\$5.50',
       'isDebit': true,
       'icon': Icons.local_cafe,
+      'category': 'Food & Drink',
+      'status': 'Paid',
     },
     {
       'name': 'Added Funds',
@@ -18,6 +20,8 @@ class StudentDashboardScreen extends StatelessWidget {
       'amount': '+\$25.00',
       'isDebit': false,
       'icon': Icons.add_circle_outline,
+      'category': 'Top Up',
+      'status': 'Completed',
     },
     {
       'name': 'Student Bookstore',
@@ -25,45 +29,48 @@ class StudentDashboardScreen extends StatelessWidget {
       'amount': '-\$42.99',
       'isDebit': true,
       'icon': Icons.menu_book,
+      'category': 'Books & Supplies',
+      'status': 'Paid',
     },
   ];
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(context, cs),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildWalletCard(context),
+                    _buildWalletCard(context, cs),
                     const SizedBox(height: 24),
-                    _buildQuickActions(context),
+                    _buildQuickActions(context, cs),
                     const SizedBox(height: 24),
-                    _buildRecentTransactions(context),
+                    _buildRecentTransactions(context, cs),
                     const SizedBox(height: 16),
-                    _buildDemoNote(),
+                    _buildDemoNote(cs),
                   ],
                 ),
               ),
             ),
-            _buildBottomNav(context),
+            _buildBottomNav(context, cs),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context, ColorScheme cs) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      color: const Color(0xFF8B1A2E),
+      color: cs.primary,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -81,19 +88,23 @@ class StudentDashboardScreen extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.notifications_none, color: Colors.white, size: 22),
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.notifications_none, color: Colors.white, size: 22),
+              onPressed: () => context.push('/notifications'),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWalletCard(BuildContext context) {
+  Widget _buildWalletCard(BuildContext context, ColorScheme cs) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF8B1A2E),
+        color: cs.primary,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -116,12 +127,12 @@ class StudentDashboardScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () => context.push('/wallet'),
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Add Funds'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF8B1A2E),
+                foregroundColor: cs.primary,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
@@ -132,7 +143,7 @@ class StudentDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
+  Widget _buildQuickActions(BuildContext context, ColorScheme cs) {
     final actions = [
       {'icon': Icons.qr_code, 'label': 'QR ID', 'route': '/qr-id'},
       {'icon': Icons.qr_code_scanner, 'label': 'Scan', 'route': '/qr-scanner'},
@@ -145,14 +156,18 @@ class StudentDashboardScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Custom quick actions coming soon')),
+                );
+              },
               child: Container(
                 width: 28,
                 height: 28,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF8B1A2E),
+                decoration: BoxDecoration(
+                  color: cs.primary,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.add, color: Colors.white, size: 18),
@@ -170,22 +185,22 @@ class StudentDashboardScreen extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: cs.surface,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
+                    border: Border.all(color: cs.outlineVariant),
                   ),
                   child: Column(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFF0F0),
+                          color: cs.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(action['icon'] as IconData, color: const Color(0xFF8B1A2E), size: 22),
+                        child: Icon(action['icon'] as IconData, color: cs.primary, size: 22),
                       ),
                       const SizedBox(height: 8),
-                      Text(action['label'] as String, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                      Text(action['label'] as String, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: cs.onSurface)),
                     ],
                   ),
                 ),
@@ -197,17 +212,17 @@ class StudentDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentTransactions(BuildContext context) {
+  Widget _buildRecentTransactions(BuildContext context, ColorScheme cs) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Recent Transactions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            Text('Recent Transactions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
             TextButton(
               onPressed: () => context.push('/transactions'),
-              child: const Text('View All', style: TextStyle(color: Color(0xFF8B1A2E))),
+              child: Text('View All', style: TextStyle(color: cs.primary)),
             ),
           ],
         ),
@@ -216,9 +231,9 @@ class StudentDashboardScreen extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade100),
+            border: Border.all(color: cs.outlineVariant),
           ),
           child: Row(
             children: [
@@ -226,27 +241,35 @@ class StudentDashboardScreen extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: tx['isDebit'] as bool ? const Color(0xFFFFF0F0) : const Color(0xFFE8F5E9),
+                  color: tx['isDebit'] as bool ? cs.primary.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(tx['icon'] as IconData, color: tx['isDebit'] as bool ? const Color(0xFF8B1A2E) : Colors.green, size: 22),
+                child: Icon(tx['icon'] as IconData, color: tx['isDebit'] as bool ? cs.primary : Colors.green, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tx['name'] as String, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text(tx['name'] as String, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: cs.onSurface)),
                     const SizedBox(height: 2),
-                    Text(tx['date'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(tx['date'] as String, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        _detailChip(tx['category'] as String, cs),
+                        const SizedBox(width: 6),
+                        _detailChip(tx['status'] as String, cs),
+                      ],
+                    ),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(tx['amount'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: tx['isDebit'] as bool ? Colors.black : Colors.green)),
-                  const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
+                  Text(tx['amount'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: tx['isDebit'] as bool ? cs.onSurface : Colors.green)),
+                  Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 18),
                 ],
               ),
             ],
@@ -256,63 +279,82 @@ class StudentDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDemoNote() {
+  Widget _buildDemoNote(ColorScheme cs) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Text(
+      child: Text(
         'This is a demo wallet. Start using Red Hawk Wallet to see your real transactions here!',
-        style: TextStyle(color: Colors.grey, fontSize: 13),
+        style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
         textAlign: TextAlign.center,
       ),
     );
   }
 
-  Widget _buildBottomNav(BuildContext context) {
+  Widget _buildBottomNav(BuildContext context, ColorScheme cs) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: cs.surface,
+        border: Border(top: BorderSide(color: cs.outlineVariant)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _navItem(context, Icons.home, 'Home', '/home', true),
-          _navItem(context, Icons.account_balance_wallet, 'Wallet', '/wallet', false),
-          _navItemQR(context),
-          _navItem(context, Icons.person, 'Account', '/profile', false),
+          _navItem(context, Icons.home, 'Home', '/home', true, cs),
+          _navItem(context, Icons.account_balance_wallet, 'Wallet', '/wallet', false, cs),
+          _navItemQR(context, cs),
+          _navItem(context, Icons.local_offer, 'Offers', '/offers', false, cs),
+          _navItem(context, Icons.person, 'Account', '/profile', false, cs),
         ],
       ),
     );
   }
 
-  Widget _navItem(BuildContext context, IconData icon, String label, String route, bool isActive) {
+  Widget _navItem(BuildContext context, IconData icon, String label, String route, bool isActive, ColorScheme cs) {
     return GestureDetector(
       onTap: () => context.push(route),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isActive ? const Color(0xFF8B1A2E) : Colors.grey, size: 24),
+          Icon(icon, color: isActive ? cs.primary : cs.onSurfaceVariant, size: 24),
           const SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 11, color: isActive ? const Color(0xFF8B1A2E) : Colors.grey, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
+          Text(label, style: TextStyle(fontSize: 11, color: isActive ? cs.primary : cs.onSurfaceVariant, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
         ],
       ),
     );
   }
 
-  Widget _navItemQR(BuildContext context) {
+  Widget _navItemQR(BuildContext context, ColorScheme cs) {
     return GestureDetector(
       onTap: () => context.push('/qr-id'),
       child: Container(
         width: 52,
         height: 52,
-        decoration: const BoxDecoration(color: Color(0xFF8B1A2E), shape: BoxShape.circle),
+        decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
         child: const Icon(Icons.qr_code, color: Colors.white, size: 26),
+      ),
+    );
+  }
+
+  Widget _detailChip(String text, ColorScheme cs) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: cs.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: cs.primary,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

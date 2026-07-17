@@ -24,8 +24,8 @@ class AppTheme {
         error: AppColors.error,
       ),
       scaffoldBackgroundColor: bg,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF8B1A2E),
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
         elevation: 0,
         centerTitle: true,

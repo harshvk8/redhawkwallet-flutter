@@ -7,22 +7,42 @@ class AccountProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        title: const Text('Account Profile'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+
+            final location = GoRouterState.of(context).matchedLocation;
+            if (location.startsWith('/vendor')) {
+              context.go('/vendor');
+            } else {
+              context.go('/settings');
+            }
+          },
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(context),
+            _buildHeader(cs),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildUniversityVerification(context),
+                    _buildUniversityVerification(context, cs),
                     const SizedBox(height: 16),
-                    _buildSettingsSection(context),
+                    _buildSettingsSection(context, cs),
                     const SizedBox(height: 16),
-                    _buildLogout(context),
+                    _buildLogout(context, cs),
                     const SizedBox(height: 16),
                     _buildVersionNote(),
                   ],
@@ -35,11 +55,11 @@ class AccountProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(ColorScheme cs) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
-      color: const Color(0xFF8B1A2E),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      color: cs.primary,
       child: Column(
         children: [
           Stack(
@@ -55,7 +75,7 @@ class AccountProfileScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                  child: const Icon(Icons.camera_alt, color: Color(0xFF8B1A2E), size: 16),
+                  child: Icon(Icons.camera_alt, color: cs.primary, size: 16),
                 ),
               ),
             ],
@@ -81,18 +101,18 @@ class AccountProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUniversityVerification(BuildContext context) {
+  Widget _buildUniversityVerification(BuildContext context, ColorScheme cs) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade100),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('University Verification', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text('University Verification', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -102,11 +122,11 @@ class AccountProfileScreen extends StatelessWidget {
                 child: const Icon(Icons.shield_outlined, color: Colors.grey, size: 22),
               ),
               const SizedBox(width: 12),
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Student Email', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                  Text('Not Verified', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text('Student Email', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: cs.onSurface)),
+                  const Text('Not Verified', style: TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             ],
@@ -119,7 +139,7 @@ class AccountProfileScreen extends StatelessWidget {
               icon: const Icon(Icons.email_outlined, size: 18),
               label: const Text('Add University Email'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B1A2E),
+                backgroundColor: cs.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 13),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -137,27 +157,28 @@ class AccountProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsSection(BuildContext context) {
+  Widget _buildSettingsSection(BuildContext context, ColorScheme cs) {
     final settings = [
       {'icon': Icons.person_outline, 'label': 'Edit Profile', 'route': null},
       {'icon': Icons.history, 'label': 'Transaction History', 'route': '/transactions'},
       {'icon': Icons.star_outline, 'label': 'Points and Rewards', 'route': '/rewards'},
-      {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': null},
+      {'icon': Icons.settings, 'label': 'Settings', 'route': '/settings'},
+      {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': '/notifications'},
       {'icon': Icons.help_outline, 'label': 'Help and Support', 'route': null},
     ];
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade100),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 14, 16, 8),
-            child: Text('Settings', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+            child: Text('Settings', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
           ),
           ...settings.asMap().entries.map((entry) {
             final index = entry.key;
@@ -169,12 +190,12 @@ class AccountProfileScreen extends StatelessWidget {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8B1A2E).withValues(alpha: 0.1),
+                      color: cs.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(setting['icon'] as IconData, color: const Color(0xFF8B1A2E), size: 20),
+                    child: Icon(setting['icon'] as IconData, color: cs.primary, size: 20),
                   ),
-                  title: Text(setting['label'] as String, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  title: Text(setting['label'] as String, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: cs.onSurface)),
                   trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
                   onTap: () {
                     final route = setting['route'] as String?;
@@ -195,7 +216,7 @@ class AccountProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogout(BuildContext context) {
+  Widget _buildLogout(BuildContext context, ColorScheme cs) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
@@ -203,11 +224,11 @@ class AccountProfileScreen extends StatelessWidget {
           await FirebaseAuth.instance.signOut();
           if (context.mounted) context.go('/login');
         },
-        icon: const Icon(Icons.logout, color: Color(0xFF8B1A2E)),
-        label: const Text('Logout', style: TextStyle(color: Color(0xFF8B1A2E), fontSize: 15)),
+        icon: Icon(Icons.logout, color: cs.primary),
+        label: Text('Logout', style: TextStyle(color: cs.primary, fontSize: 15)),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          side: const BorderSide(color: Color(0xFF8B1A2E)),
+          side: BorderSide(color: cs.primary),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
