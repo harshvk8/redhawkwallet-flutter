@@ -216,9 +216,9 @@ class _AuthStateNotifier extends ChangeNotifier {
           .snapshots()
           .listen((doc) {
         final data = doc.data();
-        _role = data?['role'] as String? ?? UserRole.normalUser;
-        _accountStatus = data?['accountStatus'] as String?;
-        _vendorStatus = data?['vendorStatus'] as String?;
+        _role = (data?['role'] as String?)?.trim() ?? UserRole.normalUser;
+        _accountStatus = (data?['accountStatus'] as String?)?.trim();
+        _vendorStatus = (data?['vendorStatus'] as String?)?.trim();
         notifyListeners();
       });
     });
