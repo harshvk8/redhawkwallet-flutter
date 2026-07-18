@@ -1,14 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class UserOffersScreen extends StatelessWidget {
   const UserOffersScreen({super.key});
 
   final List<Map<String, dynamic>> offers = const [
-    {'title': '10% off coffee', 'vendor': 'Red Hawk Cafe', 'discount': '10%', 'expiry': 'Jun 30, 2026', 'color': Color(0xFF8B1A2E)},
-    {'title': 'Free topping', 'vendor': 'Hawks Pizza', 'discount': 'FREE', 'expiry': 'Jun 15, 2026', 'color': Colors.orange},
-    {'title': 'Student lunch combo', 'vendor': "Sam's Cafe", 'discount': '15%', 'expiry': 'Jun 7, 2026', 'color': Colors.green},
-    {'title': 'Buy 1 Get 1 Coffee', 'vendor': 'Red Hawk Cafe', 'discount': 'BOGO', 'expiry': 'Jun 1, 2026', 'color': Colors.blue},
+    {
+      'title': '10% off coffee',
+      'vendor': 'Red Hawk Cafe',
+      'discount': '10%',
+      'expiry': 'Jun 30, 2026',
+      'color': Color(0xFF8B1A2E),
+    },
+    {
+      'title': 'Free topping',
+      'vendor': 'Hawks Pizza',
+      'discount': 'FREE',
+      'expiry': 'Jun 15, 2026',
+      'color': Colors.orange,
+    },
+    {
+      'title': 'Student lunch combo',
+      'vendor': "Sam's Cafe",
+      'discount': '15%',
+      'expiry': 'Jun 7, 2026',
+      'color': Colors.green,
+    },
+    {
+      'title': 'Buy 1 Get 1 Coffee',
+      'vendor': 'Red Hawk Cafe',
+      'discount': 'BOGO',
+      'expiry': 'Jun 1, 2026',
+      'color': Colors.blue,
+    },
   ];
 
   @override
@@ -16,18 +39,26 @@ class UserOffersScreen extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Offers'),
-        elevation: 0,
-      ),
-        
+      appBar: AppBar(title: const Text('Offers'), elevation: 0),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Available Offers', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
+            Text(
+              'Available Offers',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: cs.onSurface,
+              ),
+            ),
             const SizedBox(height: 4),
-            const Text('Verify your university email to unlock more offers', style: TextStyle(color: Colors.grey, fontSize: 13)),
+            const Text(
+              'Verify your university email to unlock more offers',
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
@@ -48,11 +79,20 @@ class UserOffersScreen extends StatelessWidget {
                           width: 56,
                           height: 56,
                           decoration: BoxDecoration(
-                            color: (offer['color'] as Color).withValues(alpha: 0.1),
+                            color: (offer['color'] as Color).withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
-                            child: Text(offer['discount'] as String, style: TextStyle(color: offer['color'] as Color, fontWeight: FontWeight.bold, fontSize: 13)),
+                            child: Text(
+                              offer['discount'] as String,
+                              style: TextStyle(
+                                color: offer['color'] as Color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -60,11 +100,30 @@ class UserOffersScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(offer['title'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
+                              Text(
+                                offer['title'] as String,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: cs.onSurface,
+                                ),
+                              ),
                               const SizedBox(height: 2),
-                              Text(offer['vendor'] as String, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                              Text(
+                                offer['vendor'] as String,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
                               const SizedBox(height: 2),
-                              Text('Expires ${offer['expiry']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              Text(
+                                'Expires ${offer['expiry']}',
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -80,10 +139,18 @@ class UserOffersScreen extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: cs.primary,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                          child: const Text('Redeem', style: TextStyle(fontSize: 12)),
+                          child: const Text(
+                            'Redeem',
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ),
                       ],
                     ),
