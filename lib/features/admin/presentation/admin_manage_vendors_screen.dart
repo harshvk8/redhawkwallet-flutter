@@ -313,17 +313,17 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                           Row(
                             children: [
                               if (displayStatus == 'Pending') ...[
-                                _actionBtn('Approve', Colors.green, () => _approveVendor(uid, businessName)),
+                                Expanded(child: _actionBtn('Approve', Colors.green, () => _approveVendor(uid, businessName))),
                                 const SizedBox(width: 8),
-                                _actionBtn('Reject', Colors.red, () => _rejectVendor(uid, businessName)),
+                                Expanded(child: _actionBtn('Reject', Colors.red, () => _rejectVendor(uid, businessName))),
                               ] else if (displayStatus == 'Active') ...[
-                                _actionBtn('Suspend', Colors.red, () => _suspendVendor(uid, businessName)),
+                                Expanded(child: _actionBtn('Suspend', Colors.red, () => _suspendVendor(uid, businessName))),
                                 const SizedBox(width: 8),
-                                _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data)),
+                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data))),
                               ] else if (displayStatus == 'Suspended') ...[
-                                _actionBtn('Reactivate', Colors.green, () => _reactivateVendor(uid, businessName)),
+                                Expanded(child: _actionBtn('Reactivate', Colors.green, () => _reactivateVendor(uid, businessName))),
                                 const SizedBox(width: 8),
-                                _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data)),
+                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data))),
                               ],
                             ],
                           ),
