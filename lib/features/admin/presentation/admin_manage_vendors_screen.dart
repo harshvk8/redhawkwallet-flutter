@@ -36,15 +36,23 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
       confirmColor: Colors.green,
     );
     if (!confirmed) return;
-    await _db.collection('users').doc(uid).update({
-      'vendorStatus': 'approved',
-      'accountStatus': 'active',
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name approved'), backgroundColor: Colors.green),
-      );
+    try {
+      await _db.collection('users').doc(uid).update({
+        'vendorStatus': 'approved',
+        'accountStatus': 'active',
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$name approved'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to approve $name: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -56,15 +64,23 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
       confirmColor: Colors.red,
     );
     if (!confirmed) return;
-    await _db.collection('users').doc(uid).update({
-      'vendorStatus': 'rejected',
-      'accountStatus': 'active',
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vendor application rejected')),
-      );
+    try {
+      await _db.collection('users').doc(uid).update({
+        'vendorStatus': 'rejected',
+        'accountStatus': 'active',
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vendor application rejected')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to reject $name: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -76,26 +92,42 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
       confirmColor: Colors.red,
     );
     if (!confirmed) return;
-    await _db.collection('users').doc(uid).update({
-      'accountStatus': 'suspended',
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name suspended'), backgroundColor: Colors.red),
-      );
+    try {
+      await _db.collection('users').doc(uid).update({
+        'accountStatus': 'suspended',
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$name suspended'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to suspend $name: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
   Future<void> _reactivateVendor(String uid, String name) async {
-    await _db.collection('users').doc(uid).update({
-      'accountStatus': 'active',
-      'updatedAt': Timestamp.fromDate(DateTime.now()),
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name reactivated'), backgroundColor: Colors.green),
-      );
+    try {
+      await _db.collection('users').doc(uid).update({
+        'accountStatus': 'active',
+        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$name reactivated'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to reactivate $name: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -281,17 +313,17 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                           Row(
                             children: [
                               if (displayStatus == 'Pending') ...[
-                                _actionBtn('Approve', Colors.green, () => _approveVendor(uid, businessName)),
+                                Expanded(child: _actionBtn('Approve', Colors.green, () => _approveVendor(uid, businessName))),
                                 const SizedBox(width: 8),
-                                _actionBtn('Reject', Colors.red, () => _rejectVendor(uid, businessName)),
+                                Expanded(child: _actionBtn('Reject', Colors.red, () => _rejectVendor(uid, businessName))),
                               ] else if (displayStatus == 'Active') ...[
-                                _actionBtn('Suspend', Colors.red, () => _suspendVendor(uid, businessName)),
+                                Expanded(child: _actionBtn('Suspend', Colors.red, () => _suspendVendor(uid, businessName))),
                                 const SizedBox(width: 8),
-                                _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data)),
+                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data))),
                               ] else if (displayStatus == 'Suspended') ...[
-                                _actionBtn('Reactivate', Colors.green, () => _reactivateVendor(uid, businessName)),
+                                Expanded(child: _actionBtn('Reactivate', Colors.green, () => _reactivateVendor(uid, businessName))),
                                 const SizedBox(width: 8),
-                                _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data)),
+                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data))),
                               ],
                             ],
                           ),
