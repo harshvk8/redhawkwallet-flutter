@@ -11,8 +11,6 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   final TextEditingController _currentPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-  bool _biometricEnabled = false;
-  bool _twoFactorEnabled = true;
 
   @override
   void dispose() {
@@ -36,72 +34,11 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _headerCard(),
-            const SizedBox(height: 16),
-            _securityToggles(),
-            const SizedBox(height: 16),
             _passwordCard(),
             const SizedBox(height: 16),
             _deleteAccountCard(),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _headerCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF8B1A2E), Color(0xFFC8102E)]),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Protect your account', style: TextStyle(color: Colors.white70, fontSize: 13)),
-          SizedBox(height: 6),
-          Text('Security controls for the demo wallet', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          Text('Biometric and 2FA are visual placeholders only.', style: TextStyle(color: Colors.white70, fontSize: 12)),
-        ],
-      ),
-    );
-  }
-
-  Widget _securityToggles() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Authentication', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          SwitchListTile.adaptive(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Biometric login'),
-            subtitle: const Text('Fingerprint or Face ID placeholder'),
-            value: _biometricEnabled,
-            onChanged: (value) => setState(() => _biometricEnabled = value),
-            activeThumbColor: const Color(0xFF8B1A2E),
-          ),
-          const Divider(),
-          SwitchListTile.adaptive(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Two-factor authentication'),
-            subtitle: const Text('Email or SMS code placeholder'),
-            value: _twoFactorEnabled,
-            onChanged: (value) => setState(() => _twoFactorEnabled = value),
-            activeThumbColor: const Color(0xFF8B1A2E),
-          ),
-        ],
       ),
     );
   }
@@ -129,11 +66,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Demo only: password update is not connected.')),
-                );
-              },
+              onPressed: _handlePasswordUpdate,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF8B1A2E),
                 foregroundColor: Colors.white,
@@ -144,6 +77,17 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _handlePasswordUpdate() {
+    // Demo only: no backend call is made. In a real implementation, this
+    // should call your auth/password-reset API, which would then trigger
+    // a confirmation email server-side (never send auth emails from the client).
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Demo only: password updated. A confirmation email would be sent.'),
       ),
     );
   }
