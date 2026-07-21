@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SendMoneyScreen extends StatefulWidget {
   const SendMoneyScreen({super.key});
@@ -8,10 +9,15 @@ class SendMoneyScreen extends StatefulWidget {
 }
 
 class _SendMoneyScreenState extends State<SendMoneyScreen> {
-  final TextEditingController _recipientController = TextEditingController(text: 'Student Name');
+  final TextEditingController _recipientController = TextEditingController(text: 'Alex Johnson');
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController(text: 'Lunch split');
-  final List<String> _recipients = const ['Alex Johnson', 'Sara Lee', 'Mike Chen', 'Campus Store'];
+
+  final List<Map<String, String>> recentContacts = const [
+    {'name': 'Alex Johnson', 'email': 'alex@montclair.edu', 'initial': 'A'},
+    {'name': 'Sara Lee', 'email': 'sara@montclair.edu', 'initial': 'S'},
+    {'name': 'Mike Chen', 'email': 'mike@montclair.edu', 'initial': 'M'},
+  ];
 
   @override
   void dispose() {
@@ -21,14 +27,24 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     super.dispose();
   }
 
+  void _selectRecipient(String name) {
+    setState(() {
+      _recipientController.text = name;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
+        title: const Text('Send Money'),
         backgroundColor: const Color(0xFF8B1A2E),
         foregroundColor: Colors.white,
-        title: const Text('Send Money'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -43,27 +59,63 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
               controller: _recipientController,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 filled: true,
                 fillColor: Colors.white,
-                hintText: 'Enter student name or wallet ID',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                hintText: 'Search by name, email, or wallet ID',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
               ),
             ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _recipients
-                  .map((name) => ActionChip(
-                        label: Text(name),
-                        onPressed: () => setState(() => _recipientController.text = name),
-                        backgroundColor: Colors.white,
-                        side: BorderSide(color: Colors.grey.shade200),
-                      ))
-                  .toList(),
-            ),
+            const SizedBox(height: 12),
+            const Text('Recent Contacts', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ...recentContacts.map((contact) => GestureDetector(
+                  onTap: () => _selectRecipient(contact['name']!),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _recipientController.text == contact['name']
+                            ? const Color(0xFF8B1A2E)
+                            : Colors.grey.shade100,
+                        width: _recipientController.text == contact['name'] ? 1.5 : 1.0,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: const Color(0xFFFFF0F0),
+                          child: Text(
+                            contact['initial']!,
+                            style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(contact['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            Text(contact['email']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          ],
+                        ),
+                        const Spacer(),
+                        if (_recipientController.text == contact['name'])
+                          const Icon(Icons.check_circle, color: Color(0xFF8B1A2E))
+                        else
+                          const Icon(Icons.chevron_right, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                )),
             const SizedBox(height: 16),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(child: _buildAmountField()),
                 const SizedBox(width: 12),
@@ -75,32 +127,41 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: _noteController,
-              maxLines: 3,
+              onChanged: (_) => setState(() {}),
+              maxLines: 2,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white,
-                hintText: 'Add a note for the transfer',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                hintText: 'What is this for?',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF8B1A2E), width: 2),
+                ),
               ),
             ),
             const SizedBox(height: 16),
             _buildSummaryCard(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Demo transfer prepared. Connect payments later.')),
                   );
                 },
+                icon: const Icon(Icons.send),
+                label: const Text('Send Money', style: TextStyle(fontSize: 16)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B1A2E),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Review Transfer'),
               ),
             ),
           ],
@@ -145,7 +206,14 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
             filled: true,
             fillColor: Colors.white,
             hintText: '0.00',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF8B1A2E), width: 2),
+            ),
           ),
         ),
       ],
@@ -160,17 +228,17 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         const Text('Quick Pick', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 6,
+          runSpacing: 6,
           children: amounts
               .map((amount) => GestureDetector(
                     onTap: () => setState(() => _amountController.text = amount),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: Text('\$$amount', style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
@@ -188,7 +256,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

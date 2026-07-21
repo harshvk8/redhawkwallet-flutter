@@ -15,6 +15,8 @@ class UserModel {
   final bool isEmailVerified;
   final bool isUniversityVerified;
   final String? universityEmail;
+  final String accountStatus;
+  final String? vendorStatus;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -26,6 +28,8 @@ class UserModel {
     required this.isEmailVerified,
     required this.isUniversityVerified,
     this.universityEmail,
+    this.accountStatus = 'active',
+    this.vendorStatus,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -36,10 +40,12 @@ class UserModel {
       uid: doc.id,
       name: data['name'] as String? ?? '',
       email: data['email'] as String? ?? '',
-      role: data['role'] as String? ?? UserRole.normalUser,
+      role: (data['role'] as String?)?.trim() ?? UserRole.normalUser,
       isEmailVerified: data['isEmailVerified'] as bool? ?? false,
       isUniversityVerified: data['isUniversityVerified'] as bool? ?? false,
       universityEmail: data['universityEmail'] as String?,
+      accountStatus: (data['accountStatus'] as String?)?.trim() ?? 'active',
+      vendorStatus: (data['vendorStatus'] as String?)?.trim(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -52,6 +58,8 @@ class UserModel {
         'isEmailVerified': isEmailVerified,
         'isUniversityVerified': isUniversityVerified,
         'universityEmail': universityEmail,
+        'accountStatus': accountStatus,
+        'vendorStatus': vendorStatus,
         'createdAt': Timestamp.fromDate(createdAt),
         'updatedAt': Timestamp.fromDate(updatedAt),
       };
@@ -64,6 +72,8 @@ class UserModel {
     bool? isEmailVerified,
     bool? isUniversityVerified,
     String? universityEmail,
+    String? accountStatus,
+    String? vendorStatus,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) =>
@@ -75,6 +85,8 @@ class UserModel {
         isEmailVerified: isEmailVerified ?? this.isEmailVerified,
         isUniversityVerified: isUniversityVerified ?? this.isUniversityVerified,
         universityEmail: universityEmail ?? this.universityEmail,
+        accountStatus: accountStatus ?? this.accountStatus,
+        vendorStatus: vendorStatus ?? this.vendorStatus,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );

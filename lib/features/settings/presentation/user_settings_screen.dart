@@ -41,7 +41,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             ], cs),
             const SizedBox(height: 16),
             _buildSection('Privacy & Security', [
-              _settingsTile(Icons.privacy_tip_outlined, 'Privacy Policy', cs, onTap: () {}),
+              _settingsTile(Icons.description_outlined, 'Terms of Service', cs, onTap: () => context.push('/terms')),
+              _settingsTile(Icons.privacy_tip_outlined, 'Privacy Policy', cs, onTap: () => context.push('/privacy')),
               _settingsTile(Icons.security_outlined, 'Security Settings', cs, onTap: () => context.push('/settings/security')),
             ], cs),
             const SizedBox(height: 16),

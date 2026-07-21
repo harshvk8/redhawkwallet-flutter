@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 class ReceiveMoneyScreen extends StatelessWidget {
   const ReceiveMoneyScreen({super.key});
@@ -8,12 +10,20 @@ class ReceiveMoneyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = user?.displayName ?? 'Student Name';
+    final userEmail = user?.email ?? 'student@montclair.edu';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: const Color(0xFF8B1A2E),
         foregroundColor: Colors.white,
         title: const Text('Receive Money'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -26,14 +36,30 @@ class ReceiveMoneyScreen extends StatelessWidget {
                 gradient: const LinearGradient(colors: [Color(0xFF8B1A2E), Color(0xFFC8102E)]),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Share your wallet ID or QR', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  SizedBox(height: 6),
-                  Text('Get paid in seconds', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 8),
-                  Text('This QR is a UI-only demo placeholder.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Color(0xFFFFF0F0),
+                        child: Icon(Icons.person, color: Color(0xFF8B1A2E), size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(displayName, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                          Text(userEmail, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Share your wallet ID or QR', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  const SizedBox(height: 4),
+                  const Text('Get paid in seconds', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -51,8 +77,8 @@ class ReceiveMoneyScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   const Text('Wallet ID', style: TextStyle(color: Colors.grey, fontSize: 13)),
                   const SizedBox(height: 6),
-                  Text(walletId, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                  const SizedBox(height: 12),
+                  const Text(walletId, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
@@ -63,8 +89,13 @@ class ReceiveMoneyScreen extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet ID copied')));
                             }
                           },
-                          icon: const Icon(Icons.copy),
-                          label: const Text('Copy ID'),
+                          icon: const Icon(Icons.copy, color: Color(0xFF8B1A2E)),
+                          label: const Text('Copy ID', style: TextStyle(color: Color(0xFF8B1A2E))),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF8B1A2E)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -78,6 +109,8 @@ class ReceiveMoneyScreen extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF8B1A2E),
                             foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                         ),
                       ),
@@ -134,7 +167,11 @@ class ReceiveMoneyScreen extends StatelessWidget {
         ),
         child: GridView.builder(
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, mainAxisSpacing: 6, crossAxisSpacing: 6),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 7, 
+            mainAxisSpacing: 6, 
+            crossAxisSpacing: 6,
+          ),
           itemCount: 49,
           itemBuilder: (context, index) {
             final row = index ~/ 7;

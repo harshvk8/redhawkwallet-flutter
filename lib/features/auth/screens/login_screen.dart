@@ -44,6 +44,20 @@ class _LoginScreenState extends State<LoginScreen> {
       final userModel = await _userService.getUserDocument(uid);
       if (!mounted) return;
 
+      if (userModel?.accountStatus == 'suspended') {
+        await _authService.signOut();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'This account has been suspended. Contact support for help.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
+
       if (userModel != null &&
           !userModel.isEmailVerified &&
           credential.user?.emailVerified != true) {
