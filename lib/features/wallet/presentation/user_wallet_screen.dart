@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserWalletScreen extends StatelessWidget {
   const UserWalletScreen({super.key});
@@ -30,6 +31,16 @@ class UserWalletScreen extends StatelessWidget {
             const SizedBox(height: 4),
             const Text('Real balances will appear after launch', style: TextStyle(color: Colors.grey, fontSize: 13)),
             const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(child: _actionButton(context, Icons.send, 'Send Money', '/wallet/send')),
+                const SizedBox(width: 10),
+                Expanded(child: _actionButton(context, Icons.qr_code_2, 'Receive', '/wallet/receive')),
+                const SizedBox(width: 10),
+                Expanded(child: _actionButton(context, Icons.storefront_outlined, 'Pay Vendor', '/wallet/pay-vendor')),
+              ],
+            ),
+            const SizedBox(height: 18),
             ...walletCards.map((card) => Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(18),
@@ -77,6 +88,33 @@ class UserWalletScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _actionButton(BuildContext context, IconData icon, String label, String route) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => context.push(route),
+        child: Container(
+          height: 96,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.grey.shade100),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: const Color(0xFF8B1A2E)),
+              const SizedBox(height: 8),
+              Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+            ],
+          ),
         ),
       ),
     );

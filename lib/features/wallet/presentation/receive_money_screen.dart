@@ -1,98 +1,190 @@
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 class ReceiveMoneyScreen extends StatelessWidget {
   const ReceiveMoneyScreen({super.key});
 
+  static const String walletId = 'RHW-2026-10482';
+
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = user?.displayName ?? 'Student Name';
+    final userEmail = user?.email ?? 'student@montclair.edu';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('Receive Money'),
         backgroundColor: const Color(0xFF8B1A2E),
         foregroundColor: Colors.white,
+        title: const Text('Receive Money'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircleAvatar(
-              radius: 40,
-              backgroundColor: Color(0xFFFFF0F0),
-              child: Icon(Icons.person, color: Color(0xFF8B1A2E), size: 44),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              FirebaseAuth.instance.currentUser?.displayName ?? 'Student Name',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              FirebaseAuth.instance.currentUser?.email ?? 'student@montclair.edu',
-              style: const TextStyle(color: Colors.grey, fontSize: 13),
-            ),
-            const SizedBox(height: 32),
             Container(
-              width: 200,
-              height: 200,
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF8B1A2E), width: 3),
-                borderRadius: BorderRadius.circular(16),
-                color: const Color(0xFFFFF0F0),
+                gradient: const LinearGradient(colors: [Color(0xFF8B1A2E), Color(0xFFC8102E)]),
+                borderRadius: BorderRadius.circular(18),
               ),
-              child: const Center(
-                child: Icon(Icons.qr_code_2, size: 160, color: Color(0xFF8B1A2E)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Color(0xFFFFF0F0),
+                        child: Icon(Icons.person, color: Color(0xFF8B1A2E), size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(displayName, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                          Text(userEmail, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Share your wallet ID or QR', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  const SizedBox(height: 4),
+                  const Text('Get paid in seconds', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                ],
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Wallet ID', style: TextStyle(color: Colors.grey, fontSize: 13)),
-            const SizedBox(height: 4),
-            const Text('RHW-2026-DEMO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.copy, color: Color(0xFF8B1A2E)),
-                    label: const Text('Copy ID', style: TextStyle(color: Color(0xFF8B1A2E))),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: Color(0xFF8B1A2E)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.grey.shade100),
+              ),
+              child: Column(
+                children: [
+                  _qrPreview(),
+                  const SizedBox(height: 16),
+                  const Text('Wallet ID', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  const SizedBox(height: 6),
+                  const Text(walletId, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            await Clipboard.setData(const ClipboardData(text: walletId));
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet ID copied')));
+                            }
+                          },
+                          icon: const Icon(Icons.copy, color: Color(0xFF8B1A2E)),
+                          label: const Text('Copy ID', style: TextStyle(color: Color(0xFF8B1A2E))),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF8B1A2E)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Share action is demo-only')));
+                          },
+                          icon: const Icon(Icons.share),
+                          label: const Text('Share'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF8B1A2E),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.share),
-                    label: const Text('Share QR'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8B1A2E),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Ask others to scan your QR code or use your wallet ID to send you money.',
-              style: TextStyle(color: Colors.grey, fontSize: 13),
-              textAlign: TextAlign.center,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.grey.shade100),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('How students can pay you', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
+                  Text('1. Open the wallet app', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text('2. Scan this QR or copy the wallet ID', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text('3. Confirm the transfer', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                ],
+              ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _qrPreview() {
+    const pattern = [
+      [1, 1, 1, 1, 0, 1, 0],
+      [1, 0, 0, 1, 0, 1, 1],
+      [1, 0, 1, 1, 1, 0, 1],
+      [1, 0, 1, 0, 1, 0, 1],
+      [1, 1, 1, 1, 0, 1, 1],
+      [0, 1, 0, 0, 1, 1, 0],
+      [1, 1, 0, 1, 0, 0, 1],
+    ];
+
+    return AspectRatio(
+      aspectRatio: 1,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9F9F9),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 7, 
+            mainAxisSpacing: 6, 
+            crossAxisSpacing: 6,
+          ),
+          itemCount: 49,
+          itemBuilder: (context, index) {
+            final row = index ~/ 7;
+            final col = index % 7;
+            final isDark = pattern[row][col] == 1;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF8B1A2E) : Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            );
+          },
         ),
       ),
     );

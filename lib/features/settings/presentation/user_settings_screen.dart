@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/theme_notifier.dart';
@@ -29,7 +28,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
           children: [
             _buildSection('Account', [
               _settingsTile(Icons.person_outline, 'Edit Profile', cs, onTap: () => context.push('/profile')),
-              _settingsTile(Icons.lock_outline, 'Change Password', cs, onTap: () {}),
+              _settingsTile(Icons.lock_outline, 'Change Password', cs, onTap: () => context.push('/settings/security')),
               _settingsTile(Icons.school_outlined, 'University Verification', cs, onTap: () => context.push('/verify')),
             ], cs),
             const SizedBox(height: 16),
@@ -44,7 +43,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             _buildSection('Privacy & Security', [
               _settingsTile(Icons.description_outlined, 'Terms of Service', cs, onTap: () => context.push('/terms')),
               _settingsTile(Icons.privacy_tip_outlined, 'Privacy Policy', cs, onTap: () => context.push('/privacy')),
-              _settingsTile(Icons.security_outlined, 'Security Settings', cs, onTap: () {}),
+              _settingsTile(Icons.security_outlined, 'Security Settings', cs, onTap: () => context.push('/settings/security')),
             ], cs),
             const SizedBox(height: 16),
             _buildSection('Support', [
@@ -52,25 +51,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
               _settingsTile(Icons.info_outline, 'About Red Hawk Wallet', cs, onTap: () {}),
             ], cs),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                  if (context.mounted) context.go('/login');
-                },
-                icon: Icon(Icons.logout, color: cs.primary),
-                label: Text('Logout', style: TextStyle(color: cs.primary, fontSize: 15)),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: BorderSide(color: cs.primary),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
             const Text('Red Hawk Wallet v1.0.0', style: TextStyle(color: Colors.grey, fontSize: 12)),
-            const Text('Demo Mode • Real payments coming soon', style: TextStyle(color: Colors.grey, fontSize: 12)),
           ],
         ),
       ),

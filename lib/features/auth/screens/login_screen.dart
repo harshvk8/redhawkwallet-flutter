@@ -102,43 +102,51 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showForgotPassword(BuildContext context) {
-    final resetCtrl = TextEditingController();
+    final resetCtrl = TextEditingController(text: _emailController.text.trim());
+    String? errorText;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Reset Password'),
-        content: TextField(
-          controller: resetCtrl,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            labelText: 'Email address',
-            hintText: 'you@university.edu',
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Reset Password'),
+          content: TextField(
+            controller: resetCtrl,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              labelText: 'Email address',
+              hintText: 'you@university.edu',
+              errorText: errorText,
+            ),
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () async {
+                final email = resetCtrl.text.trim();
+                if (email.isEmpty || !email.contains('@')) {
+                  setDialogState(() => errorText = 'Enter a valid email address');
+                  return;
+                }
+                setDialogState(() => errorText = null);
+                try {
+                  await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Password reset email sent!'), backgroundColor: Colors.green),
+                  );
+                } on FirebaseAuthException catch (e) {
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.message ?? 'Failed to send reset email'), backgroundColor: Colors.red),
+                  );
+                }
+              },
+              child: const Text('Send Reset Link'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              final email = resetCtrl.text.trim();
-              if (email.isEmpty || !email.contains('@')) return;
-              try {
-                await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Password reset email sent!'), backgroundColor: Colors.green),
-                );
-              } on FirebaseAuthException catch (e) {
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(e.message ?? 'Failed to send reset email'), backgroundColor: Colors.red),
-                );
-              }
-            },
-            child: const Text('Send Reset Link'),
-          ),
-        ],
       ),
     );
   }

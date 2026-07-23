@@ -16,6 +16,8 @@ import '../../features/student/screens/qr_scanner_screen.dart';
 import '../../features/student/screens/transaction_history_screen.dart';
 import '../../features/vendor/presentation/vendor_dashboard_screen.dart';
 import '../../features/vendor/presentation/vendor_create_payment_request_screen.dart';
+import '../../features/vendor/presentation/vendor_list_screen.dart';
+import '../../features/vendor/presentation/vendor_details_screen.dart';
 import '../../features/vendor/presentation/vendor_qr_payment_screen.dart';
 import '../../features/vendor/presentation/vendor_offers_screen.dart';
 import '../../features/vendor/presentation/vendor_transaction_history_screen.dart';
@@ -43,6 +45,7 @@ import '../../features/wallet/presentation/pay_vendor_screen.dart';
 import '../../features/offers/presentation/user_offers_screen.dart';
 import '../../features/points_rewards/presentation/user_points_rewards_screen.dart';
 import '../../features/settings/presentation/user_settings_screen.dart';
+import '../../features/settings/presentation/security_settings_screen.dart';
 import '../../features/events/presentation/user_events_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/legal/presentation/terms_screen.dart';
@@ -57,12 +60,13 @@ class AppRouter {
     redirect: (BuildContext context, GoRouterState state) {
       final isLoggedIn = FirebaseAuth.instance.currentUser != null;
       final loc = state.matchedLocation;
+      
       // Auth routes: redirect logged-in users away to their dashboard.
       final isAuthRoute = loc == '/login' ||
           loc == '/register' ||
           loc == '/email-verification';
-      // Legal routes: always viewable, logged in or not, regardless of
-      // role/approval status — never redirected away.
+
+      // Legal routes: always viewable, logged in or not.
       final isLegalRoute =
           loc == '/terms' || loc == '/privacy' || loc == '/vendor-terms';
 
@@ -103,8 +107,7 @@ class AppRouter {
       if (isVendorRoute && role != UserRole.vendor) return '/home';
       if (isAdminRoute && role != UserRole.admin) return '/home';
 
-      // Role changed live (e.g. promoted to admin/vendor) while sitting on a
-      // student route — move to the correct dashboard instead of staying put.
+      // Role changed live while sitting on a student route — move to correct dashboard.
       if (!isVendorRoute && !isAdminRoute) {
         if (role == UserRole.vendor) return '/vendor';
         if (role == UserRole.admin) return '/admin';
@@ -145,16 +148,26 @@ class AppRouter {
       GoRoute(path: '/wallet/add', builder: (context, state) => const AddMoneyScreen()),
       GoRoute(path: '/wallet/send', builder: (context, state) => const SendMoneyScreen()),
       GoRoute(path: '/wallet/receive', builder: (context, state) => const ReceiveMoneyScreen()),
+      GoRoute(
+        path: '/wallet/pay-vendor', 
+        builder: (context, state) => PayVendorScreen(vendor: state.extra as Map<String, dynamic>?),
+      ),
       GoRoute(path: '/wallet/pay', builder: (context, state) => const PayVendorScreen()),
       GoRoute(path: '/offers', builder: (context, state) => const UserOffersScreen()),
       GoRoute(path: '/rewards', builder: (context, state) => const UserPointsRewardsScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const UserSettingsScreen()),
+      GoRoute(path: '/settings/security', builder: (context, state) => const SecuritySettingsScreen()),
       GoRoute(path: '/events', builder: (context, state) => const UserEventsScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/terms', builder: (context, state) => const TermsScreen()),
       GoRoute(path: '/privacy', builder: (context, state) => const PrivacyPolicyScreen()),
       GoRoute(path: '/vendor-terms', builder: (context, state) => const VendorTermsScreen()),
       GoRoute(path: '/vendor', builder: (context, state) => const VendorDashboardScreen()),
+      GoRoute(path: '/vendors', builder: (context, state) => const VendorListScreen()),
+      GoRoute(
+        path: '/vendors/details', 
+        builder: (context, state) => VendorDetailsScreen(vendor: state.extra as Map<String, dynamic>?),
+      ),
       GoRoute(path: '/vendor/waiting', builder: (context, state) => const VendorWaitingApprovalScreen()),
       GoRoute(path: '/vendor/profile', builder: (context, state) => const VendorProfileScreen()),
       GoRoute(path: '/vendor/edit-profile', builder: (context, state) => const EditVendorProfileScreen()),
