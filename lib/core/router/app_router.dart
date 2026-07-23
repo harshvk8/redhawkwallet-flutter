@@ -64,8 +64,7 @@ class AppRouter {
       // Auth routes: redirect logged-in users away to their dashboard.
       final isAuthRoute = loc == '/login' ||
           loc == '/register' ||
-          loc == '/email-verification' ||
-          loc == '/settings/security';
+          loc == '/email-verification';
 
       // Legal routes: always viewable, logged in or not.
       final isLegalRoute =
