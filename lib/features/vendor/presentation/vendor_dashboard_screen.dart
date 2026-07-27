@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/widgets/app_states.dart';
 
 class VendorDashboardScreen extends StatefulWidget {
   const VendorDashboardScreen({super.key});
@@ -129,54 +130,13 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   }
 
   Widget _buildTransactionsSection(ColorScheme cs) {
-    if (_isLoading) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: CircularProgressIndicator(color: cs.primary),
-        ),
-      );
-    }
-    if (_hasError) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: cs.errorContainer,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: cs.error),
-        ),
-        child: Column(
-          children: [
-            Icon(Icons.error_outline, color: cs.onErrorContainer, size: 40),
-            const SizedBox(height: 8),
-            Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold, color: cs.onErrorContainer)),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: _loadData,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
-            ),
-          ],
-        ),
-      );
-    }
+    if (_isLoading) return const AppLoadingState(message: 'Loading transactions…');
+    if (_hasError) return AppErrorState(onRetry: _loadData);
     if (recentTransactions.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Column(
-          children: [
-            Icon(Icons.receipt_long, color: cs.onSurfaceVariant, size: 40),
-            const SizedBox(height: 8),
-            const Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text('Your transactions will appear here.', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
-          ],
-        ),
+      return const AppEmptyState(
+        icon: Icons.receipt_long_outlined,
+        title: 'No transactions yet',
+        subtitle: 'Your transactions will appear here once payments start coming in.',
       );
     }
     return Column(

@@ -1,8 +1,43 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/widgets/app_states.dart';
 
-class StudentDashboardScreen extends StatelessWidget {
+class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
+
+  @override
+  State<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
+}
+
+class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
+  bool _isLoading = true;
+  bool _hasError = false;
+  String _displayName = 'Student';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() { _isLoading = true; _hasError = false; });
+    try {
+      await Future.delayed(const Duration(milliseconds: 400));
+      final user = FirebaseAuth.instance.currentUser;
+      if (mounted) {
+        setState(() {
+          _displayName = user?.displayName?.isNotEmpty == true
+              ? user!.displayName!
+              : (user?.email?.split('@').first ?? 'Student');
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() { _isLoading = false; _hasError = true; });
+    }
+  }
 
   final List<Map<String, dynamic>> recentTransactions = const [
     {
@@ -37,6 +72,9 @@ class StudentDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+
+    if (_isLoading) return const Scaffold(body: AppLoadingState(message: 'Loading your wallet…'));
+    if (_hasError) return Scaffold(body: AppErrorState(onRetry: _load));
 
     return Scaffold(
       body: SafeArea(
@@ -74,11 +112,11 @@ class StudentDashboardScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Welcome back,', style: TextStyle(color: Colors.white70, fontSize: 14)),
-              Text('Student Name', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text('Welcome back,', style: TextStyle(color: Colors.white70, fontSize: 14)),
+              Text(_displayName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
             ],
           ),
           Container(
