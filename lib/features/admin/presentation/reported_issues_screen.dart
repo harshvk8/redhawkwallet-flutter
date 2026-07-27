@@ -108,7 +108,9 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
                         Text(issue['date'], style: const TextStyle(color: Colors.grey, fontSize: 12)),
                         const SizedBox(height: 10),
                         OutlinedButton(
-                          onPressed: () {},
+                          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Issue management coming post-MVP.')),
+                          ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFFC8102E),
                             side: const BorderSide(color: Color(0xFFC8102E)),

@@ -162,7 +162,9 @@ class AdminVendorDetailsScreen extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Use Manage Vendors to approve — actions are wired there.')),
+            ),
             icon: const Icon(Icons.check_circle_outline),
             label: const Text('Approve Vendor'),
             style: ElevatedButton.styleFrom(
@@ -177,7 +179,9 @@ class AdminVendorDetailsScreen extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Use Manage Vendors to reject — actions are wired there.')),
+            ),
             icon: const Icon(Icons.cancel_outlined),
             label: const Text('Reject Application'),
             style: ElevatedButton.styleFrom(
@@ -192,7 +196,9 @@ class AdminVendorDetailsScreen extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Use Manage Vendors to suspend — actions are wired there.')),
+            ),
             icon: const Icon(Icons.block, color: Colors.orange),
             label: const Text('Suspend Vendor', style: TextStyle(color: Colors.orange)),
             style: OutlinedButton.styleFrom(

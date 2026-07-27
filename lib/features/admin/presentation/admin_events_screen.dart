@@ -17,7 +17,13 @@ class AdminEventsScreen extends StatelessWidget {
         title: const Text('Manage Events'),
         elevation: 0,
         actions: [
-          IconButton(icon: const Icon(Icons.add), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Create event',
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Event creation coming post-MVP.')),
+            ),
+          ),
         ],
       ),
       body: Padding(
@@ -80,7 +86,9 @@ class AdminEventsScreen extends StatelessWidget {
                   Row(
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Event editing coming post-MVP.')),
+                        ),
                         icon: const Icon(Icons.edit, size: 16),
                         label: const Text('Edit', style: TextStyle(fontSize: 13)),
                         style: ElevatedButton.styleFrom(
@@ -92,7 +100,9 @@ class AdminEventsScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Event management coming post-MVP.')),
+                        ),
                         icon: const Icon(Icons.block, size: 16),
                         label: const Text('Disable', style: TextStyle(fontSize: 13)),
                         style: ElevatedButton.styleFrom(

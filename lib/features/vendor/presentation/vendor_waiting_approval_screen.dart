@@ -61,7 +61,9 @@ class VendorWaitingApprovalScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Email support@redhawkwallet.edu for help with your application.')),
+                ),
                 icon: const Icon(Icons.support_agent, color: Color(0xFFC8102E)),
                 label: const Text('Contact Support', style: TextStyle(color: Color(0xFFC8102E))),
                 style: OutlinedButton.styleFrom(

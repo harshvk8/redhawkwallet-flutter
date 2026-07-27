@@ -47,8 +47,18 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             ], cs),
             const SizedBox(height: 16),
             _buildSection('Support', [
-              _settingsTile(Icons.help_outline, 'Help & Support', cs, onTap: () {}),
-              _settingsTile(Icons.info_outline, 'About Red Hawk Wallet', cs, onTap: () {}),
+              _settingsTile(Icons.help_outline, 'Help & Support', cs, onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Support portal coming post-launch. Email support@redhawkwallet.edu for help.')));
+              }),
+              _settingsTile(Icons.info_outline, 'About Red Hawk Wallet', cs, onTap: () {
+                showAboutDialog(
+                  context: context,
+                  applicationName: 'Red Hawk Wallet',
+                  applicationVersion: '1.0.0-MVP',
+                  applicationLegalese: '© 2026 Montclair State University',
+                  children: [const Text('Campus wallet, rewards, and student ID in one place.')],
+                );
+              }),
             ], cs),
             const SizedBox(height: 16),
             const Text('Red Hawk Wallet v1.0.0', style: TextStyle(color: Colors.grey, fontSize: 12)),
