@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/widgets/app_states.dart';
 
 class AdminTransactionsScreen extends StatefulWidget {
   const AdminTransactionsScreen({super.key});
@@ -33,6 +35,8 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final filtered = filteredTransactions;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Transactions'),
@@ -68,61 +72,76 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: ListView.builder(
-                itemCount: filteredTransactions.length,
-                itemBuilder: (context, index) {
-                  final tx = filteredTransactions[index];
-                  final statusColor = _statusColor(tx['status']);
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: cs.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade100),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(tx['id'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cs.primary)),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: statusColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(tx['status'], style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
+              child: filtered.isEmpty
+                  ? AppEmptyState(
+                      icon: Icons.receipt_long_outlined,
+                      title: 'No $selectedFilter transactions',
+                      subtitle: 'There are no transactions matching this filter right now.',
+                    )
+                  : ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final tx = filtered[index];
+                        final statusColor = _statusColor(tx['status'] as String);
+                        return GestureDetector(
+                          onTap: () => context.push('/admin/transaction-details', extra: tx),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: cs.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade100),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.person_outline, size: 14, color: Colors.grey),
-                            const SizedBox(width: 4),
-                            Text(tx['user'], style: const TextStyle(fontSize: 13)),
-                            const SizedBox(width: 12),
-                            const Icon(Icons.store_outlined, size: 14, color: Colors.grey),
-                            const SizedBox(width: 4),
-                            Text(tx['vendor'], style: const TextStyle(fontSize: 13)),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(tx['date'], style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                            Text(tx['amount'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                          ],
-                        ),
-                      ],
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(tx['id'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cs.primary)),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: statusColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(tx['status'] as String, style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.person_outline, size: 14, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text(tx['user'] as String, style: const TextStyle(fontSize: 13)),
+                                    const SizedBox(width: 12),
+                                    const Icon(Icons.store_outlined, size: 14, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text(tx['vendor'] as String, style: const TextStyle(fontSize: 13)),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(tx['date'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                    Row(
+                                      children: [
+                                        Text(tx['amount'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                        const SizedBox(width: 6),
+                                        const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

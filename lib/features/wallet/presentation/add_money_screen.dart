@@ -9,10 +9,38 @@ class AddMoneyScreen extends StatefulWidget {
 }
 
 class _AddMoneyScreenState extends State<AddMoneyScreen> {
-  int selectedMethod = 0;
+  final _amountController = TextEditingController();
+  int _selectedMethod = 0;
+  final _quickAmounts = [10, 25, 50, 100];
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  double get _parsedAmount {
+    return double.tryParse(_amountController.text) ?? 0.0;
+  }
+
+  String get _feeEstimate {
+    final amount = _parsedAmount;
+    if (amount <= 0) return '\$0.00';
+    final fee = _selectedMethod == 0 ? amount * 0.029 + 0.30 : 0.0;
+    return '\$${fee.toStringAsFixed(2)}';
+  }
+
+  String get _totalEstimate {
+    final amount = _parsedAmount;
+    if (amount <= 0) return '\$0.00';
+    final fee = _selectedMethod == 0 ? amount * 0.029 + 0.30 : 0.0;
+    return '\$${(amount + fee).toStringAsFixed(2)}';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -29,44 +57,38 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Amount', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            TextField(
-              keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                prefixText: '\$ ',
-                prefixStyle: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF8B1A2E)),
-                hintText: '0.00',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF8B1A2E), width: 2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text('Select Payment Method', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            _paymentMethod(0, Icons.credit_card, 'Debit or Credit Card', 'Visa, Mastercard, Amex'),
-            const SizedBox(height: 10),
-            _paymentMethod(1, Icons.account_balance, 'Bank Transfer', 'ACH transfer from your bank'),
-            const SizedBox(height: 32),
+            _buildAmountCard(cs),
+            const SizedBox(height: 16),
+            _buildMethodCard(cs),
+            const SizedBox(height: 16),
+            if (_parsedAmount > 0) ...[
+              _buildSummaryCard(cs),
+              const SizedBox(height: 16),
+            ],
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Add Money coming in MVP')),
-                  );
-                },
+                onPressed: _parsedAmount >= 1.0
+                    ? () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Stripe PaymentSheet coming in Week 3 — wiring ready.'),
+                            backgroundColor: Color(0xFF8B1A2E),
+                          ),
+                        );
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B1A2E),
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade300,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Review Payment', style: TextStyle(fontSize: 16)),
+                child: Text(
+                  _parsedAmount >= 1.0 ? 'Review Payment · $_totalEstimate' : 'Enter an amount',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -75,8 +97,8 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
               child: const Text(
-                'This is a demo. Real payments will be added after security and legal review.',
-                style: TextStyle(color: Colors.grey, fontSize: 13),
+                'Demo mode — real payments will be wired to Stripe in Week 3. Minimum deposit: \$1.00.',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -86,32 +108,168 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
     );
   }
 
-  Widget _paymentMethod(int index, IconData icon, String title, String subtitle) {
-    final selected = selectedMethod == index;
+  Widget _buildAmountCard(ColorScheme cs) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xFF8B1A2E), Color(0xFFC8102E)]),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('How much?', style: TextStyle(color: Colors.white70, fontSize: 13)),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text('\$', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 4),
+              Expanded(
+                child: TextField(
+                  controller: _amountController,
+                  onChanged: (_) => setState(() {}),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
+                  decoration: const InputDecoration(
+                    hintText: '0.00',
+                    hintStyle: TextStyle(color: Colors.white38, fontSize: 36, fontWeight: FontWeight.bold),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: _quickAmounts.map((amount) {
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _amountController.text = amount.toString()),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _parsedAmount == amount.toDouble()
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '\$$amount',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: _parsedAmount == amount.toDouble()
+                              ? const Color(0xFF8B1A2E)
+                              : Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMethodCard(ColorScheme cs) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Payment Method', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
+        const SizedBox(height: 10),
+        _paymentMethod(0, Icons.credit_card, 'Debit or Credit Card', 'Visa, Mastercard, Amex · 2.9% + \$0.30 fee', cs),
+        const SizedBox(height: 10),
+        _paymentMethod(1, Icons.account_balance, 'Bank Transfer (ACH)', 'Free · 1–3 business days', cs),
+      ],
+    );
+  }
+
+  Widget _paymentMethod(int index, IconData icon, String title, String subtitle, ColorScheme cs) {
+    final selected = _selectedMethod == index;
     return GestureDetector(
-      onTap: () => setState(() => selectedMethod = index),
+      onTap: () => setState(() {
+        _selectedMethod = index;
+        if (_parsedAmount > 0) setState(() {});
+      }),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cs.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: selected ? const Color(0xFF8B1A2E) : Colors.grey.shade200, width: selected ? 2 : 1),
+          border: Border.all(
+            color: selected ? const Color(0xFF8B1A2E) : Colors.grey.shade200,
+            width: selected ? 2 : 1,
+          ),
         ),
         child: Row(
           children: [
             Icon(icon, color: selected ? const Color(0xFF8B1A2E) : Colors.grey, size: 28),
             const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: selected ? const Color(0xFF8B1A2E) : Colors.black)),
-                Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: selected ? const Color(0xFF8B1A2E) : cs.onSurface)),
+                  Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                ],
+              ),
             ),
-            const Spacer(),
             if (selected) const Icon(Icons.check_circle, color: Color(0xFF8B1A2E)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard(ColorScheme cs) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Payment Summary', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: cs.onSurface)),
+          const SizedBox(height: 10),
+          _row('Amount', '\$${_parsedAmount.toStringAsFixed(2)}', cs),
+          _row('Processing fee', _feeEstimate, cs),
+          Divider(color: Colors.grey.shade200, height: 20),
+          _row('Total charged', _totalEstimate, cs, bold: true),
+          const SizedBox(height: 6),
+          _row('Added to wallet', '\$${_parsedAmount.toStringAsFixed(2)}', cs, color: Colors.green),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(String label, String value, ColorScheme cs, {bool bold = false, Color? color}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6))),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: bold ? FontWeight.bold : FontWeight.w500,
+              color: color ?? cs.onSurface,
+            ),
+          ),
+        ],
       ),
     );
   }
