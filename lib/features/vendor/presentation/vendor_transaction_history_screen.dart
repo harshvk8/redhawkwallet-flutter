@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import '../../wallet/models/transaction_model.dart';
 
 class VendorTransactionHistoryScreen extends StatefulWidget {
   const VendorTransactionHistoryScreen({super.key});
@@ -11,142 +15,127 @@ class VendorTransactionHistoryScreen extends StatefulWidget {
 class _VendorTransactionHistoryScreenState
     extends State<VendorTransactionHistoryScreen> {
   String selectedFilter = 'All';
-  final List<String> filters = ['All', 'Paid', 'Pending', 'Failed'];
-  bool _isLoading = true;
-  bool _hasError = false;
-  List<Map<String, dynamic>> transactions = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-      setState(() {
-        transactions = [
-          {'name': 'Alex Johnson', 'amount': '\$12.50', 'date': 'May 21, 2026', 'time': '3:45 PM', 'status': 'Paid', 'note': 'Coffee order', 'points': '12'},
-          {'name': 'Sara Lee', 'amount': '\$8.00', 'date': 'May 21, 2026', 'time': '2:30 PM', 'status': 'Paid', 'note': 'Sandwich', 'points': '8'},
-          {'name': 'Mike Chen', 'amount': '\$22.00', 'date': 'May 21, 2026', 'time': '1:15 PM', 'status': 'Pending', 'note': 'Lunch combo', 'points': '0'},
-          {'name': 'Priya Patel', 'amount': '\$5.00', 'date': 'May 20, 2026', 'time': '4:00 PM', 'status': 'Failed', 'note': 'Snack', 'points': '0'},
-          {'name': 'James Wu', 'amount': '\$18.75', 'date': 'May 20, 2026', 'time': '12:00 PM', 'status': 'Paid', 'note': 'Pizza slice + drink', 'points': '18'},
-        ];
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _hasError = true;
-        _isLoading = false;
-      });
-    }
-  }
+  final List<String> filters = ['All', 'Completed', 'Pending', 'Failed'];
 
   Color _statusColor(String status) {
-    if (status == 'Paid') return Colors.green;
-    if (status == 'Pending') return Colors.orange;
+    if (status == 'completed') return Colors.green;
+    if (status == 'pending') return Colors.orange;
     return Colors.red;
   }
 
-  List<Map<String, dynamic>> get filteredTransactions {
+  List<TransactionModel> _applyFilter(List<TransactionModel> transactions) {
     if (selectedFilter == 'All') return transactions;
-    return transactions.where((t) => t['status'] == selectedFilter).toList();
+    return transactions.where((t) => t.status == selectedFilter.toLowerCase()).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final totalSales = transactions
-        .where((t) => t['status'] == 'Paid')
-        .fold(0.0, (sum, t) => sum + double.parse((t['amount'] as String).replaceAll('\$', '')));
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Transaction History')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            if (!_isLoading && !_hasError) ...[
-              Row(
-                children: [
-                  _summaryCard('Total Sales', '\$${totalSales.toStringAsFixed(2)}', Icons.attach_money, cs),
-                  const SizedBox(width: 10),
-                  _summaryCard('Transactions', '${transactions.length}', Icons.receipt_long, cs),
-                  const SizedBox(width: 10),
-                  _summaryCard('Pending', '${transactions.where((t) => t['status'] == 'Pending').length}', Icons.pending_actions, cs),
-                ],
-              ),
-              const SizedBox(height: 12),
-            ],
-            SizedBox(
-              height: 36,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: filters.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final filter = filters[index];
-                  final selected = filter == selectedFilter;
-                  return GestureDetector(
-                    onTap: () => setState(() => selectedFilter = filter),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: selected ? cs.primary : cs.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        border: selected ? null : Border.all(color: cs.outlineVariant),
+        child: uid == null
+            ? const Center(child: Text('Not signed in.'))
+            : StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('transactions')
+                    .where('toUid', isEqualTo: uid)
+                    .orderBy('createdAt', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator(color: cs.primary));
+                  }
+                  if (snapshot.hasError) {
+                    return _errorState(cs, () => setState(() {}));
+                  }
+
+                  final allTransactions = (snapshot.data?.docs ?? []).map(TransactionModel.fromFirestore).toList();
+                  final totalSales = allTransactions
+                      .where((t) => t.status == 'completed')
+                      .fold(0.0, (total, t) => total + t.amount);
+                  final pendingCount = allTransactions.where((t) => t.status == 'pending').length;
+                  final transactions = _applyFilter(allTransactions);
+
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          _summaryCard('Total Sales', '\$${totalSales.toStringAsFixed(2)}', Icons.attach_money, cs),
+                          const SizedBox(width: 10),
+                          _summaryCard('Transactions', '${allTransactions.length}', Icons.receipt_long, cs),
+                          const SizedBox(width: 10),
+                          _summaryCard('Pending', '$pendingCount', Icons.pending_actions, cs),
+                        ],
                       ),
-                      child: Text(
-                        filter,
-                        style: TextStyle(
-                          color: selected ? Colors.white : cs.onSurface,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 36,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: filters.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (context, index) {
+                            final filter = filters[index];
+                            final selected = filter == selectedFilter;
+                            return GestureDetector(
+                              onTap: () => setState(() => selectedFilter = filter),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: selected ? cs.primary : cs.surface,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: selected ? null : Border.all(color: cs.outlineVariant),
+                                ),
+                                child: Text(
+                                  filter,
+                                  style: TextStyle(
+                                    color: selected ? Colors.white : cs.onSurface,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      Expanded(child: _buildList(cs, transactions)),
+                    ],
                   );
                 },
               ),
-            ),
-            const SizedBox(height: 12),
-            Expanded(child: _buildBody(cs)),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildBody(ColorScheme cs) {
-    if (_isLoading) {
-      return Center(child: CircularProgressIndicator(color: cs.primary));
-    }
-    if (_hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, color: cs.error, size: 48),
-            const SizedBox(height: 12),
-            const Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 4),
-            Text('Could not load transactions.', style: TextStyle(color: cs.onSurfaceVariant)),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _loadData,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
-            ),
-          ],
-        ),
-      );
-    }
-    if (filteredTransactions.isEmpty) {
+  Widget _errorState(ColorScheme cs, VoidCallback onRetry) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, color: cs.error, size: 48),
+          const SizedBox(height: 12),
+          const Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 4),
+          Text('Could not load transactions.', style: TextStyle(color: cs.onSurfaceVariant)),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildList(ColorScheme cs, List<TransactionModel> transactions) {
+    if (transactions.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -161,10 +150,13 @@ class _VendorTransactionHistoryScreenState
       );
     }
     return ListView.builder(
-      itemCount: filteredTransactions.length,
+      itemCount: transactions.length,
       itemBuilder: (context, index) {
-        final tx = filteredTransactions[index];
-        final statusColor = _statusColor(tx['status'] as String);
+        final tx = transactions[index];
+        final statusColor = _statusColor(tx.status);
+        final name = tx.fromName.isNotEmpty ? tx.fromName : 'Customer';
+        final hour = tx.createdAt.hour % 12 == 0 ? 12 : tx.createdAt.hour % 12;
+        final period = tx.createdAt.hour >= 12 ? 'PM' : 'AM';
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(14),
@@ -183,14 +175,14 @@ class _VendorTransactionHistoryScreenState
                     children: [
                       CircleAvatar(
                         backgroundColor: cs.primary.withValues(alpha: 0.1),
-                        child: Text(tx['name'][0] as String, style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
+                        child: Text(name[0].toUpperCase(), style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(tx['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          Text(tx['note'] as String, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+                          Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(tx.description.isEmpty ? '—' : tx.description, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                         ],
                       ),
                     ],
@@ -198,34 +190,21 @@ class _VendorTransactionHistoryScreenState
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(tx['amount'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text('\$${tx.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text(tx['status'] as String, style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                        child: Text(tx.status[0].toUpperCase() + tx.status.substring(1), style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('${tx['date']} at ${tx['time']}', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
-                  if (tx['status'] == 'Paid')
-                    Row(
-                      children: [
-                        const Icon(Icons.stars, size: 14, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text('+${tx['points']} pts', style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                ],
-              ),
+              Text('${tx.createdAt.month}/${tx.createdAt.day}/${tx.createdAt.year} at $hour:${tx.createdAt.minute.toString().padLeft(2, '0')} $period', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
             ],
           ),
         );
