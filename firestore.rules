@@ -28,9 +28,30 @@ service cloud.firestore {
     match /transactions/{transactionId} {
       allow read: if request.auth != null &&
         (resource.data.fromUid == request.auth.uid ||
-         resource.data.toUid == request.auth.uid);
+         resource.data.toUid == request.auth.uid ||
+         isAdmin());
       allow create: if request.auth != null &&
         request.resource.data.fromUid == request.auth.uid;
+    }
+
+    match /paymentRequests/{requestId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null &&
+        request.resource.data.vendorUid == request.auth.uid &&
+        request.resource.data.status == 'pending';
+      // Vendor may cancel their own pending request.
+      allow update: if request.auth != null &&
+        resource.data.vendorUid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+        request.resource.data.status == 'cancelled';
+      // Any other authenticated user may claim a pending request as the payer.
+      allow update: if request.auth != null &&
+        resource.data.status == 'pending' &&
+        request.resource.data.status == 'paid' &&
+        request.resource.data.studentUid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'studentUid', 'studentName', 'paidAt', 'transactionId']);
+      allow delete: if false;
     }
   }
 }

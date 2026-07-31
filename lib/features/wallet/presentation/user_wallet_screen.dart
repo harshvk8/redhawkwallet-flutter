@@ -1,47 +1,69 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../models/wallet_model.dart';
 
 class UserWalletScreen extends StatelessWidget {
   const UserWalletScreen({super.key});
 
-  final List<Map<String, dynamic>> walletCards = const [
-    {'name': 'Red Hawk Dollars', 'balance': '\$0.00', 'type': 'Debit', 'color': Color(0xFF8B1A2E), 'icon': Icons.account_balance_wallet},
-    {'name': 'Flex Dollars', 'balance': '\$0.00', 'type': 'Flex', 'color': Colors.blue, 'icon': Icons.payment},
-    {'name': 'Bonus Dollars', 'balance': '\$0.00', 'type': 'Bonus', 'color': Colors.green, 'icon': Icons.card_giftcard},
-    {'name': 'Meal Swipes', 'balance': '0 swipes', 'type': 'Meal', 'color': Colors.orange, 'icon': Icons.restaurant},
-    {'name': 'Points', 'balance': '250 pts', 'type': 'Rewards', 'color': Colors.amber, 'icon': Icons.stars},
-  ];
+  List<Map<String, dynamic>> _walletCards(WalletModel? wallet) => [
+        {
+          'name': 'Red Hawk Dollars',
+          'balance': '\$${(wallet?.balance ?? 0.0).toStringAsFixed(2)}',
+          'type': 'Debit',
+          'color': const Color(0xFF8B1A2E),
+          'icon': Icons.account_balance_wallet,
+        },
+        {'name': 'Flex Dollars', 'balance': '\$0.00', 'type': 'Flex', 'color': Colors.blue, 'icon': Icons.payment},
+        {'name': 'Bonus Dollars', 'balance': '\$0.00', 'type': 'Bonus', 'color': Colors.green, 'icon': Icons.card_giftcard},
+        {'name': 'Meal Swipes', 'balance': '0 swipes', 'type': 'Meal', 'color': Colors.orange, 'icon': Icons.restaurant},
+        {
+          'name': 'Points',
+          'balance': '${wallet?.points ?? 0} pts',
+          'type': 'Rewards',
+          'color': Colors.amber,
+          'icon': Icons.stars,
+        },
+      ];
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Wallet'),
         elevation: 0,
       ),
-  
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Demo Wallet', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
-            const SizedBox(height: 4),
-            const Text('Real balances will appear after launch', style: TextStyle(color: Colors.grey, fontSize: 13)),
-            const SizedBox(height: 16),
-            Row(
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: uid == null ? null : FirebaseFirestore.instance.collection('wallets').doc(uid).snapshots(),
+        builder: (context, snapshot) {
+          final wallet = snapshot.hasData && snapshot.data!.exists ? WalletModel.fromFirestore(snapshot.data!) : null;
+          final walletCards = _walletCards(wallet);
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: _actionButton(context, Icons.send, 'Send Money', '/wallet/send')),
-                const SizedBox(width: 10),
-                Expanded(child: _actionButton(context, Icons.qr_code_2, 'Receive', '/wallet/receive')),
-                const SizedBox(width: 10),
-                Expanded(child: _actionButton(context, Icons.storefront_outlined, 'Pay Vendor', '/wallet/pay-vendor')),
-              ],
-            ),
-            const SizedBox(height: 18),
-            ...walletCards.map((card) => Container(
+                Text('My Wallet', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
+                const SizedBox(height: 4),
+                const Text('Red Hawk Dollars balance updates from your account. Other categories are coming soon.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: _actionButton(context, Icons.send, 'Send Money', '/wallet/send')),
+                    const SizedBox(width: 10),
+                    Expanded(child: _actionButton(context, Icons.qr_code_2, 'Receive', '/wallet/receive')),
+                    const SizedBox(width: 10),
+                    Expanded(child: _actionButton(context, Icons.storefront_outlined, 'Pay Vendor', '/wallet/pay-vendor')),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                ...walletCards.map((card) => Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
@@ -82,13 +104,15 @@ class UserWalletScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'This is a demo wallet. Real payments will be added after security and legal review.',
+                'Real money movement (send, receive, pay vendor) is coming in a future update.',
                 style: TextStyle(color: Colors.grey, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
             ),
-          ],
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
