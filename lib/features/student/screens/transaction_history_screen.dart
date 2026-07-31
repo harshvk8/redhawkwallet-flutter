@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../wallet/models/transaction_model.dart';
 
@@ -108,7 +109,17 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             final statusColor = _statusColor(tx.status);
                             final hour = tx.createdAt.hour % 12 == 0 ? 12 : tx.createdAt.hour % 12;
                             final period = tx.createdAt.hour >= 12 ? 'PM' : 'AM';
-                            return Container(
+                            return GestureDetector(
+                              onTap: () => context.push('/transaction-details', extra: {
+                                'id': tx.id,
+                                'fromName': tx.fromName.isNotEmpty ? tx.fromName : 'You',
+                                'toName': tx.toName.isNotEmpty ? tx.toName : 'Vendor',
+                                'amount': tx.amount,
+                                'status': tx.status[0].toUpperCase() + tx.status.substring(1),
+                                'createdAt': tx.createdAt,
+                                'description': tx.description,
+                              }),
+                              child: Container(
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
@@ -160,6 +171,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                     ],
                                   ),
                                 ],
+                              ),
                               ),
                             );
                           },

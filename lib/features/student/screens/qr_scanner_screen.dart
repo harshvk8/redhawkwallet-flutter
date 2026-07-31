@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../wallet/models/payment_request_model.dart';
-import '../../wallet/models/transaction_model.dart';
+import '../../wallet/services/money_transfer_service.dart';
 
 class QrScannerScreen extends StatefulWidget {
   const QrScannerScreen({super.key});
@@ -38,34 +38,20 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     setState(() => _processing = true);
     try {
       final user = FirebaseAuth.instance.currentUser!;
-      final now = DateTime.now();
-      final db = FirebaseFirestore.instance;
-      final requestRef = db.collection('paymentRequests').doc(request.id);
-      final transactionRef = db.collection('transactions').doc();
-
-      final transaction = TransactionModel(
-        id: transactionRef.id,
-        fromUid: user.uid,
+      final transactionId = await MoneyTransferService().transfer(
         toUid: request.vendorUid,
-        fromName: user.displayName ?? 'Student',
-        toName: request.vendorName,
         amount: request.amount,
+        note: request.note,
         type: 'payment',
-        status: 'completed',
-        createdAt: now,
-        description: request.note,
       );
 
-      final batch = db.batch();
-      batch.update(requestRef, {
+      await FirebaseFirestore.instance.collection('paymentRequests').doc(request.id).update({
         'status': 'paid',
         'studentUid': user.uid,
         'studentName': user.displayName ?? 'Student',
-        'paidAt': Timestamp.fromDate(now),
-        'transactionId': transactionRef.id,
+        'paidAt': Timestamp.fromDate(DateTime.now()),
+        'transactionId': transactionId,
       });
-      batch.set(transactionRef, transaction.toMap());
-      await batch.commit();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

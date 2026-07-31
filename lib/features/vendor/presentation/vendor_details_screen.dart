@@ -8,16 +8,7 @@ class VendorDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = vendor ?? const {
-      'name': 'Red Hawk Cafe',
-      'category': 'Dining',
-      'rating': 4.8,
-      'distance': '0.2 mi',
-      'status': 'Open now',
-      'color': Color(0xFF8B1A2E),
-      'hours': '7:00 AM - 9:00 PM',
-      'description': 'Popular stop for coffee, sandwiches, and campus favorites.',
-    };
+    final data = vendor ?? const {'name': 'Vendor', 'category': 'Other', 'uid': ''};
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -34,8 +25,6 @@ class VendorDetailsScreen extends StatelessWidget {
             _hero(data),
             const SizedBox(height: 16),
             _infoCard(data),
-            const SizedBox(height: 16),
-            _menuPreview(),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -58,28 +47,24 @@ class VendorDetailsScreen extends StatelessWidget {
   }
 
   Widget _hero(Map<String, dynamic> data) {
-    final color = data['color'] as Color? ?? const Color(0xFF8B1A2E);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [color, const Color(0xFFC8102E)]),
+        gradient: const LinearGradient(colors: [Color(0xFF8B1A2E), Color(0xFFC8102E)]),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(data['name'] as String, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          Text(data['description'] as String? ?? 'Campus vendor', style: const TextStyle(color: Colors.white70, fontSize: 13)),
           const SizedBox(height: 12),
           Wrap(
             spacing: 10,
             runSpacing: 10,
             children: [
               _pill(data['category'] as String),
-              _pill('${data['rating']} stars'),
-              _pill(data['status'] as String),
+              _pill('Approved vendor'),
             ],
           ),
         ],
@@ -112,10 +97,10 @@ class VendorDetailsScreen extends StatelessWidget {
         children: [
           const Text('Vendor Info', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          _row(Icons.place_outlined, 'Distance', data['distance'] as String),
-          _row(Icons.schedule_outlined, 'Hours', data['hours'] as String? ?? '7:00 AM - 9:00 PM'),
           _row(Icons.storefront_outlined, 'Category', data['category'] as String),
-          _row(Icons.verified_outlined, 'Status', data['status'] as String),
+          _row(Icons.verified_outlined, 'Status', 'Approved'),
+          const SizedBox(height: 4),
+          const Text('Menu and hours are managed by the vendor and coming soon.', style: TextStyle(color: Colors.grey, fontSize: 12)),
         ],
       ),
     );
@@ -131,43 +116,6 @@ class VendorDetailsScreen extends StatelessWidget {
           Text(label, style: const TextStyle(fontSize: 13, color: Colors.grey)),
           const Spacer(),
           Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-
-  Widget _menuPreview() {
-    final items = [
-      ('Iced Coffee', '\$ 3.50'),
-      ('Chicken Wrap', '\$ 6.75'),
-      ('Student Combo', '\$ 8.25'),
-    ];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Popular Items', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          ...items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(item.$1, style: const TextStyle(fontSize: 13)),
-                  Text(item.$2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );

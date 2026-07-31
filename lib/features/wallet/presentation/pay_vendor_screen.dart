@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../services/money_transfer_service.dart';
 
 class PayVendorScreen extends StatefulWidget {
   const PayVendorScreen({super.key, this.vendor});
@@ -12,15 +15,10 @@ class PayVendorScreen extends StatefulWidget {
 
 class _PayVendorScreenState extends State<PayVendorScreen> {
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _noteController = TextEditingController(text: 'Campus lunch');
-  
-  Map<String, dynamic>? _selectedVendor;
+  final TextEditingController _noteController = TextEditingController();
 
-  final List<Map<String, String>> recentVendors = const [
-    {'name': 'Red Hawk Cafe', 'category': 'Food & Drinks', 'initial': 'R', 'rating': '4.8', 'distance': 'On campus', 'status': 'Open now'},
-    {'name': 'Campus Bookstore', 'category': 'Books & Supplies', 'initial': 'C', 'rating': '4.6', 'distance': 'Student Center', 'status': 'Open now'},
-    {'name': 'Hawks Pizza', 'category': 'Food & Drinks', 'initial': 'H', 'rating': '4.9', 'distance': '0.2 miles', 'status': 'Open now'},
-  ];
+  Map<String, dynamic>? _selectedVendor;
+  bool _paying = false;
 
   @override
   void initState() {
@@ -33,6 +31,49 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
     _amountController.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pay(Map<String, dynamic> vendor) async {
+    final vendorUid = vendor['uid'] as String?;
+    if (vendorUid == null || vendorUid.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This vendor is missing an account id.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    final amount = double.tryParse(_amountController.text.trim());
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a valid amount'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    setState(() => _paying = true);
+    try {
+      await MoneyTransferService().transfer(
+        toUid: vendorUid,
+        amount: amount,
+        note: _noteController.text.trim(),
+        type: 'payment',
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Paid \$${amount.toStringAsFixed(2)} to ${vendor['name']}'), backgroundColor: const Color(0xFF8B1A2E)),
+        );
+        context.pop();
+      }
+    } on MoneyTransferException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Payment failed: $e'), backgroundColor: Colors.red));
+      }
+    } finally {
+      if (mounted) setState(() => _paying = false);
+    }
   }
 
   @override
@@ -119,38 +160,65 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text('Recent Vendors', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+        const Text('Vendors', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        ...recentVendors.map((vendor) => GestureDetector(
-          onTap: () => setState(() => _selectedVendor = vendor),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade100),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: const Color(0xFFFFF0F0),
-                  child: Text(vendor['initial']!, style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(vendor['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text(vendor['category']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                  ],
-                ),
-                const Spacer(),
-                const Icon(Icons.chevron_right, color: Colors.grey),
-              ],
-            ),
-          ),
-        )),
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .where('role', isEqualTo: 'vendor')
+              .orderBy('createdAt', descending: true)
+              .limit(5)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: CircularProgressIndicator(color: Color(0xFF8B1A2E))));
+            }
+            final docs = (snapshot.data?.docs ?? [])
+                .where((d) => (d.data() as Map<String, dynamic>)['vendorStatus'] == 'approved')
+                .toList();
+            if (docs.isEmpty) {
+              return const Text('No approved vendors yet.', style: TextStyle(color: Colors.grey));
+            }
+            return Column(
+              children: docs.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                final name = data['businessName'] as String? ?? data['name'] as String? ?? 'Vendor';
+                final category = data['businessCategory'] as String? ?? 'Other';
+                final vendor = {'uid': doc.id, 'name': name, 'category': category};
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedVendor = vendor),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade100),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: const Color(0xFFFFF0F0),
+                          child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?', style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            Text(category, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          ],
+                        ),
+                        const Spacer(),
+                        const Icon(Icons.chevron_right, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
       ],
     );
   }
@@ -186,18 +254,16 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Demo payment submitted. Wire real payments later.')),
-              );
-            },
+            onPressed: _paying ? null : () => _pay(vendor),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF8B1A2E),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 15),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Pay Now'),
+            child: _paying
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Pay Now'),
           ),
         ),
       ],
@@ -222,11 +288,7 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
           Wrap(
             spacing: 10,
             runSpacing: 10,
-            children: [
-              _pill(vendor['rating'] as String? ?? '4.8 stars'),
-              _pill(vendor['distance'] as String? ?? 'Nearby'),
-              _pill(vendor['status'] as String? ?? 'Open now'),
-            ],
+            children: [_pill('Approved vendor')],
           ),
         ],
       ),
