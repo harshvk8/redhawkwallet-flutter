@@ -23,11 +23,14 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('Send Money'),
       ),
       body: SingleChildScrollView(
@@ -37,16 +40,16 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
           children: [
             _headerCard(),
             const SizedBox(height: 16),
-            const Text('Recipient', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            Text('Recipient', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             TextField(
               controller: _recipientController,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: colorScheme.surface,
                 hintText: 'Enter student name or wallet ID',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
               ),
             ),
             const SizedBox(height: 10),
@@ -131,10 +134,13 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   }
 
   Widget _buildAmountField() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Amount', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        Text('Amount', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         TextField(
           controller: _amountController,
@@ -143,9 +149,9 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
           decoration: InputDecoration(
             prefixText: '\$ ',
             filled: true,
-            fillColor: Colors.white,
+            fillColor: colorScheme.surface,
             hintText: '0.00',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
           ),
         ),
       ],
@@ -154,10 +160,13 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
   Widget _buildQuickAmountPanel() {
     final amounts = ['5', '10', '20', '50'];
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Quick Pick', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        Text('Quick Pick', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -168,11 +177,11 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(color: colorScheme.outlineVariant),
                       ),
-                      child: Text('\$$amount', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text('\$$amount', style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
                     ),
                   ))
               .toList(),
@@ -182,18 +191,21 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   }
 
   Widget _buildSummaryCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Transfer Preview', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text('Transfer Preview', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           _summaryRow('To', _recipientController.text.isEmpty ? 'No recipient selected' : _recipientController.text),
           _summaryRow('Amount', _amountController.text.isEmpty ? '\$ 0.00' : '\$${_amountController.text}'),
@@ -204,14 +216,17 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   }
 
   Widget _summaryRow(String label, String value) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          Text(label, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
           Flexible(
-            child: Text(value, textAlign: TextAlign.right, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+            child: Text(value, textAlign: TextAlign.right, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
           ),
         ],
       ),

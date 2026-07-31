@@ -24,11 +24,14 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('Security Settings'),
       ),
       body: SingleChildScrollView(
@@ -71,18 +74,21 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   }
 
   Widget _securityToggles() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Authentication', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text('Authentication', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
@@ -90,7 +96,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
             subtitle: const Text('Fingerprint or Face ID placeholder'),
             value: _biometricEnabled,
             onChanged: (value) => setState(() => _biometricEnabled = value),
-            activeThumbColor: const Color(0xFF8B1A2E),
+            activeThumbColor: colorScheme.primary,
           ),
           const Divider(),
           SwitchListTile.adaptive(
@@ -99,7 +105,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
             subtitle: const Text('Email or SMS code placeholder'),
             value: _twoFactorEnabled,
             onChanged: (value) => setState(() => _twoFactorEnabled = value),
-            activeThumbColor: const Color(0xFF8B1A2E),
+            activeThumbColor: colorScheme.primary,
           ),
         ],
       ),
@@ -107,18 +113,21 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   }
 
   Widget _passwordCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Change Password', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text('Change Password', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           _passwordField(_currentPasswordController, 'Current password'),
           const SizedBox(height: 12),
@@ -149,24 +158,29 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   }
 
   Widget _passwordField(TextEditingController controller, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return TextField(
       controller: controller,
       obscureText: true,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+        fillColor: colorScheme.surface,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
       ),
     );
   }
 
   Widget _deleteAccountCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.red.shade100),
       ),
@@ -175,9 +189,9 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         children: [
           const Text('Delete Account', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.red)),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'This demo entry shows where account deletion would live. No data is removed in this build.',
-            style: TextStyle(color: Colors.grey, fontSize: 13),
+            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
           SizedBox(

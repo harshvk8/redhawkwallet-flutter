@@ -31,12 +31,14 @@ class _VendorListScreenState extends State<VendorListScreen> {
   @override
   Widget build(BuildContext context) {
     final vendors = _filteredVendors;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('Browse Vendors'),
       ),
       body: Column(
@@ -50,8 +52,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
                 prefixIcon: const Icon(Icons.search),
                 hintText: 'Search vendors',
                 filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                fillColor: colorScheme.surface,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
               ),
             ),
           ),
@@ -67,9 +69,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
                   label: Text(filter),
                   selected: isActive,
                   onSelected: (_) => setState(() => _selectedFilter = filter),
-                  selectedColor: const Color(0xFF8B1A2E),
-                  labelStyle: TextStyle(color: isActive ? Colors.white : Colors.black87),
-                  backgroundColor: Colors.white,
+                  selectedColor: colorScheme.primary,
+                  labelStyle: TextStyle(color: isActive ? colorScheme.onPrimary : colorScheme.onSurface),
+                  backgroundColor: colorScheme.surface,
                 );
               },
               separatorBuilder: (_, _) => const SizedBox(width: 8),
@@ -103,15 +105,18 @@ class _VendorListScreenState extends State<VendorListScreen> {
   }
 
   Widget _vendorCard(BuildContext context, Map<String, dynamic> vendor) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return InkWell(
       onTap: () => context.push('/vendors/details', extra: vendor),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade100),
+          border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: Row(
           children: [
@@ -131,27 +136,27 @@ class _VendorListScreenState extends State<VendorListScreen> {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Text(vendor['name'] as String, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold))),
+                      Expanded(child: Text(vendor['name'] as String, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700))),
                       if (vendor['featured'] == true)
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xFFFFF0F0), borderRadius: BorderRadius.circular(999)),
-                          child: const Text('Featured', style: TextStyle(color: Color(0xFF8B1A2E), fontSize: 11, fontWeight: FontWeight.w600)),
+                          decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
+                          child: Text('Featured', style: TextStyle(color: colorScheme.primary, fontSize: 11, fontWeight: FontWeight.w600)),
                         ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(vendor['category'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(vendor['category'] as String, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
                       const Icon(Icons.star, color: Colors.amber, size: 16),
                       const SizedBox(width: 4),
-                      Text('${vendor['rating']}', style: const TextStyle(fontSize: 12)),
+                      Text('${vendor['rating']}', style: theme.textTheme.bodySmall),
                       const SizedBox(width: 12),
                       const Icon(Icons.place_outlined, color: Colors.grey, size: 16),
                       const SizedBox(width: 4),
-                      Text(vendor['distance'] as String, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      Text(vendor['distance'] as String, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                     ],
                   ),
                 ],

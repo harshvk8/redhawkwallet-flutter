@@ -1,29 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserHomeScreen extends StatelessWidget {
   const UserHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(colorScheme),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSummaryRow(),
+                    _buildSummaryRow(colorScheme),
                     const SizedBox(height: 20),
-                    const Text('Quick Access', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                    Text('Quick Access', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
                     _buildQuickAccessGrid(context),
                     const SizedBox(height: 20),
-                    _buildRecentTransaction(),
+                    _buildRecentTransaction(context),
                   ],
                 ),
               ),
@@ -34,10 +38,12 @@ class UserHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      color: const Color(0xFF8B1A2E),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [colorScheme.primary, const Color(0xFFC8102E)]),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -62,14 +68,14 @@ class UserHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryRow() {
+  Widget _buildSummaryRow(ColorScheme colorScheme) {
     return Row(
       children: [
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFF8B1A2E),
+              color: colorScheme.primary,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Column(
@@ -108,15 +114,18 @@ class UserHomeScreen extends StatelessWidget {
 
   Widget _buildQuickAccessGrid(BuildContext context) {
     final items = [
-      {'icon': Icons.account_balance_wallet, 'label': 'Wallet', 'color': const Color(0xFF8B1A2E)},
-      {'icon': Icons.local_offer, 'label': 'Offers', 'color': Colors.orange},
-      {'icon': Icons.event, 'label': 'Events', 'color': Colors.blue},
-      {'icon': Icons.qr_code, 'label': 'QR ID', 'color': Colors.purple},
-      {'icon': Icons.history, 'label': 'Transactions', 'color': Colors.teal},
-      {'icon': Icons.person, 'label': 'Profile', 'color': Colors.green},
-      {'icon': Icons.star, 'label': 'Rewards', 'color': Colors.amber},
-      {'icon': Icons.settings, 'label': 'Settings', 'color': Colors.grey},
+      {'icon': Icons.account_balance_wallet, 'label': 'Wallet', 'color': const Color(0xFF8B1A2E), 'route': '/wallet'},
+      {'icon': Icons.local_offer, 'label': 'Offers', 'color': Colors.orange, 'route': '/offers'},
+      {'icon': Icons.event, 'label': 'Events', 'color': Colors.blue, 'route': null},
+      {'icon': Icons.qr_code, 'label': 'QR ID', 'color': Colors.purple, 'route': '/qr-id'},
+      {'icon': Icons.history, 'label': 'Transactions', 'color': Colors.teal, 'route': '/transactions'},
+      {'icon': Icons.person, 'label': 'Profile', 'color': Colors.green, 'route': '/profile'},
+      {'icon': Icons.star, 'label': 'Rewards', 'color': Colors.amber, 'route': '/rewards'},
+      {'icon': Icons.settings, 'label': 'Settings', 'color': Colors.grey, 'route': '/settings'},
     ];
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return GridView.builder(
       shrinkWrap: true,
@@ -130,39 +139,62 @@ class UserHomeScreen extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
+        return Material(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade100),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: (item['color'] as Color).withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 22),
+            onTap: () {
+              final route = item['route'] as String?;
+              if (route == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Events are demo-only in this build.')),
+                );
+                return;
+              }
+              context.push(route);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
-              const SizedBox(height: 6),
-              Text(item['label'] as String, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
-            ],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: (item['color'] as Color).withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 22),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    item['label'] as String,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildRecentTransaction() {
+  Widget _buildRecentTransaction(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,32 +202,34 @@ class UserHomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Recent Transaction', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-              TextButton(onPressed: () {}, child: const Text('View All', style: TextStyle(color: Color(0xFF8B1A2E)))),
+              Text('Recent Transaction', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              TextButton(onPressed: () => context.push('/transactions'), child: const Text('View All')),
             ],
           ),
           const Divider(),
-          _txRow('Campus Coffee House', '-\$5.50', 'May 27'),
-          _txRow('Added Funds', '+\$25.00', 'May 26'),
-          _txRow('Student Bookstore', '-\$42.99', 'May 25'),
+          _txRow(context, 'Campus Coffee House', '-\$5.50', 'May 27'),
+          _txRow(context, 'Added Funds', '+\$25.00', 'May 26'),
+          _txRow(context, 'Student Bookstore', '-\$42.99', 'May 25'),
         ],
       ),
     );
   }
 
-  Widget _txRow(String name, String amount, String date) {
+  Widget _txRow(BuildContext context, String name, String amount, String date) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isDebit = amount.startsWith('-');
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(name, style: const TextStyle(fontSize: 13)),
+          Text(name, style: theme.textTheme.bodyMedium),
           Row(
             children: [
-              Text(amount, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDebit ? Colors.black : Colors.green)),
+              Text(amount, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDebit ? colorScheme.onSurface : Colors.green)),
               const SizedBox(width: 8),
-              Text(date, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(date, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
             ],
           ),
         ],

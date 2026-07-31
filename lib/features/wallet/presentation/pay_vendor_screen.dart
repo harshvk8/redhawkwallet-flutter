@@ -23,6 +23,9 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final vendor = widget.vendor ?? const {
       'name': 'Browse a vendor',
       'category': 'Campus dining and retail',
@@ -32,10 +35,10 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
     };
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('Pay Vendor'),
       ),
       body: SingleChildScrollView(
@@ -56,15 +59,15 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _fieldCard('Amount', _buildAmountField())),
+                Expanded(child: _fieldCard(context, 'Amount', _buildAmountField())),
                 const SizedBox(width: 12),
-                Expanded(child: _fieldCard('Tip / Note', _buildNoteField())),
+                Expanded(child: _fieldCard(context, 'Tip / Note', _buildNoteField())),
               ],
             ),
             const SizedBox(height: 16),
-            _paymentMethods(),
+            _paymentMethods(context),
             const SizedBox(height: 16),
-            _summaryCard(vendor),
+            _summaryCard(context, vendor),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -129,11 +132,13 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
     );
   }
 
-  Widget _fieldCard(String label, Widget field) {
+  Widget _fieldCard(BuildContext context, String label, Widget field) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        Text(label, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         field,
       ],
@@ -141,6 +146,8 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
   }
 
   Widget _buildAmountField() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return TextField(
       controller: _amountController,
       onChanged: (_) => setState(() {}),
@@ -148,97 +155,107 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
       decoration: InputDecoration(
         prefixText: '\$ ',
         filled: true,
-        fillColor: Colors.white,
+        fillColor: colorScheme.surface,
         hintText: '0.00',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
       ),
     );
   }
 
   Widget _buildNoteField() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return TextField(
       controller: _noteController,
       onChanged: (_) => setState(() {}),
       maxLines: 2,
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: colorScheme.surface,
         hintText: 'Add a tip or note',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
       ),
     );
   }
 
-  Widget _paymentMethods() {
+  Widget _paymentMethods(BuildContext context) {
     final methods = [
       {'icon': Icons.account_balance_wallet, 'name': 'Red Hawk Dollars'},
       {'icon': Icons.credit_card, 'name': 'Flex Dollars'},
       {'icon': Icons.stars, 'name': 'Points'},
     ];
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Pay with', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text('Pay with', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           ...methods.map(
             (method) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 children: [
-                  Icon(method['icon'] as IconData, color: const Color(0xFF8B1A2E)),
+                  Icon(method['icon'] as IconData, color: colorScheme.primary),
                   const SizedBox(width: 10),
-                  Text(method['name'] as String, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text(method['name'] as String, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                   const Spacer(),
-                  const Icon(Icons.check_circle_outline, color: Colors.grey, size: 18),
+                  Icon(Icons.check_circle_outline, color: colorScheme.onSurfaceVariant, size: 18),
                 ],
               ),
             ),
           ),
-          const Text('Selection state is demo-only.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          Text('Selection state is demo-only.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
         ],
       ),
     );
   }
 
-  Widget _summaryCard(Map<String, dynamic> vendor) {
+  Widget _summaryCard(BuildContext context, Map<String, dynamic> vendor) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Payment Summary', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text('Payment Summary', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
-          _row('Vendor', vendor['name'] as String? ?? 'Vendor'),
-          _row('Amount', _amountController.text.isEmpty ? '\$ 0.00' : '\$${_amountController.text}'),
-          _row('Note', _noteController.text.isEmpty ? 'No note' : _noteController.text),
+          _row(context, 'Vendor', vendor['name'] as String? ?? 'Vendor'),
+          _row(context, 'Amount', _amountController.text.isEmpty ? '\$ 0.00' : '\$${_amountController.text}'),
+          _row(context, 'Note', _noteController.text.isEmpty ? 'No note' : _noteController.text),
         ],
       ),
     );
   }
 
-  Widget _row(String label, String value) {
+  Widget _row(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          Flexible(child: Text(value, textAlign: TextAlign.right, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+          Text(label, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+          Flexible(child: Text(value, textAlign: TextAlign.right, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600))),
         ],
       ),
     );

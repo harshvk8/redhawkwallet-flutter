@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/theme_notifier.dart';
+
 class UserSettingsScreen extends StatefulWidget {
   const UserSettingsScreen({super.key});
 
@@ -10,7 +12,6 @@ class UserSettingsScreen extends StatefulWidget {
 
 class _UserSettingsScreenState extends State<UserSettingsScreen> {
   bool notificationsEnabled = true;
-  bool darkModeEnabled = false;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,12 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             const SizedBox(height: 16),
             _buildSection('Preferences', [
               _settingsTileSwitch(Icons.notifications_none, 'Notifications', notificationsEnabled, (val) => setState(() => notificationsEnabled = val)),
-              _settingsTileSwitch(Icons.dark_mode_outlined, 'Dark Mode (Coming Soon)', darkModeEnabled, (val) => setState(() => darkModeEnabled = val)),
+              _settingsTileSwitch(
+                Icons.dark_mode_outlined,
+                'Dark Mode',
+                ThemeNotifier.instance.isDark,
+                (val) => ThemeNotifier.instance.value = val ? ThemeMode.dark : ThemeMode.light,
+              ),
             ]),
             const SizedBox(height: 16),
             _buildSection('Privacy & Security', [

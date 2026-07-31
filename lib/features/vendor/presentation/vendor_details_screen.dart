@@ -18,12 +18,14 @@ class VendorDetailsScreen extends StatelessWidget {
       'hours': '7:00 AM - 9:00 PM',
       'description': 'Popular stop for coffee, sandwiches, and campus favorites.',
     };
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('Vendor Details'),
       ),
       body: SingleChildScrollView(
@@ -33,9 +35,9 @@ class VendorDetailsScreen extends StatelessWidget {
           children: [
             _hero(data),
             const SizedBox(height: 16),
-            _infoCard(data),
+            _infoCard(context, data),
             const SizedBox(height: 16),
-            _menuPreview(),
+            _menuPreview(context),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -98,45 +100,54 @@ class VendorDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoCard(Map<String, dynamic> data) {
+  Widget _infoCard(BuildContext context, Map<String, dynamic> data) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Vendor Info', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text('Vendor Info', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
-          _row(Icons.place_outlined, 'Distance', data['distance'] as String),
-          _row(Icons.schedule_outlined, 'Hours', data['hours'] as String? ?? '7:00 AM - 9:00 PM'),
-          _row(Icons.storefront_outlined, 'Category', data['category'] as String),
-          _row(Icons.verified_outlined, 'Status', data['status'] as String),
+          _row(context, Icons.place_outlined, 'Distance', data['distance'] as String),
+          _row(context, Icons.schedule_outlined, 'Hours', data['hours'] as String? ?? '7:00 AM - 9:00 PM'),
+          _row(context, Icons.storefront_outlined, 'Category', data['category'] as String),
+          _row(context, Icons.verified_outlined, 'Status', data['status'] as String),
         ],
       ),
     );
   }
 
-  Widget _row(IconData icon, String label, String value) {
+  Widget _row(BuildContext context, IconData icon, String label, String value) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF8B1A2E), size: 20),
+          Icon(icon, color: colorScheme.primary, size: 20),
           const SizedBox(width: 10),
-          Text(label, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+          Text(label, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
           const Spacer(),
-          Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(value, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
         ],
       ),
     );
   }
 
-  Widget _menuPreview() {
+  Widget _menuPreview(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final items = [
       ('Iced Coffee', '\$ 3.50'),
       ('Chicken Wrap', '\$ 6.75'),
@@ -147,14 +158,14 @@ class VendorDetailsScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Popular Items', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text('Popular Items', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           ...items.map(
             (item) => Padding(
@@ -162,8 +173,8 @@ class VendorDetailsScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(item.$1, style: const TextStyle(fontSize: 13)),
-                  Text(item.$2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text(item.$1, style: theme.textTheme.bodyMedium),
+                  Text(item.$2, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                 ],
               ),
             ),

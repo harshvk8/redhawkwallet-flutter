@@ -8,11 +8,14 @@ class ReceiveMoneyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('Receive Money'),
       ),
       body: SingleChildScrollView(
@@ -41,17 +44,17 @@ class ReceiveMoneyScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
                 children: [
-                  _qrPreview(),
+                  _qrPreview(colorScheme),
                   const SizedBox(height: 16),
-                  const Text('Wallet ID', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text('Wallet ID', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 6),
-                  Text(walletId, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  Text(walletId, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: 1.2)),
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -91,9 +94,9 @@ class ReceiveMoneyScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,42 +115,134 @@ class ReceiveMoneyScreen extends StatelessWidget {
     );
   }
 
-  Widget _qrPreview() {
-    const pattern = [
-      [1, 1, 1, 1, 0, 1, 0],
-      [1, 0, 0, 1, 0, 1, 1],
-      [1, 0, 1, 1, 1, 0, 1],
-      [1, 0, 1, 0, 1, 0, 1],
-      [1, 1, 1, 1, 0, 1, 1],
-      [0, 1, 0, 0, 1, 1, 0],
-      [1, 1, 0, 1, 0, 0, 1],
-    ];
+  Widget _qrPreview(ColorScheme colorScheme) {
+    final pattern = _buildQrPattern();
+    const size = 21;
 
     return AspectRatio(
       aspectRatio: 1,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF9F9F9),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: colorScheme.outlineVariant, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withValues(alpha: 0.08),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        child: GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, mainAxisSpacing: 6, crossAxisSpacing: 6),
-          itemCount: 49,
-          itemBuilder: (context, index) {
-            final row = index ~/ 7;
-            final col = index % 7;
-            final isDark = pattern[row][col] == 1;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF8B1A2E) : Colors.white,
-                borderRadius: BorderRadius.circular(4),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: size,
+              mainAxisSpacing: 2,
+              crossAxisSpacing: 2,
+            ),
+            itemCount: size * size,
+            itemBuilder: (context, index) {
+              final row = index ~/ size;
+              final col = index % size;
+              final cell = pattern[row][col];
+
+              if (cell == 2) {
+                return _finderModule(colorScheme.primary);
+              }
+
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 120),
+                decoration: BoxDecoration(
+                  color: cell == 1 ? const Color(0xFF111827) : Colors.white,
+                  borderRadius: BorderRadius.circular(2.5),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<List<int>> _buildQrPattern() {
+    const size = 21;
+    final pattern = List.generate(size, (_) => List<int>.filled(size, 0));
+
+    void setFinder(int startRow, int startCol) {
+      for (var row = 0; row < 7; row++) {
+        for (var col = 0; col < 7; col++) {
+          final absRow = startRow + row;
+          final absCol = startCol + col;
+          final isBorder = row == 0 || row == 6 || col == 0 || col == 6;
+          final isCenter = row >= 2 && row <= 4 && col >= 2 && col <= 4;
+          if (isBorder || isCenter) {
+            pattern[absRow][absCol] = 2;
+          }
+        }
+      }
+    }
+
+    setFinder(0, 0);
+    setFinder(0, size - 7);
+    setFinder(size - 7, 0);
+
+    for (var i = 0; i < size; i++) {
+      if (pattern[6][i] == 0) {
+        pattern[6][i] = i.isEven ? 1 : 0;
+      }
+      if (pattern[i][6] == 0) {
+        pattern[i][6] = i.isOdd ? 1 : 0;
+      }
+    }
+
+    final seed = walletId.codeUnits;
+    var seedIndex = 0;
+    for (var row = 0; row < size; row++) {
+      for (var col = 0; col < size; col++) {
+        if (pattern[row][col] != 0) {
+          continue;
+        }
+        final value = seed[seedIndex % seed.length];
+        pattern[row][col] = ((value + row * 7 + col * 13 + seedIndex) % 5 == 0) ? 1 : 0;
+        seedIndex++;
+      }
+    }
+
+    return pattern;
+  }
+
+  Widget _finderModule(Color color) {
+    return Container(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(2.5),
+      ),
+      child: Center(
+        child: FractionallySizedBox(
+          widthFactor: 0.5,
+          heightFactor: 0.5,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: Center(
+              child: FractionallySizedBox(
+                widthFactor: 0.5,
+                heightFactor: 0.5,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(1.5),
+                  ),
+                ),
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
