@@ -13,35 +13,38 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Payment Request'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Amount', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+            Text('Amount', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             TextField(
               keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
               decoration: InputDecoration(
                 prefixText: '\$ ',
-                prefixStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFC8102E)),
+                prefixStyle: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, color: colorScheme.primary),
                 hintText: '0.00',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFC8102E), width: 2),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Apply Offer or Discount', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+            Text('Apply Offer or Discount', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: selectedDiscount,
@@ -49,14 +52,14 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFC8102E), width: 2),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
               ),
               items: discounts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
               onChanged: (val) => setState(() => selectedDiscount = val!),
             ),
             const SizedBox(height: 16),
-            const Text('Note (optional)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+            Text('Note (optional)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             TextField(
               maxLines: 3,
@@ -65,7 +68,7 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFC8102E), width: 2),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
               ),
             ),
@@ -77,8 +80,8 @@ class _VendorCreatePaymentRequestScreenState extends State<VendorCreatePaymentRe
                 icon: const Icon(Icons.qr_code, size: 24),
                 label: const Text('Generate QR Code', style: TextStyle(fontSize: 16)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC8102E),
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),

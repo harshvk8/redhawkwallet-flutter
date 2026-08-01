@@ -15,11 +15,14 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('Settings'),
         elevation: 0,
       ),
@@ -27,28 +30,22 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildSection('Account', [
+            _buildSection(context, 'Account', [
               _settingsTile(Icons.person_outline, 'Edit Profile', onTap: () {}),
               _settingsTile(Icons.lock_outline, 'Change Password', onTap: () => context.push('/settings/security')),
               _settingsTile(Icons.school_outlined, 'University Verification', onTap: () {}),
             ]),
             const SizedBox(height: 16),
-            _buildSection('Preferences', [
+            _buildSection(context, 'Preferences', [
               _settingsTileSwitch(Icons.notifications_none, 'Notifications', notificationsEnabled, (val) => setState(() => notificationsEnabled = val)),
-              _settingsTileSwitch(
-                Icons.dark_mode_outlined,
-                'Dark Mode',
-                ThemeNotifier.instance.isDark,
-                (val) => ThemeNotifier.instance.value = val ? ThemeMode.dark : ThemeMode.light,
-              ),
             ]),
             const SizedBox(height: 16),
-            _buildSection('Privacy & Security', [
+            _buildSection(context, 'Privacy & Security', [
               _settingsTile(Icons.privacy_tip_outlined, 'Privacy Policy', onTap: () {}),
               _settingsTile(Icons.security_outlined, 'Security Settings', onTap: () => context.push('/settings/security')),
             ]),
             const SizedBox(height: 16),
-            _buildSection('Support', [
+            _buildSection(context, 'Support', [
               _settingsTile(Icons.help_outline, 'Help & Support', onTap: () {}),
               _settingsTile(Icons.info_outline, 'About Red Hawk Wallet', onTap: () {}),
             ]),
@@ -67,31 +64,58 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Red Hawk Wallet v1.0.0', style: TextStyle(color: Colors.grey, fontSize: 12)),
-            const Text('Demo Mode • Real payments coming soon', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            Text('Red Hawk Wallet v1.0.0', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+            Text('Demo Mode • Real payments coming soon', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSection(String title, List<Widget> children) {
+  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-            child: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+            child: Row(
+              children: [
+                Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                const Spacer(),
+                if (title == 'Preferences') ...[
+                  Text(
+                    'Dark Mode',
+                    style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(width: 8),
+                  ValueListenableBuilder<ThemeMode>(
+                    valueListenable: ThemeNotifier.instance,
+                    builder: (context, mode, _) {
+                      return Switch.adaptive(
+                        value: mode == ThemeMode.dark,
+                        onChanged: (value) {
+                          ThemeNotifier.instance.value = value ? ThemeMode.dark : ThemeMode.light;
+                        },
+                        activeThumbColor: colorScheme.primary,
+                      );
+                    },
+                  ),
+                ],
+              ],
+            ),
           ),
           ...children.asMap().entries.map((e) => Column(
             children: [
-              if (e.key > 0) Divider(height: 1, color: Colors.grey.shade100),
+              if (e.key > 0) Divider(height: 1, color: colorScheme.outlineVariant),
               e.value,
             ],
           )),
@@ -104,11 +128,11 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: const Color(0xFFFFF0F0), borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, color: const Color(0xFF8B1A2E), size: 20),
+        decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+        child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
       ),
-      title: Text(label, style: const TextStyle(fontSize: 14)),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+      title: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+      trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 20),
       onTap: onTap,
     );
   }
@@ -117,11 +141,11 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: const Color(0xFFFFF0F0), borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, color: const Color(0xFF8B1A2E), size: 20),
+        decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+        child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
       ),
-      title: Text(label, style: const TextStyle(fontSize: 14)),
-      trailing: Switch(value: value, onChanged: onChanged, activeThumbColor: const Color(0xFF8B1A2E)),
+      title: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+      trailing: Switch(value: value, onChanged: onChanged, activeThumbColor: Theme.of(context).colorScheme.primary),
     );
   }
 }

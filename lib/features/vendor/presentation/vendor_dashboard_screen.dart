@@ -45,11 +45,14 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Vendor Dashboard'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         actions: [
           IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
           IconButton(
@@ -70,7 +73,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFC8102E),
+                gradient: LinearGradient(colors: [colorScheme.primary, const Color(0xFFC8102E)]),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Column(
@@ -88,11 +91,11 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                _statCard('Orders', '0', Icons.receipt_long),
+                _statCard(context, 'Orders', '0', Icons.receipt_long),
                 const SizedBox(width: 10),
-                _statCard('Offers', '3', Icons.local_offer),
+                _statCard(context, 'Offers', '3', Icons.local_offer),
                 const SizedBox(width: 10),
-                _statCard('Points Given', '0', Icons.stars),
+                _statCard(context, 'Points Given', '0', Icons.stars),
               ],
             ),
             const SizedBox(height: 20),
@@ -110,14 +113,17 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
             const SizedBox(height: 20),
             const Text('Recent Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            _buildTransactionsSection(),
+            _buildTransactionsSection(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTransactionsSection() {
+  Widget _buildTransactionsSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_isLoading) {
       return const Center(
         child: Padding(
@@ -130,21 +136,21 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.red.shade50,
+          color: Colors.red.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.red.shade200),
+          border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
         ),
         child: Column(
           children: [
             const Icon(Icons.error_outline, color: Colors.red, size: 40),
             const SizedBox(height: 8),
-            const Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Something went wrong.', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: _loadData,
               icon: const Icon(Icons.refresh),
               label: const Text('Try Again'),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC8102E), foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary),
             ),
           ],
         ),
@@ -154,17 +160,17 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: colorScheme.outlineVariant),
         ),
-        child: const Column(
+        child: Column(
           children: [
             Icon(Icons.receipt_long, color: Colors.grey, size: 40),
             SizedBox(height: 8),
             Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 4),
-            Text('Your transactions will appear here.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+            Text('Your transactions will appear here.', style: TextStyle(fontSize: 13)),
           ],
         ),
       );
@@ -174,9 +180,9 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -184,15 +190,15 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: const Color(0xFFFFF0F0),
-                  child: Text(tx['name']![0], style: const TextStyle(color: Color(0xFFC8102E), fontWeight: FontWeight.bold)),
+                  backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                  child: Text(tx['name']![0], style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tx['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text(tx['time']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(tx['name']!, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
+                    Text(tx['time']!, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                   ],
                 ),
               ],
@@ -200,10 +206,10 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(tx['amount']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(tx['amount']!, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(20)),
+                  decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
                   child: Text(tx['status']!, style: TextStyle(color: Colors.green.shade700, fontSize: 11)),
                 ),
               ],
@@ -214,21 +220,24 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
     );
   }
 
-  Widget _statCard(String label, String value, IconData icon) {
+  Widget _statCard(BuildContext context, String label, String value, IconData icon) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF0F0),
+          color: colorScheme.primary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFC8102E), width: 0.5),
+          border: Border.all(color: colorScheme.primary.withValues(alpha: 0.3), width: 0.5),
         ),
         child: Column(
           children: [
-            Icon(icon, color: const Color(0xFFC8102E), size: 20),
+            Icon(icon, color: colorScheme.primary, size: 20),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+            Text(value, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+            Text(label, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
           ],
         ),
       ),
@@ -236,19 +245,21 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   }
 
   Widget _quickAction(BuildContext context, IconData icon, String label, String route) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: () => context.push(route),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFFC8102E),
+          color: colorScheme.primary,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            Icon(icon, color: Colors.white, size: 22),
+            Icon(icon, color: colorScheme.onPrimary, size: 22),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(color: Colors.white, fontSize: 11), textAlign: TextAlign.center),
+            Text(label, style: TextStyle(color: colorScheme.onPrimary, fontSize: 11), textAlign: TextAlign.center),
           ],
         ),
       ),

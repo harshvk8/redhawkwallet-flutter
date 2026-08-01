@@ -32,11 +32,14 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('Transaction History'),
         elevation: 0,
       ),
@@ -58,14 +61,14 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFF8B1A2E) : Colors.white,
+                        color: selected ? colorScheme.primary : colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? const Color(0xFF8B1A2E) : Colors.grey.shade200),
+                        border: Border.all(color: selected ? colorScheme.primary : colorScheme.outlineVariant),
                       ),
                       child: Text(
                         filter,
                         style: TextStyle(
-                          color: selected ? Colors.white : Colors.black,
+                          color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -86,9 +89,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade100),
+                      border: Border.all(color: colorScheme.outlineVariant),
                     ),
                     child: Row(
                       children: [
@@ -96,26 +99,26 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: tx['isDebit'] as bool ? const Color(0xFFFFF0F0) : const Color(0xFFE8F5E9),
+                            color: tx['isDebit'] as bool ? colorScheme.primary.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(tx['icon'] as IconData, color: tx['isDebit'] as bool ? const Color(0xFF8B1A2E) : Colors.green, size: 22),
+                          child: Icon(tx['icon'] as IconData, color: tx['isDebit'] as bool ? colorScheme.primary : Colors.green, size: 22),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(tx['name'] as String, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              Text(tx['name'] as String, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                               const SizedBox(height: 2),
-                              Text('${tx['date']} at ${tx['time']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              Text('${tx['date']} at ${tx['time']}', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                             ],
                           ),
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(tx['amount'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: tx['isDebit'] as bool ? Colors.black : Colors.green)),
+                            Text(tx['amount'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: tx['isDebit'] as bool ? colorScheme.onSurface : Colors.green)),
                             const SizedBox(height: 4),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

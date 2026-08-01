@@ -5,11 +5,14 @@ class QrIdScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('QR Student ID'),
         elevation: 0,
       ),
@@ -22,9 +25,9 @@ class QrIdScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
                 children: [
@@ -41,19 +44,19 @@ class QrIdScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF0F0),
+                      color: colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text('Verified Student', style: TextStyle(color: Color(0xFF8B1A2E), fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: Text('Verified Student', style: TextStyle(color: colorScheme.primary, fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(height: 24),
                   Container(
                     width: 200,
                     height: 200,
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFF8B1A2E), width: 3),
+                      border: Border.all(color: colorScheme.primary, width: 3),
                       borderRadius: BorderRadius.circular(16),
-                      color: const Color(0xFFFFF0F0),
+                      color: colorScheme.primary.withValues(alpha: 0.08),
                     ),
                     child: const Center(
                       child: Icon(Icons.qr_code_2, size: 160, color: Color(0xFF8B1A2E)),
@@ -74,8 +77,8 @@ class QrIdScreen extends StatelessWidget {
                 icon: const Icon(Icons.share),
                 label: const Text('Share QR Code'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B1A2E),
-                  foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -86,11 +89,11 @@ class QrIdScreen extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {},
-                icon: const Icon(Icons.refresh, color: Color(0xFF8B1A2E)),
-                label: const Text('Refresh QR', style: TextStyle(color: Color(0xFF8B1A2E))),
+                icon: Icon(Icons.refresh, color: colorScheme.primary),
+                label: Text('Refresh QR', style: TextStyle(color: colorScheme.primary)),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: const BorderSide(color: Color(0xFF8B1A2E)),
+                  side: BorderSide(color: colorScheme.primary),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),

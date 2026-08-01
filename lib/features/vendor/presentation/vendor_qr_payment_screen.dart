@@ -5,11 +5,14 @@ class VendorQrPaymentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Payment QR Code'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       body: Center(
         child: Padding(
@@ -17,29 +20,29 @@ class VendorQrPaymentScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Show this QR to the customer', style: TextStyle(fontSize: 15, color: Colors.grey)),
+              Text('Show this QR to the customer', style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
               const SizedBox(height: 24),
               Container(
                 width: 220,
                 height: 220,
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFC8102E), width: 3),
+                  border: Border.all(color: colorScheme.primary, width: 3),
                   borderRadius: BorderRadius.circular(16),
-                  color: const Color(0xFFFFF0F0),
+                  color: colorScheme.primary.withValues(alpha: 0.08),
                 ),
                 child: const Center(
                   child: Icon(Icons.qr_code_2, size: 160, color: Color(0xFFC8102E)),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text('\$12.50', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Color(0xFFC8102E))),
+              Text('\$12.50', style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700, color: colorScheme.primary)),
               const SizedBox(height: 4),
-              const Text('Coffee order', style: TextStyle(fontSize: 14, color: Colors.grey)),
+              Text('Coffee order', style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
+                  color: Colors.orange.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text('Waiting for payment...', style: TextStyle(color: Colors.orange.shade700, fontWeight: FontWeight.bold)),
@@ -53,8 +56,8 @@ class VendorQrPaymentScreen extends StatelessWidget {
                       icon: const Icon(Icons.refresh),
                       label: const Text('Regenerate'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC8102E),
-                        foregroundColor: Colors.white,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -67,8 +70,8 @@ class VendorQrPaymentScreen extends StatelessWidget {
                       icon: const Icon(Icons.cancel_outlined),
                       label: const Text('Cancel'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey.shade200,
-                        foregroundColor: Colors.black,
+                        backgroundColor: colorScheme.surfaceContainerHighest,
+                        foregroundColor: colorScheme.onSurface,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),

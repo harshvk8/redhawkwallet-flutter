@@ -100,11 +100,14 @@ class _VendorTransactionHistoryScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transaction History'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -128,14 +131,15 @@ class _VendorTransactionHistoryScreenState
                       ),
                       decoration: BoxDecoration(
                         color: selected
-                            ? const Color(0xFFC8102E)
-                            : Colors.grey.shade100,
+                            ? colorScheme.primary
+                            : colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: selected ? colorScheme.primary : colorScheme.outlineVariant),
                       ),
                       child: Text(
                         filter,
                         style: TextStyle(
-                          color: selected ? Colors.white : Colors.black,
+                          color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -146,14 +150,17 @@ class _VendorTransactionHistoryScreenState
               ),
             ),
             const SizedBox(height: 12),
-            Expanded(child: _buildBody()),
+            Expanded(child: _buildBody(context)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFFC8102E)),
@@ -182,8 +189,8 @@ class _VendorTransactionHistoryScreenState
               icon: const Icon(Icons.refresh),
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFC8102E),
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
               ),
             ),
           ],
@@ -205,7 +212,7 @@ class _VendorTransactionHistoryScreenState
             const SizedBox(height: 4),
             const Text(
               'Transactions will appear here once customers pay.',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(),
               textAlign: TextAlign.center,
             ),
           ],
@@ -222,9 +229,9 @@ class _VendorTransactionHistoryScreenState
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,11 +242,11 @@ class _VendorTransactionHistoryScreenState
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: const Color(0xFFFFF0F0),
+                        backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                         child: Text(
                           tx['name'][0],
-                          style: const TextStyle(
-                            color: Color(0xFFC8102E),
+                          style: TextStyle(
+                            color: colorScheme.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -250,17 +257,11 @@ class _VendorTransactionHistoryScreenState
                         children: [
                           Text(
                             tx['name'],
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
+                            style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
                           ),
                           Text(
                             tx['note'],
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
-                            ),
+                            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ],
                       ),
@@ -271,16 +272,10 @@ class _VendorTransactionHistoryScreenState
                     children: [
                       Text(
                         tx['amount'],
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
+                        style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -299,30 +294,21 @@ class _VendorTransactionHistoryScreenState
                 ],
               ),
               const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${tx['date']} at ${tx['time']}',
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  if (tx['status'] == 'Paid')
-                    Row(
-                      children: [
-                        const Icon(Icons.stars, size: 14, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text(
-                          '+${tx['points']} pts',
-                          style: const TextStyle(
-                            color: Colors.amber,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+              if (tx['status'] == 'Paid')
+                Row(
+                  children: [
+                    const Icon(Icons.stars, size: 14, color: Colors.amber),
+                    const SizedBox(width: 4),
+                    Text(
+                      '+${tx['points']} pts',
+                      style: const TextStyle(
+                        color: Colors.amber,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ),
         );

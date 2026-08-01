@@ -68,19 +68,25 @@ class _UniversityVerificationScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('University Verification'),
         elevation: 0,
       ),
-      body: _buildEnterEmailView(),
+      body: _buildEnterEmailView(context),
     );
   }
 
-  Widget _buildEnterEmailView() {
+  Widget _buildEnterEmailView(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -88,12 +94,12 @@ class _UniversityVerificationScreenState
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFF0F0),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.shield_outlined,
-                color: Color(0xFF8B1A2E), size: 60),
+            child: Icon(Icons.shield_outlined,
+                color: colorScheme.primary, size: 60),
           ),
           const SizedBox(height: 20),
           const Text(
@@ -102,16 +108,16 @@ class _UniversityVerificationScreenState
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Verify your university email to unlock student discounts, campus offers, QR student ID, and exclusive rewards.',
-            style: TextStyle(color: Colors.grey, fontSize: 14),
+            style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 28),
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
             child: Text('University Email',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -122,12 +128,13 @@ class _UniversityVerificationScreenState
               prefixIcon:
                   const Icon(Icons.email_outlined, color: Colors.grey),
               helperText: 'Use your official university email address',
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+              fillColor: colorScheme.surface,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide:
-                    const BorderSide(color: Color(0xFF8B1A2E), width: 2),
+                    BorderSide(color: colorScheme.primary, width: 2),
               ),
             ),
           ),
@@ -137,8 +144,8 @@ class _UniversityVerificationScreenState
             child: ElevatedButton(
               onPressed: _loading ? null : _sendVerification,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B1A2E),
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
@@ -155,20 +162,20 @@ class _UniversityVerificationScreenState
             ),
           ),
           const SizedBox(height: 28),
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
             child: Text('Benefits You Will Unlock',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           ),
           const SizedBox(height: 12),
-          _benefitItem(Icons.local_offer, Colors.amber, 'Student Discounts',
+            _benefitItem(context, Icons.local_offer, Colors.amber, 'Student Discounts',
               'Get exclusive discounts at campus and local vendors'),
-          _benefitItem(Icons.confirmation_number, const Color(0xFF8B1A2E),
+            _benefitItem(context, Icons.confirmation_number, const Color(0xFF8B1A2E),
               'Campus Offers',
               'Access special deals and promotions available only on campus'),
-          _benefitItem(Icons.qr_code, const Color(0xFF8B1A2E), 'QR Student ID',
+            _benefitItem(context, Icons.qr_code, const Color(0xFF8B1A2E), 'QR Student ID',
               'Use your digital student ID for quick verification and access'),
-          _benefitItem(Icons.star, Colors.amber, 'Exclusive Rewards',
+            _benefitItem(context, Icons.star, Colors.amber, 'Exclusive Rewards',
               'Earn bonus points and unlock student-only reward tiers'),
           const SizedBox(height: 16),
           TextButton(
@@ -182,14 +189,17 @@ class _UniversityVerificationScreenState
   }
 
   Widget _benefitItem(
-      IconData icon, Color color, String title, String description) {
+      BuildContext context, IconData icon, Color color, String title, String description) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
@@ -207,12 +217,10 @@ class _UniversityVerificationScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14)),
+                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text(description,
-                    style:
-                        const TextStyle(color: Colors.grey, fontSize: 12)),
+                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
               ],
             ),
           ),

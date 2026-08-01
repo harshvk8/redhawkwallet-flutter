@@ -16,11 +16,14 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Offers'),
-        backgroundColor: const Color(0xFFC8102E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -33,8 +36,8 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
                 icon: const Icon(Icons.add),
                 label: const Text('Add New Offer'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC8102E),
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -50,9 +53,9 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
+                      border: Border.all(color: colorScheme.outlineVariant),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,32 +68,32 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFFF0F0),
+                                    color: colorScheme.primary.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Text(offer['discount'], style: const TextStyle(color: Color(0xFFC8102E), fontWeight: FontWeight.bold, fontSize: 12)),
+                                  child: Text(offer['discount'], style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 12)),
                                 ),
                                 const SizedBox(width: 10),
-                                Text(offer['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                Text(offer['title'], style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
                               ],
                             ),
                             Switch(
                               value: offer['active'],
-                              activeThumbColor: const Color(0xFFC8102E),
+                              activeThumbColor: colorScheme.primary,
                               onChanged: (val) => setState(() => offers[index]['active'] = val),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text(offer['description'], style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                        Text(offer['description'], style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                         const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Used ${offer['used']} times', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                            Text('Used ${offer['used']} times', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                             Row(
                               children: [
-                                TextButton(onPressed: () {}, child: const Text('Edit', style: TextStyle(color: Color(0xFFC8102E)))),
+                                TextButton(onPressed: () {}, child: Text('Edit', style: TextStyle(color: colorScheme.primary))),
                                 TextButton(onPressed: () {}, child: const Text('Delete', style: TextStyle(color: Colors.red))),
                               ],
                             ),
