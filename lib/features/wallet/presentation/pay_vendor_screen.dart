@@ -49,6 +49,23 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
       return;
     }
 
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Pay \$${amount.toStringAsFixed(2)} to ${vendor['name']}?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B1A2E), foregroundColor: Colors.white),
+            child: const Text('Pay'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
     setState(() => _paying = true);
     try {
       await MoneyTransferService().transfer(
@@ -348,9 +365,9 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
 
   Widget _paymentMethods() {
     final methods = [
-      {'icon': Icons.account_balance_wallet, 'name': 'Red Hawk Dollars'},
-      {'icon': Icons.credit_card, 'name': 'Flex Dollars'},
-      {'icon': Icons.stars, 'name': 'Points'},
+      {'icon': Icons.account_balance_wallet, 'name': 'Red Hawk Dollars', 'enabled': true},
+      {'icon': Icons.credit_card, 'name': 'Flex Dollars', 'enabled': false},
+      {'icon': Icons.stars, 'name': 'Points', 'enabled': false},
     ];
 
     return Container(
@@ -366,20 +383,30 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
         children: [
           const Text('Pay with', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          ...methods.map(
-            (method) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: [
-                  Icon(method['icon'] as IconData, color: const Color(0xFF8B1A2E)),
-                  const SizedBox(width: 10),
-                  Text(method['name'] as String, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                  const Spacer(),
-                  const Icon(Icons.check_circle_outline, color: Colors.grey, size: 18),
-                ],
+          ...methods.map((method) {
+            final enabled = method['enabled'] as bool;
+            return Opacity(
+              opacity: enabled ? 1.0 : 0.4,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  children: [
+                    Icon(method['icon'] as IconData, color: const Color(0xFF8B1A2E)),
+                    const SizedBox(width: 10),
+                    Text(method['name'] as String, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    const Spacer(),
+                    enabled
+                        ? const Icon(Icons.check_circle, color: Color(0xFF8B1A2E), size: 18)
+                        : Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(20)),
+                            child: const Text('Coming soon', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                          ),
+                  ],
+                ),
               ),
-            ),
-          ),
+            );
+          }),
           const Text('Selection state is demo-only.', style: TextStyle(color: Colors.grey, fontSize: 12)),
         ],
       ),

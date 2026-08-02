@@ -106,6 +106,7 @@ export const transferMoney = onCall<TransferRequest, Promise<TransferResult>>(as
     tx.set(transactionRef, {
       fromUid,
       toUid,
+      participants: [fromUid, toUid],
       fromName: (fromUserData.name as string | undefined) ?? "",
       toName: (toUserData.businessName as string | undefined) ?? (toUserData.name as string | undefined) ?? "",
       amount: safeAmount,

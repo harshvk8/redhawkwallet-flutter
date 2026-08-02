@@ -14,6 +14,9 @@ class TransactionHistoryScreen extends StatefulWidget {
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   String selectedFilter = 'All';
+  // Pending/Failed will always be empty today — transferMoney only ever
+  // writes status: "completed" (it throws before writing anything on
+  // failure). Kept for when a pending/async payment path exists.
   final List<String> filters = ['All', 'Completed', 'Pending', 'Failed'];
 
   Color _statusColor(String status) {
@@ -79,10 +82,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               child: uid == null
                   ? const Center(child: Text('Not signed in.'))
                   : StreamBuilder<QuerySnapshot>(
+                      // array-contains + orderBy on a different field needs a
+                      // composite index, so we sort client-side instead of in
+                      // the query — same approach used elsewhere in this app.
                       stream: FirebaseFirestore.instance
                           .collection('transactions')
-                          .where('fromUid', isEqualTo: uid)
-                          .orderBy('createdAt', descending: true)
+                          .where('participants', arrayContains: uid)
                           .snapshots(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -91,9 +96,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         if (snapshot.hasError) {
                           return const Center(child: Text('Failed to load transactions.'));
                         }
-                        final transactions = _applyFilter(
-                          (snapshot.data?.docs ?? []).map(TransactionModel.fromFirestore).toList(),
-                        );
+                        final all = (snapshot.data?.docs ?? []).map(TransactionModel.fromFirestore).toList()
+                          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+                        final transactions = _applyFilter(all);
                         if (transactions.isEmpty) {
                           return Center(
                             child: Text(
@@ -109,10 +114,14 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             final statusColor = _statusColor(tx.status);
                             final hour = tx.createdAt.hour % 12 == 0 ? 12 : tx.createdAt.hour % 12;
                             final period = tx.createdAt.hour >= 12 ? 'PM' : 'AM';
+                            final isReceived = tx.toUid == uid;
+                            final counterparty = isReceived
+                                ? (tx.fromName.isNotEmpty ? tx.fromName : 'Someone')
+                                : (tx.toName.isNotEmpty ? tx.toName : 'Vendor');
                             return GestureDetector(
                               onTap: () => context.push('/transaction-details', extra: {
                                 'id': tx.id,
-                                'fromName': tx.fromName.isNotEmpty ? tx.fromName : 'You',
+                                'fromName': tx.fromName.isNotEmpty ? tx.fromName : 'Someone',
                                 'toName': tx.toName.isNotEmpty ? tx.toName : 'Vendor',
                                 'amount': tx.amount,
                                 'status': tx.status[0].toUpperCase() + tx.status.substring(1),
@@ -143,7 +152,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(tx.toName.isNotEmpty ? tx.toName : 'Vendor', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: cs.onSurface)),
+                                        Text(counterparty, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: cs.onSurface)),
                                         const SizedBox(height: 2),
                                         Text(
                                           '${tx.createdAt.month}/${tx.createdAt.day}/${tx.createdAt.year} at $hour:${_twoDigits(tx.createdAt.minute)} $period',
@@ -155,7 +164,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-                                      Text('-\$${tx.amount.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
+                                      Text(
+                                        '${isReceived ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isReceived ? Colors.green : cs.onSurface),
+                                      ),
                                       const SizedBox(height: 4),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
