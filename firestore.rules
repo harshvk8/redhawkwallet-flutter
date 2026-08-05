@@ -30,8 +30,10 @@ service cloud.firestore {
         (resource.data.fromUid == request.auth.uid ||
          resource.data.toUid == request.auth.uid ||
          isAdmin());
-      allow create: if request.auth != null &&
-        request.resource.data.fromUid == request.auth.uid;
+      // All money-moving transactions are written by the transferMoney Cloud
+      // Function (Admin SDK, bypasses rules) so every transfer gets the same
+      // server-side balance/eligibility validation. No client writes.
+      allow create, update, delete: if false;
     }
 
     match /paymentRequests/{requestId} {

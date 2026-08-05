@@ -159,7 +159,7 @@ class AccountProfileScreen extends StatelessWidget {
 
   Widget _buildSettingsSection(BuildContext context, ColorScheme cs) {
     final settings = [
-      {'icon': Icons.person_outline, 'label': 'Edit Profile', 'route': null},
+      {'icon': Icons.person_outline, 'label': 'Edit Profile', 'route': '/profile/edit'},
       {'icon': Icons.history, 'label': 'Transaction History', 'route': '/transactions'},
       {'icon': Icons.star_outline, 'label': 'Points and Rewards', 'route': '/rewards'},
       {'icon': Icons.settings, 'label': 'Settings', 'route': '/settings'},
