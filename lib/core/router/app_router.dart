@@ -10,6 +10,7 @@ import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/email_verification_screen.dart';
 import '../../features/student/screens/student_dashboard_screen.dart';
 import '../../features/student/screens/account_profile_screen.dart';
+import '../../features/student/screens/edit_profile_screen.dart';
 import '../../features/student/screens/university_verification_screen.dart';
 import '../../features/student/screens/qr_id_screen.dart';
 import '../../features/student/screens/qr_scanner_screen.dart';
@@ -42,6 +43,7 @@ import '../../features/wallet/presentation/add_money_screen.dart';
 import '../../features/wallet/presentation/send_money_screen.dart';
 import '../../features/wallet/presentation/receive_money_screen.dart';
 import '../../features/wallet/presentation/pay_vendor_screen.dart';
+import '../../features/wallet/presentation/transaction_details_screen.dart';
 import '../../features/offers/presentation/user_offers_screen.dart';
 import '../../features/points_rewards/presentation/user_points_rewards_screen.dart';
 import '../../features/settings/presentation/user_settings_screen.dart';
@@ -140,10 +142,12 @@ class AppRouter {
       GoRoute(path: '/email-verification', builder: (context, state) => const EmailVerificationScreen()),
       GoRoute(path: '/home', builder: (context, state) => const StudentDashboardScreen()),
       GoRoute(path: '/profile', builder: (context, state) => const AccountProfileScreen()),
+      GoRoute(path: '/profile/edit', builder: (context, state) => const EditProfileScreen()),
       GoRoute(path: '/verify', builder: (context, state) => const UniversityVerificationScreen()),
       GoRoute(path: '/qr-id', builder: (context, state) => const QrIdScreen()),
       GoRoute(path: '/qr-scanner', builder: (context, state) => const QrScannerScreen()),
       GoRoute(path: '/transactions', builder: (context, state) => const TransactionHistoryScreen()),
+      GoRoute(path: '/transaction-details', builder: (context, state) => const TransactionDetailsScreen()),
       GoRoute(path: '/wallet', builder: (context, state) => const UserWalletScreen()),
       GoRoute(path: '/wallet/add', builder: (context, state) => const AddMoneyScreen()),
       GoRoute(path: '/wallet/send', builder: (context, state) => const SendMoneyScreen()),

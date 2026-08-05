@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,17 +11,9 @@ class VendorListScreen extends StatefulWidget {
 
 class _VendorListScreenState extends State<VendorListScreen> {
   final TextEditingController _searchController = TextEditingController();
-
-  final List<Map<String, dynamic>> _vendors = const [
-    {'name': 'Red Hawk Cafe', 'category': 'Dining', 'rating': 4.8, 'distance': '0.2 mi', 'status': 'Open now', 'featured': true, 'color': Color(0xFF8B1A2E)},
-    {'name': 'Campus Bookstore', 'category': 'Retail', 'rating': 4.6, 'distance': '0.4 mi', 'status': 'Open now', 'featured': false, 'color': Colors.blue},
-    {'name': 'Hawks Pizza', 'category': 'Dining', 'rating': 4.7, 'distance': '0.6 mi', 'status': 'Open now', 'featured': true, 'color': Colors.orange},
-    {'name': 'Campus Print Lab', 'category': 'Services', 'rating': 4.5, 'distance': '0.5 mi', 'status': 'Closes soon', 'featured': false, 'color': Colors.green},
-    {'name': 'The Nest Market', 'category': 'Retail', 'rating': 4.9, 'distance': '0.8 mi', 'status': 'Open now', 'featured': true, 'color': Colors.teal},
-  ];
-
-  final List<String> _filters = const ['All', 'Dining', 'Retail', 'Services'];
   String _selectedFilter = 'All';
+
+  static const _colors = [Color(0xFF8B1A2E), Colors.blue, Colors.orange, Colors.green, Colors.teal, Colors.purple];
 
   @override
   void dispose() {
@@ -28,10 +21,22 @@ class _VendorListScreenState extends State<VendorListScreen> {
     super.dispose();
   }
 
+  List<Map<String, dynamic>> _approvedVendors(List<QueryDocumentSnapshot> docs) {
+    return docs
+        .map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return {
+            'uid': doc.id,
+            'name': data['businessName'] as String? ?? data['name'] as String? ?? 'Vendor',
+            'category': data['businessCategory'] as String? ?? 'Other',
+          };
+        })
+        .toList()
+      ..sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final vendors = _filteredVendors;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -55,36 +60,72 @@ class _VendorListScreenState extends State<VendorListScreen> {
               ),
             ),
           ),
-          SizedBox(
-            height: 46,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) {
-                final filter = _filters[index];
-                final isActive = filter == _selectedFilter;
-                return ChoiceChip(
-                  label: Text(filter),
-                  selected: isActive,
-                  onSelected: (_) => setState(() => _selectedFilter = filter),
-                  selectedColor: const Color(0xFF8B1A2E),
-                  labelStyle: TextStyle(color: isActive ? Colors.white : Colors.black87),
-                  backgroundColor: Colors.white,
-                );
-              },
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemCount: _filters.length,
-            ),
-          ),
-          const SizedBox(height: 12),
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              itemCount: vendors.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final vendor = vendors[index];
-                return _vendorCard(context, vendor);
+            child: StreamBuilder<QuerySnapshot>(
+              // Single equality + orderBy on a different field — no composite
+              // index required. createdAt is set on every user doc, unlike
+              // businessName, which older accounts may not have; the actual
+              // alphabetical sort happens client-side in _approvedVendors.
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .where('role', isEqualTo: 'vendor')
+                  .orderBy('createdAt', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: Color(0xFF8B1A2E)));
+                }
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Failed to load vendors.'));
+                }
+                final approvedDocs = (snapshot.data?.docs ?? [])
+                    .where((d) => (d.data() as Map<String, dynamic>)['vendorStatus'] == 'approved')
+                    .toList();
+                final vendors = _approvedVendors(approvedDocs);
+                final categories = ['All', ...{for (final v in vendors) v['category'] as String}];
+                final query = _searchController.text.toLowerCase();
+                final filtered = vendors.where((vendor) {
+                  final matchesQuery = query.isEmpty || (vendor['name'] as String).toLowerCase().contains(query);
+                  final matchesFilter = _selectedFilter == 'All' || vendor['category'] == _selectedFilter;
+                  return matchesQuery && matchesFilter;
+                }).toList();
+
+                return Column(
+                  children: [
+                    SizedBox(
+                      height: 46,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) {
+                          final filter = categories[index];
+                          final isActive = filter == _selectedFilter;
+                          return ChoiceChip(
+                            label: Text(filter),
+                            selected: isActive,
+                            onSelected: (_) => setState(() => _selectedFilter = filter),
+                            selectedColor: const Color(0xFF8B1A2E),
+                            labelStyle: TextStyle(color: isActive ? Colors.white : Colors.black87),
+                            backgroundColor: Colors.white,
+                          );
+                        },
+                        separatorBuilder: (_, _) => const SizedBox(width: 8),
+                        itemCount: categories.length,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? const Center(child: Text('No vendors found.', style: TextStyle(color: Colors.grey)))
+                          : ListView.separated(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                              itemCount: filtered.length,
+                              separatorBuilder: (_, _) => const SizedBox(height: 12),
+                              itemBuilder: (context, index) => _vendorCard(context, filtered[index], index),
+                            ),
+                    ),
+                  ],
+                );
               },
             ),
           ),
@@ -93,16 +134,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
     );
   }
 
-  List<Map<String, dynamic>> get _filteredVendors {
-    final query = _searchController.text.toLowerCase();
-    return _vendors.where((vendor) {
-      final matchesQuery = query.isEmpty || (vendor['name'] as String).toLowerCase().contains(query);
-      final matchesFilter = _selectedFilter == 'All' || vendor['category'] == _selectedFilter;
-      return matchesQuery && matchesFilter;
-    }).toList();
-  }
-
-  Widget _vendorCard(BuildContext context, Map<String, dynamic> vendor) {
+  Widget _vendorCard(BuildContext context, Map<String, dynamic> vendor, int index) {
+    final color = _colors[index % _colors.length];
     return InkWell(
       onTap: () => context.push('/vendors/details', extra: vendor),
       borderRadius: BorderRadius.circular(16),
@@ -119,41 +152,19 @@ class _VendorListScreenState extends State<VendorListScreen> {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: (vendor['color'] as Color).withValues(alpha: 0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(Icons.storefront, color: vendor['color'] as Color),
+              child: Icon(Icons.storefront, color: color),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(child: Text(vendor['name'] as String, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold))),
-                      if (vendor['featured'] == true)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xFFFFF0F0), borderRadius: BorderRadius.circular(999)),
-                          child: const Text('Featured', style: TextStyle(color: Color(0xFF8B1A2E), fontSize: 11, fontWeight: FontWeight.w600)),
-                        ),
-                    ],
-                  ),
+                  Text(vendor['name'] as String, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   Text(vendor['category'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 16),
-                      const SizedBox(width: 4),
-                      Text('${vendor['rating']}', style: const TextStyle(fontSize: 12)),
-                      const SizedBox(width: 12),
-                      const Icon(Icons.place_outlined, color: Colors.grey, size: 16),
-                      const SizedBox(width: 4),
-                      Text(vendor['distance'] as String, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                    ],
-                  ),
                 ],
               ),
             ),

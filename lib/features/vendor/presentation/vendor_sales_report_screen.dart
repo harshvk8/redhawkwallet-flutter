@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import '../../wallet/models/transaction_model.dart';
 
 class VendorSalesReportScreen extends StatefulWidget {
   const VendorSalesReportScreen({super.key});
@@ -11,15 +15,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
   String _period = 'Week';
   final _periods = ['Today', 'Week', 'Month', 'Year'];
 
-  final _weekData = [
-    {'day': 'Mon', 'amount': 120.0},
-    {'day': 'Tue', 'amount': 185.0},
-    {'day': 'Wed', 'amount': 95.0},
-    {'day': 'Thu', 'amount': 210.0},
-    {'day': 'Fri', 'amount': 340.0},
-    {'day': 'Sat', 'amount': 280.0},
-    {'day': 'Sun', 'amount': 60.0},
-  ];
+  static const _weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   final _topItems = [
     {'name': 'Latte (Large)', 'sold': 48, 'revenue': '\$192.00'},
@@ -29,12 +25,38 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
     {'name': 'Breakfast Wrap', 'sold': 14, 'revenue': '\$126.00'},
   ];
 
-  double get _totalSales => _weekData.fold(0, (sum, d) => sum + (d['amount'] as double));
-  double get _maxAmount => _weekData.map((d) => d['amount'] as double).reduce((a, b) => a > b ? a : b);
+  DateTime _periodStart(DateTime now) {
+    switch (_period) {
+      case 'Today':
+        return DateTime(now.year, now.month, now.day);
+      case 'Month':
+        return now.subtract(const Duration(days: 30));
+      case 'Year':
+        return now.subtract(const Duration(days: 365));
+      case 'Week':
+      default:
+        return now.subtract(const Duration(days: 7));
+    }
+  }
+
+  /// Last 7 calendar days' completed revenue, oldest first — the chart is
+  /// always a trailing-7-day view regardless of the period filter above.
+  List<Map<String, dynamic>> _last7DaysData(List<TransactionModel> completed) {
+    final now = DateTime.now();
+    return List.generate(7, (i) {
+      final day = DateTime(now.year, now.month, now.day).subtract(Duration(days: 6 - i));
+      final dayTotal = completed
+          .where((t) =>
+              t.createdAt.year == day.year && t.createdAt.month == day.month && t.createdAt.day == day.day)
+          .fold(0.0, (total, t) => total + t.amount);
+      return {'day': _weekdayLabels[day.weekday - 1], 'amount': dayTotal};
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(
@@ -51,27 +73,59 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPeriodSelector(cs),
-            const SizedBox(height: 16),
-            _buildSummaryCards(cs),
-            const SizedBox(height: 20),
-            Text('Revenue Chart', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
-            const SizedBox(height: 12),
-            _buildBarChart(cs),
-            const SizedBox(height: 20),
-            Text('Top Items', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
-            const SizedBox(height: 12),
-            _buildTopItems(cs),
-            const SizedBox(height: 20),
-            _buildCategoryBreakdown(cs),
-          ],
-        ),
-      ),
+      body: uid == null
+          ? const Center(child: Text('Not signed in.'))
+          : StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('transactions')
+                  .where('toUid', isEqualTo: uid)
+                  .orderBy('createdAt', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator(color: cs.primary));
+                }
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Failed to load sales data.'));
+                }
+
+                final all = (snapshot.data?.docs ?? []).map(TransactionModel.fromFirestore).toList();
+                final now = DateTime.now();
+                final periodStart = _periodStart(now);
+                final completedInPeriod = all
+                    .where((t) => t.status == 'completed' && !t.createdAt.isBefore(periodStart))
+                    .toList();
+                final totalSales = completedInPeriod.fold(0.0, (total, t) => total + t.amount);
+                final orderCount = completedInPeriod.length;
+                final avgOrder = orderCount == 0 ? 0.0 : totalSales / orderCount;
+                final weekData = _last7DaysData(all.where((t) => t.status == 'completed').toList());
+                final maxAmount = weekData
+                    .map((d) => d['amount'] as double)
+                    .fold(0.0, (m, v) => v > m ? v : m);
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPeriodSelector(cs),
+                      const SizedBox(height: 16),
+                      _buildSummaryCards(cs, totalSales, orderCount, avgOrder),
+                      const SizedBox(height: 20),
+                      Text('Revenue Chart — Last 7 Days', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
+                      const SizedBox(height: 12),
+                      _buildBarChart(cs, weekData, maxAmount),
+                      const SizedBox(height: 20),
+                      Text('Top Items', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
+                      const SizedBox(height: 12),
+                      _buildTopItems(cs),
+                      const SizedBox(height: 20),
+                      _buildCategoryBreakdown(cs),
+                    ],
+                  ),
+                );
+              },
+            ),
     );
   }
 
@@ -114,14 +168,14 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
     );
   }
 
-  Widget _buildSummaryCards(ColorScheme cs) {
+  Widget _buildSummaryCards(ColorScheme cs, double totalSales, int orderCount, double avgOrder) {
     return Row(
       children: [
-        _summaryCard('Total Revenue', '\$${_totalSales.toStringAsFixed(2)}', Icons.attach_money, cs, Colors.green),
+        _summaryCard('Total Revenue', '\$${totalSales.toStringAsFixed(2)}', Icons.attach_money, cs, Colors.green),
         const SizedBox(width: 10),
-        _summaryCard('Orders', '142', Icons.receipt_long, cs, cs.primary),
+        _summaryCard('Orders', '$orderCount', Icons.receipt_long, cs, cs.primary),
         const SizedBox(width: 10),
-        _summaryCard('Avg Order', '\$${(_totalSales / 142).toStringAsFixed(2)}', Icons.trending_up, cs, Colors.orange),
+        _summaryCard('Avg Order', '\$${avgOrder.toStringAsFixed(2)}', Icons.trending_up, cs, Colors.orange),
       ],
     );
   }
@@ -147,7 +201,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
     );
   }
 
-  Widget _buildBarChart(ColorScheme cs) {
+  Widget _buildBarChart(ColorScheme cs, List<Map<String, dynamic>> weekData, double maxAmount) {
     return Container(
       height: 180,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
@@ -158,9 +212,9 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
-        children: _weekData.map((d) {
+        children: weekData.map((d) {
           final amount = d['amount'] as double;
-          final heightFraction = amount / _maxAmount;
+          final heightFraction = maxAmount == 0 ? 0.0 : amount / maxAmount;
           return Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),

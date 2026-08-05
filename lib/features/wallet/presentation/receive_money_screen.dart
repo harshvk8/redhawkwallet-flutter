@@ -6,13 +6,12 @@ import 'package:go_router/go_router.dart';
 class ReceiveMoneyScreen extends StatelessWidget {
   const ReceiveMoneyScreen({super.key});
 
-  static const String walletId = 'RHW-2026-10482';
-
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final displayName = user?.displayName ?? 'Student Name';
     final userEmail = user?.email ?? 'student@montclair.edu';
+    final walletId = user?.uid ?? 'unknown';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -77,14 +76,14 @@ class ReceiveMoneyScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   const Text('Wallet ID', style: TextStyle(color: Colors.grey, fontSize: 13)),
                   const SizedBox(height: 6),
-                  const Text(walletId, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  Text(walletId, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () async {
-                            await Clipboard.setData(const ClipboardData(text: walletId));
+                            await Clipboard.setData(ClipboardData(text: walletId));
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet ID copied')));
                             }

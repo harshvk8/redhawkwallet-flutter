@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class AdminTransactionDetailsScreen extends StatelessWidget {
-  const AdminTransactionDetailsScreen({super.key});
+class TransactionDetailsScreen extends StatelessWidget {
+  const TransactionDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +18,9 @@ class AdminTransactionDetailsScreen extends StatelessWidget {
     final period = createdAt.hour >= 12 ? 'PM' : 'AM';
     final dateStr = '${createdAt.month}/${createdAt.day}/${createdAt.year}';
     final timeStr = '$hour:${createdAt.minute.toString().padLeft(2, '0')} $period';
-    final statusColor = status == 'Completed'
+    final statusColor = status.toLowerCase() == 'completed'
         ? Colors.green
-        : status == 'Pending'
+        : status.toLowerCase() == 'pending'
             ? Colors.orange
             : Colors.red;
 
@@ -45,7 +45,9 @@ class AdminTransactionDetailsScreen extends StatelessWidget {
               child: Text(status, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 8),
-            Text(id, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFC8102E))),
+            Text(id, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFC8102E))),
+            const SizedBox(height: 16),
+            Text('\$${amount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -84,9 +86,9 @@ class AdminTransactionDetailsScreen extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        const CircleAvatar(
-                          backgroundColor: Color(0xFFFFF0F0),
-                          child: Icon(Icons.store, color: Color(0xFFC8102E)),
+                        CircleAvatar(
+                          backgroundColor: const Color(0xFFFFF0F0),
+                          child: Text(toName.isNotEmpty ? toName[0].toUpperCase() : '?', style: const TextStyle(color: Color(0xFFC8102E), fontWeight: FontWeight.bold)),
                         ),
                         const SizedBox(height: 8),
                         const Text('To', style: TextStyle(color: Colors.grey, fontSize: 12)),
@@ -109,9 +111,8 @@ class AdminTransactionDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Transaction Details', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  const Text('Details', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  _detailRow('Amount', '\$${amount.toStringAsFixed(2)}'),
                   _detailRow('Date', dateStr),
                   _detailRow('Time', timeStr),
                   if (description.isNotEmpty) _detailRow('Note', description),
