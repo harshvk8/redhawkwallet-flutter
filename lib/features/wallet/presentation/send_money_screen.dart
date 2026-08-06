@@ -38,7 +38,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _headerCard(),
+            _headerCard(colorScheme),
             const SizedBox(height: 16),
             Text('Recipient', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
@@ -60,8 +60,8 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                   .map((name) => ActionChip(
                         label: Text(name),
                         onPressed: () => setState(() => _recipientController.text = name),
-                        backgroundColor: Colors.white,
-                        side: BorderSide(color: Colors.grey.shade200),
+                        backgroundColor: colorScheme.surface,
+                        side: BorderSide(color: colorScheme.outlineVariant),
                       ))
                   .toList(),
             ),
@@ -81,9 +81,9 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
               maxLines: 3,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: colorScheme.surface,
                 hintText: 'Add a note for the transfer',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
               ),
             ),
             const SizedBox(height: 16),
@@ -99,7 +99,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B1A2E),
-                  foregroundColor: Colors.white,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -112,7 +112,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     );
   }
 
-  Widget _headerCard() {
+  Widget _headerCard(ColorScheme colorScheme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -120,14 +120,14 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         gradient: const LinearGradient(colors: [Color(0xFF8B1A2E), Color(0xFFC8102E)]),
         borderRadius: BorderRadius.circular(18),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Fast campus transfers', style: TextStyle(color: Colors.white70, fontSize: 13)),
+          Text('Fast campus transfers', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 13)),
           SizedBox(height: 6),
-          Text('Send Red Hawk Dollars instantly', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Send Red Hawk Dollars instantly', style: TextStyle(color: colorScheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 8),
-          Text('Demo mode only. Transfers will be connected to payments later.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+          Text('Demo mode only. Transfers will be connected to payments later.', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 12)),
         ],
       ),
     );

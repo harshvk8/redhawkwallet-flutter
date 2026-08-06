@@ -47,19 +47,19 @@ class UserHomeScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Welcome back,', style: TextStyle(color: Colors.white70, fontSize: 13)),
-              Text('Student Name', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Welcome back,', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 13)),
+              Text('Student Name', style: TextStyle(color: colorScheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
             ],
           ),
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
-                child: const Icon(Icons.notifications_none, color: Colors.white, size: 20),
+                decoration: BoxDecoration(color: colorScheme.onPrimary.withValues(alpha: 0.2), shape: BoxShape.circle),
+                child: Icon(Icons.notifications_none, color: colorScheme.onPrimary, size: 20),
               ),
             ],
           ),
@@ -78,13 +78,13 @@ class UserHomeScreen extends StatelessWidget {
               color: colorScheme.primary,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Wallet Balance', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Text('Wallet Balance', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 12)),
                 SizedBox(height: 4),
-                Text('\$0.00', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                Text('Demo', style: TextStyle(color: Colors.white54, fontSize: 11)),
+                Text('\$0.00', style: TextStyle(color: colorScheme.onPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
+                Text('Demo', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 11)),
               ],
             ),
           ),
@@ -94,16 +94,16 @@ class UserHomeScreen extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.amber.shade700,
+              color: colorScheme.secondaryContainer,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Points', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Text('Points', style: TextStyle(color: colorScheme.onSecondaryContainer.withValues(alpha: 0.8), fontSize: 12)),
                 SizedBox(height: 4),
-                Text('250', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                Text('Next reward at 500', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                Text('250', style: TextStyle(color: colorScheme.onSecondaryContainer, fontSize: 22, fontWeight: FontWeight.bold)),
+                Text('Next reward at 500', style: TextStyle(color: colorScheme.onSecondaryContainer.withValues(alpha: 0.8), fontSize: 11)),
               ],
             ),
           ),
@@ -121,7 +121,7 @@ class UserHomeScreen extends StatelessWidget {
       {'icon': Icons.history, 'label': 'Transactions', 'color': Colors.teal, 'route': '/transactions'},
       {'icon': Icons.person, 'label': 'Profile', 'color': Colors.green, 'route': '/profile'},
       {'icon': Icons.star, 'label': 'Rewards', 'color': Colors.amber, 'route': '/rewards'},
-      {'icon': Icons.settings, 'label': 'Settings', 'color': Colors.grey, 'route': '/settings'},
+      {'icon': Icons.settings, 'label': 'Settings', 'color': null, 'route': '/settings'},
     ];
 
     final theme = Theme.of(context);
@@ -165,10 +165,10 @@ class UserHomeScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: (item['color'] as Color).withValues(alpha: 0.12),
+                      color: ((item['color'] as Color?) ?? colorScheme.onSurfaceVariant).withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 22),
+                    child: Icon(item['icon'] as IconData, color: (item['color'] as Color?) ?? colorScheme.onSurfaceVariant, size: 22),
                   ),
                   const SizedBox(height: 6),
                   Text(

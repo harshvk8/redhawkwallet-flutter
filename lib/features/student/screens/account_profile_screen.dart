@@ -49,24 +49,43 @@ class AccountProfileScreen extends StatelessWidget {
         gradient: LinearGradient(colors: [colorScheme.primary, const Color(0xFFC8102E)]),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(
+          Row(
             children: [
-              const CircleAvatar(
-                radius: 40,
-                backgroundColor: Colors.white24,
-                child: Icon(Icons.person, color: Colors.white, size: 44),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                  child: const Icon(Icons.camera_alt, color: Color(0xFF8B1A2E), size: 16),
-                ),
+              IconButton(
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/home');
+                  }
+                },
+                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
+                tooltip: 'Back',
               ),
             ],
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: Stack(
+              children: [
+                const CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.white24,
+                  child: Icon(Icons.person, color: Colors.white, size: 44),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    child: const Icon(Icons.camera_alt, color: Color(0xFF8B1A2E), size: 16),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
           Text(

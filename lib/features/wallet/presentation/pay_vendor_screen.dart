@@ -46,7 +46,7 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _vendorHero(vendor),
+            _vendorHero(vendor, colorScheme),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -79,7 +79,7 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B1A2E),
-                  foregroundColor: Colors.white,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -92,7 +92,8 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
     );
   }
 
-  Widget _vendorHero(Map<String, dynamic> vendor) {
+  Widget _vendorHero(Map<String, dynamic> vendor, ColorScheme colorScheme) {
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -103,17 +104,17 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(vendor['name'] as String? ?? 'Vendor', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(vendor['name'] as String? ?? 'Vendor', style: TextStyle(color: colorScheme.onPrimary, fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
-          Text(vendor['category'] as String? ?? 'Campus vendor', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+          Text(vendor['category'] as String? ?? 'Campus vendor', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 13)),
           const SizedBox(height: 12),
           Wrap(
             spacing: 10,
             runSpacing: 10,
             children: [
-              _pill(vendor['rating'] as String? ?? '4.8 stars'),
-              _pill(vendor['distance'] as String? ?? 'Nearby'),
-              _pill(vendor['status'] as String? ?? 'Open now'),
+              _pill(vendor['rating'] as String? ?? '4.8 stars', colorScheme),
+              _pill(vendor['distance'] as String? ?? 'Nearby', colorScheme),
+              _pill(vendor['status'] as String? ?? 'Open now', colorScheme),
             ],
           ),
         ],
@@ -121,14 +122,14 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
     );
   }
 
-  Widget _pill(String label) {
+  Widget _pill(String label, ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
+        color: colorScheme.onPrimary.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+      child: Text(label, style: TextStyle(color: colorScheme.onPrimary, fontSize: 12, fontWeight: FontWeight.w600)),
     );
   }
 

@@ -63,29 +63,31 @@ class StudentDashboardScreen extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [Theme.of(context).colorScheme.primary, const Color(0xFFC8102E)]),
+        gradient: LinearGradient(colors: [colorScheme.primary, const Color(0xFFC8102E)]),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Welcome back,', style: TextStyle(color: Colors.white70, fontSize: 14)),
-              Text('Student Name', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Welcome back,', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 14)),
+              Text('Student Name', style: TextStyle(color: colorScheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
             ],
           ),
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: colorScheme.onPrimary.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.notifications_none, color: Colors.white, size: 22),
+            child: Icon(Icons.notifications_none, color: colorScheme.onPrimary, size: 22),
           ),
         ],
       ),
@@ -106,16 +108,16 @@ class StudentDashboardScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Demo Wallet Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
+          Text('Demo Wallet Balance', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 14)),
           const SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text('\$0.00', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+              Text('\$0.00', style: TextStyle(color: colorScheme.onPrimary, fontSize: 36, fontWeight: FontWeight.bold)),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
-                child: Text('USD', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
+                child: Text('USD', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.7), fontSize: 14)),
               ),
             ],
           ),
@@ -124,7 +126,7 @@ class StudentDashboardScreen extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.add, size: 18),
+              icon: Icon(Icons.add, size: 18, color: colorScheme.primary),
               label: const Text('Add Funds'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorScheme.surface,
@@ -164,7 +166,7 @@ class StudentDashboardScreen extends StatelessWidget {
                   color: colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.add, color: Colors.white, size: 18),
+                child: Icon(Icons.add, color: colorScheme.onPrimary, size: 18),
               ),
             ),
           ],
@@ -276,55 +278,60 @@ class StudentDashboardScreen extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Text(
+      child: Text(
         'This is a demo wallet. Start using Red Hawk Wallet to see your real transactions here!',
-        style: TextStyle(color: Colors.grey, fontSize: 13),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
         textAlign: TextAlign.center,
       ),
     );
   }
 
   Widget _buildBottomNav(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: colorScheme.surface,
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _navItem(context, Icons.home, 'Home', '/home', true),
-          _navItem(context, Icons.account_balance_wallet, 'Wallet', '/wallet', false),
+          _navItem(context, Icons.home, 'Home', '/home', true, colorScheme),
+          _navItem(context, Icons.account_balance_wallet, 'Wallet', '/wallet', false, colorScheme),
           _navItemQR(context),
-          _navItem(context, Icons.person, 'Account', '/profile', false),
+          _navItem(context, Icons.person, 'Account', '/profile', false, colorScheme),
         ],
       ),
     );
   }
 
-  Widget _navItem(BuildContext context, IconData icon, String label, String route, bool isActive) {
+  Widget _navItem(BuildContext context, IconData icon, String label, String route, bool isActive, ColorScheme colorScheme) {
     return GestureDetector(
       onTap: () => context.push(route),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isActive ? const Color(0xFF8B1A2E) : Colors.grey, size: 24),
+          Icon(icon, color: isActive ? colorScheme.primary : colorScheme.onSurfaceVariant, size: 24),
           const SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 11, color: isActive ? const Color(0xFF8B1A2E) : Colors.grey, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
+          Text(label, style: TextStyle(fontSize: 11, color: isActive ? colorScheme.primary : colorScheme.onSurfaceVariant, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
         ],
       ),
     );
   }
 
   Widget _navItemQR(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: () => context.push('/qr-id'),
       child: Container(
         width: 52,
         height: 52,
-        decoration: const BoxDecoration(color: Color(0xFF8B1A2E), shape: BoxShape.circle),
-        child: const Icon(Icons.qr_code, color: Colors.white, size: 26),
+        decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
+        child: Icon(Icons.qr_code, color: colorScheme.onPrimary, size: 26),
       ),
     );
   }

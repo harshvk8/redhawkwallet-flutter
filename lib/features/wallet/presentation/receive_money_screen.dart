@@ -29,14 +29,14 @@ class ReceiveMoneyScreen extends StatelessWidget {
                 gradient: const LinearGradient(colors: [Color(0xFF8B1A2E), Color(0xFFC8102E)]),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Share your wallet ID or QR', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  Text('Share your wallet ID or QR', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 13)),
                   SizedBox(height: 6),
-                  Text('Get paid in seconds', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('Get paid in seconds', style: TextStyle(color: colorScheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
-                  Text('This QR is a UI-only demo placeholder.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  Text('This QR is a UI-only demo placeholder.', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 12)),
                 ],
               ),
             ),
@@ -80,7 +80,7 @@ class ReceiveMoneyScreen extends StatelessWidget {
                           label: const Text('Share'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF8B1A2E),
-                            foregroundColor: Colors.white,
+                            foregroundColor: colorScheme.onPrimary,
                           ),
                         ),
                       ),
@@ -98,14 +98,14 @@ class ReceiveMoneyScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: colorScheme.outlineVariant),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('How students can pay you', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
-                  Text('1. Open the wallet app', style: TextStyle(color: Colors.grey, fontSize: 13)),
-                  Text('2. Scan this QR or copy the wallet ID', style: TextStyle(color: Colors.grey, fontSize: 13)),
-                  Text('3. Confirm the transfer', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text('1. Open the wallet app', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13)),
+                  Text('2. Scan this QR or copy the wallet ID', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13)),
+                  Text('3. Confirm the transfer', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13)),
                 ],
               ),
             ),
@@ -124,7 +124,7 @@ class ReceiveMoneyScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: colorScheme.outlineVariant, width: 1.2),
           boxShadow: [
@@ -151,13 +151,13 @@ class ReceiveMoneyScreen extends StatelessWidget {
               final cell = pattern[row][col];
 
               if (cell == 2) {
-                return _finderModule(colorScheme.primary);
+                return _finderModule(colorScheme.primary, colorScheme);
               }
 
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 120),
                 decoration: BoxDecoration(
-                  color: cell == 1 ? const Color(0xFF111827) : Colors.white,
+                  color: cell == 1 ? colorScheme.onSurface : colorScheme.surface,
                   borderRadius: BorderRadius.circular(2.5),
                 ),
               );
@@ -215,7 +215,7 @@ class ReceiveMoneyScreen extends StatelessWidget {
     return pattern;
   }
 
-  Widget _finderModule(Color color) {
+  Widget _finderModule(Color color, ColorScheme colorScheme) {
     return Container(
       decoration: BoxDecoration(
         color: color,
@@ -227,7 +227,7 @@ class ReceiveMoneyScreen extends StatelessWidget {
           heightFactor: 0.5,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(2),
             ),
             child: Center(

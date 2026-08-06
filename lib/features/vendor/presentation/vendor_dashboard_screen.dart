@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/theme_notifier.dart';
+
 class VendorDashboardScreen extends StatefulWidget {
   const VendorDashboardScreen({super.key});
 
@@ -48,74 +50,157 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Vendor Dashboard'),
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
-        actions: [
-          IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              if (context.mounted) context.go('/login');
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Vendor Dashboard'),
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          actions: [
+            IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                if (context.mounted) context.go('/login');
+              },
+            ),
+          ],
+        ),
+        body: TabBarView(
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [colorScheme.primary, const Color(0xFFC8102E)]),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Column(
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Red Hawk Cafe', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
-                  Text('Active Vendor', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  SizedBox(height: 16),
-                  Text('\$0.00', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-                  Text('Total Sales Today (Demo)', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: [colorScheme.primary, const Color(0xFFC8102E)]),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Red Hawk Cafe', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 4),
+                        Text('Active Vendor', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                        SizedBox(height: 16),
+                        Text('\$0.00', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
+                        Text('Total Sales Today (Demo)', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      _statCard(context, 'Orders', '0', Icons.receipt_long),
+                      const SizedBox(width: 10),
+                      _statCard(context, 'Offers', '3', Icons.local_offer),
+                      const SizedBox(width: 10),
+                      _statCard(context, 'Points Given', '0', Icons.stars),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(child: _quickAction(context, Icons.qr_code, 'Request Payment', '/vendor/payment-request')),
+                      const SizedBox(width: 10),
+                      Expanded(child: _quickAction(context, Icons.local_offer, 'My Offers', '/vendor/offers')),
+                      const SizedBox(width: 10),
+                      Expanded(child: _quickAction(context, Icons.history, 'History', '/vendor/transactions')),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text('Recent Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  _buildTransactionsSection(context),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                _statCard(context, 'Orders', '0', Icons.receipt_long),
-                const SizedBox(width: 10),
-                _statCard(context, 'Offers', '3', Icons.local_offer),
-                const SizedBox(width: 10),
-                _statCard(context, 'Points Given', '0', Icons.stars),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(child: _quickAction(context, Icons.qr_code, 'Request Payment', '/vendor/payment-request')),
-                const SizedBox(width: 10),
-                Expanded(child: _quickAction(context, Icons.local_offer, 'My Offers', '/vendor/offers')),
-                const SizedBox(width: 10),
-                Expanded(child: _quickAction(context, Icons.history, 'History', '/vendor/transactions')),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Text('Recent Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            _buildTransactionsSection(context),
+            _buildSettingsTab(context),
           ],
         ),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: TabBar(
+              indicatorColor: colorScheme.primary,
+              labelColor: colorScheme.primary,
+              unselectedLabelColor: colorScheme.onSurfaceVariant,
+              tabs: const [
+                Tab(text: 'Dashboard', icon: Icon(Icons.dashboard_outlined)),
+                Tab(text: 'Settings', icon: Icon(Icons.settings_outlined)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsTab(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Appearance', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(Icons.dark_mode_outlined, color: colorScheme.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Dark Mode', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                          Text('Switch the vendor dashboard between light and dark themes.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+                        ],
+                      ),
+                    ),
+                    ValueListenableBuilder<ThemeMode>(
+                      valueListenable: ThemeNotifier.instance,
+                      builder: (context, mode, _) {
+                        return Switch.adaptive(
+                          value: mode == ThemeMode.dark,
+                          onChanged: (value) {
+                            ThemeNotifier.instance.value = value ? ThemeMode.dark : ThemeMode.light;
+                          },
+                          activeThumbColor: colorScheme.primary,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
