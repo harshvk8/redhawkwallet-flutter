@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class VendorTransactionHistoryScreen extends StatefulWidget {
   const VendorTransactionHistoryScreen({super.key});
@@ -11,6 +12,7 @@ class VendorTransactionHistoryScreen extends StatefulWidget {
 class _VendorTransactionHistoryScreenState
     extends State<VendorTransactionHistoryScreen> {
   String selectedFilter = 'All';
+<<<<<<< HEAD
   final List<String> filters = ['All', 'Paid', 'Pending', 'Failed'];
   bool _isLoading = true;
   bool _hasError = false;
@@ -86,6 +88,12 @@ class _VendorTransactionHistoryScreenState
       });
     }
   }
+=======
+  // Pending/Failed will always be empty today — transferMoney only ever
+  // writes status: "completed" (it throws before writing anything on
+  // failure). Kept for when a pending/async payment path exists.
+  final List<String> filters = ['All', 'Completed', 'Pending', 'Failed'];
+>>>>>>> origin/dev
 
   Color _statusColor(String status) {
     if (status == 'Paid') return Colors.green;
@@ -223,9 +231,28 @@ class _VendorTransactionHistoryScreenState
     return ListView.builder(
       itemCount: filteredTransactions.length,
       itemBuilder: (context, index) {
+<<<<<<< HEAD
         final tx = filteredTransactions[index];
         final statusColor = _statusColor(tx['status']);
         return Container(
+=======
+        final tx = transactions[index];
+        final statusColor = _statusColor(tx.status);
+        final name = tx.fromName.isNotEmpty ? tx.fromName : 'Customer';
+        final hour = tx.createdAt.hour % 12 == 0 ? 12 : tx.createdAt.hour % 12;
+        final period = tx.createdAt.hour >= 12 ? 'PM' : 'AM';
+        return GestureDetector(
+          onTap: () => context.push('/transaction-details', extra: {
+            'id': tx.id,
+            'fromName': name,
+            'toName': tx.toName.isNotEmpty ? tx.toName : 'You',
+            'amount': tx.amount,
+            'status': tx.status[0].toUpperCase() + tx.status.substring(1),
+            'createdAt': tx.createdAt,
+            'description': tx.description,
+          }),
+          child: Container(
+>>>>>>> origin/dev
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -310,6 +337,7 @@ class _VendorTransactionHistoryScreenState
                   ],
                 ),
             ],
+          ),
           ),
         );
       },

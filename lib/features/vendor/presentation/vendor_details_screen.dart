@@ -8,6 +8,7 @@ class VendorDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     final data = vendor ?? const {
       'name': 'Red Hawk Cafe',
       'category': 'Dining',
@@ -20,6 +21,9 @@ class VendorDetailsScreen extends StatelessWidget {
     };
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+=======
+    final data = vendor ?? const {'name': 'Vendor', 'category': 'Other', 'uid': ''};
+>>>>>>> origin/dev
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -37,8 +41,11 @@ class VendorDetailsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _infoCard(context, data),
             const SizedBox(height: 16),
+<<<<<<< HEAD
             _menuPreview(context),
             const SizedBox(height: 16),
+=======
+>>>>>>> origin/dev
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -60,28 +67,24 @@ class VendorDetailsScreen extends StatelessWidget {
   }
 
   Widget _hero(Map<String, dynamic> data) {
-    final color = data['color'] as Color? ?? const Color(0xFF8B1A2E);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [color, const Color(0xFFC8102E)]),
+        gradient: const LinearGradient(colors: [Color(0xFF8B1A2E), Color(0xFFC8102E)]),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(data['name'] as String, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          Text(data['description'] as String? ?? 'Campus vendor', style: const TextStyle(color: Colors.white70, fontSize: 13)),
           const SizedBox(height: 12),
           Wrap(
             spacing: 10,
             runSpacing: 10,
             children: [
               _pill(data['category'] as String),
-              _pill('${data['rating']} stars'),
-              _pill(data['status'] as String),
+              _pill('Approved vendor'),
             ],
           ),
         ],
@@ -117,10 +120,17 @@ class VendorDetailsScreen extends StatelessWidget {
         children: [
           Text('Vendor Info', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
+<<<<<<< HEAD
           _row(context, Icons.place_outlined, 'Distance', data['distance'] as String),
           _row(context, Icons.schedule_outlined, 'Hours', data['hours'] as String? ?? '7:00 AM - 9:00 PM'),
           _row(context, Icons.storefront_outlined, 'Category', data['category'] as String),
           _row(context, Icons.verified_outlined, 'Status', data['status'] as String),
+=======
+          _row(Icons.storefront_outlined, 'Category', data['category'] as String),
+          _row(Icons.verified_outlined, 'Status', 'Approved'),
+          const SizedBox(height: 4),
+          const Text('Menu and hours are managed by the vendor and coming soon.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+>>>>>>> origin/dev
         ],
       ),
     );
@@ -143,6 +153,7 @@ class VendorDetailsScreen extends StatelessWidget {
       ),
     );
   }
+<<<<<<< HEAD
 
   Widget _menuPreview(BuildContext context) {
     final theme = Theme.of(context);
@@ -184,3 +195,6 @@ class VendorDetailsScreen extends StatelessWidget {
     );
   }
 }
+=======
+}
+>>>>>>> origin/dev

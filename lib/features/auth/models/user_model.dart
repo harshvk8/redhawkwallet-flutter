@@ -17,6 +17,7 @@ class UserModel {
   final String? universityEmail;
   final String accountStatus;
   final String? vendorStatus;
+  final String? phoneNumber;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -30,6 +31,7 @@ class UserModel {
     this.universityEmail,
     this.accountStatus = 'active',
     this.vendorStatus,
+    this.phoneNumber,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -46,6 +48,7 @@ class UserModel {
       universityEmail: data['universityEmail'] as String?,
       accountStatus: (data['accountStatus'] as String?)?.trim() ?? 'active',
       vendorStatus: (data['vendorStatus'] as String?)?.trim(),
+      phoneNumber: data['phoneNumber'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -60,6 +63,7 @@ class UserModel {
         'universityEmail': universityEmail,
         'accountStatus': accountStatus,
         'vendorStatus': vendorStatus,
+        'phoneNumber': phoneNumber,
         'createdAt': Timestamp.fromDate(createdAt),
         'updatedAt': Timestamp.fromDate(updatedAt),
       };
@@ -74,6 +78,7 @@ class UserModel {
     String? universityEmail,
     String? accountStatus,
     String? vendorStatus,
+    String? phoneNumber,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) =>
@@ -87,6 +92,7 @@ class UserModel {
         universityEmail: universityEmail ?? this.universityEmail,
         accountStatus: accountStatus ?? this.accountStatus,
         vendorStatus: vendorStatus ?? this.vendorStatus,
+        phoneNumber: phoneNumber ?? this.phoneNumber,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );

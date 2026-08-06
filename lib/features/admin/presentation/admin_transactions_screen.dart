@@ -13,6 +13,9 @@ class AdminTransactionsScreen extends StatefulWidget {
 
 class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
   String selectedFilter = 'All';
+  // Pending/Failed will always be empty today — transferMoney only ever
+  // writes status: "completed" (it throws before writing anything on
+  // failure). Kept for when a pending/async payment path exists.
   final List<String> filters = ['All', 'Completed', 'Pending', 'Failed'];
 
   Color _statusColor(String status) {

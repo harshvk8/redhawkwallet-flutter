@@ -4,12 +4,17 @@ import 'package:flutter/services.dart';
 class ReceiveMoneyScreen extends StatelessWidget {
   const ReceiveMoneyScreen({super.key});
 
-  static const String walletId = 'RHW-2026-10482';
-
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+=======
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = user?.displayName ?? 'Student Name';
+    final userEmail = user?.email ?? 'student@montclair.edu';
+    final walletId = user?.uid ?? 'unknown';
+>>>>>>> origin/dev
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -54,14 +59,19 @@ class ReceiveMoneyScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text('Wallet ID', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 6),
+<<<<<<< HEAD
                   Text(walletId, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: 1.2)),
                   const SizedBox(height: 12),
+=======
+                  Text(walletId, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                  const SizedBox(height: 16),
+>>>>>>> origin/dev
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () async {
-                            await Clipboard.setData(const ClipboardData(text: walletId));
+                            await Clipboard.setData(ClipboardData(text: walletId));
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet ID copied')));
                             }
