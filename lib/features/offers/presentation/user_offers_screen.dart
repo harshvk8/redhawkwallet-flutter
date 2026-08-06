@@ -5,10 +5,34 @@ class UserOffersScreen extends StatelessWidget {
   const UserOffersScreen({super.key});
 
   final List<Map<String, dynamic>> offers = const [
-    {'title': '10% off coffee', 'vendor': 'Red Hawk Cafe', 'discount': '10%', 'expiry': 'Jun 30, 2026', 'color': Color(0xFF8B1A2E)},
-    {'title': 'Free topping', 'vendor': 'Hawks Pizza', 'discount': 'FREE', 'expiry': 'Jun 15, 2026', 'color': Colors.orange},
-    {'title': 'Student lunch combo', 'vendor': "Sam's Cafe", 'discount': '15%', 'expiry': 'Jun 7, 2026', 'color': Colors.green},
-    {'title': 'Buy 1 Get 1 Coffee', 'vendor': 'Red Hawk Cafe', 'discount': 'BOGO', 'expiry': 'Jun 1, 2026', 'color': Colors.blue},
+    {
+      'title': '10% off coffee',
+      'vendor': 'Red Hawk Cafe',
+      'discount': '10%',
+      'expiry': 'Jun 30, 2026',
+      'color': Color(0xFF8B1A2E),
+    },
+    {
+      'title': 'Free topping',
+      'vendor': 'Hawks Pizza',
+      'discount': 'FREE',
+      'expiry': 'Jun 15, 2026',
+      'color': Colors.orange,
+    },
+    {
+      'title': 'Student lunch combo',
+      'vendor': "Sam's Cafe",
+      'discount': '15%',
+      'expiry': 'Jun 7, 2026',
+      'color': Colors.green,
+    },
+    {
+      'title': 'Buy 1 Get 1 Coffee',
+      'vendor': 'Red Hawk Cafe',
+      'discount': 'BOGO',
+      'expiry': 'Jun 1, 2026',
+      'color': Colors.blue,
+    },
   ];
 
   @override
@@ -63,11 +87,20 @@ class UserOffersScreen extends StatelessWidget {
                           width: 56,
                           height: 56,
                           decoration: BoxDecoration(
-                            color: (offer['color'] as Color).withValues(alpha: 0.1),
+                            color: (offer['color'] as Color).withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
-                            child: Text(offer['discount'] as String, style: TextStyle(color: offer['color'] as Color, fontWeight: FontWeight.bold, fontSize: 13)),
+                            child: Text(
+                              offer['discount'] as String,
+                              style: TextStyle(
+                                color: offer['color'] as Color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -84,7 +117,14 @@ class UserOffersScreen extends StatelessWidget {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Redeemed: ${offer['title']}!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colorScheme.primary,
                             foregroundColor: colorScheme.onPrimary,

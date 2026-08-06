@@ -44,6 +44,20 @@ class _LoginScreenState extends State<LoginScreen> {
       final userModel = await _userService.getUserDocument(uid);
       if (!mounted) return;
 
+      if (userModel?.accountStatus == 'suspended') {
+        await _authService.signOut();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'This account has been suspended. Contact support for help.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
+
       if (userModel != null &&
           !userModel.isEmailVerified &&
           credential.user?.emailVerified != true) {
@@ -85,6 +99,62 @@ class _LoginScreenState extends State<LoginScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _showForgotPassword(BuildContext context) {
+    final resetCtrl = TextEditingController(text: _emailController.text.trim());
+    String? errorText;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Reset Password'),
+          content: TextField(
+            controller: resetCtrl,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              labelText: 'Email address',
+              hintText: 'you@university.edu',
+              errorText: errorText,
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () async {
+                final email = resetCtrl.text.trim();
+                if (email.isEmpty || !email.contains('@')) {
+                  setDialogState(() => errorText = 'Enter a valid email address');
+                  return;
+                }
+                setDialogState(() => errorText = null);
+                try {
+                  await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Password reset email sent!'), backgroundColor: Colors.green),
+                  );
+                } on FirebaseAuthException catch (e) {
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.message ?? 'Failed to send reset email'), backgroundColor: Colors.red),
+                  );
+                }
+              },
+              child: const Text('Send Reset Link'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showComingSoon(BuildContext context, String provider) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$provider sign-in coming soon')),
+    );
   }
 
   @override
@@ -234,7 +304,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: () => context.push('/settings/security'),
+                              onPressed: () => _showForgotPassword(context),
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: Size.zero,
@@ -276,7 +346,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Google
                           AuthSocialButton(
-                            onTap: () {},
+                            onTap: () => _showComingSoon(context, 'Google'),
                             borderColor: borderColor,
                             cardColor: cardColor,
                             mutedBg: mutedBg,
@@ -302,7 +372,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Apple
                           AuthSocialButton(
-                            onTap: () {},
+                            onTap: () => _showComingSoon(context, 'Apple'),
                             borderColor: borderColor,
                             cardColor: cardColor,
                             mutedBg: mutedBg,
