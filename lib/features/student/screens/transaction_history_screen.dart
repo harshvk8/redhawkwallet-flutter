@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../wallet/models/transaction_model.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -10,44 +14,31 @@ class TransactionHistoryScreen extends StatefulWidget {
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   String selectedFilter = 'All';
-<<<<<<< HEAD
-  final List<String> filters = ['All', 'Paid', 'Pending', 'Failed'];
-
-  final List<Map<String, dynamic>> transactions = [
-    {'name': 'Campus Coffee House', 'date': 'May 27, 2026', 'time': '9:45 AM', 'amount': '-\$5.50', 'isDebit': true, 'status': 'Paid', 'icon': Icons.local_cafe},
-    {'name': 'Added Funds', 'date': 'May 26, 2026', 'time': '2:30 PM', 'amount': '+\$25.00', 'isDebit': false, 'status': 'Paid', 'icon': Icons.add_circle_outline},
-    {'name': 'Student Bookstore', 'date': 'May 25, 2026', 'time': '11:20 AM', 'amount': '-\$42.99', 'isDebit': true, 'status': 'Paid', 'icon': Icons.menu_book},
-    {'name': 'Hawks Pizza', 'date': 'May 24, 2026', 'time': '1:00 PM', 'amount': '-\$8.75', 'isDebit': true, 'status': 'Pending', 'icon': Icons.local_pizza},
-    {'name': 'Campus Prints', 'date': 'May 23, 2026', 'time': '3:15 PM', 'amount': '-\$3.00', 'isDebit': true, 'status': 'Failed', 'icon': Icons.print},
-  ];
-=======
   // Pending/Failed will always be empty today — transferMoney only ever
   // writes status: "completed" (it throws before writing anything on
   // failure). Kept for when a pending/async payment path exists.
   final List<String> filters = ['All', 'Completed', 'Pending', 'Failed'];
->>>>>>> origin/dev
 
   Color _statusColor(String status) {
-    if (status == 'Paid') return Colors.green;
-    if (status == 'Pending') return Colors.orange;
+    if (status == 'completed') return Colors.green;
+    if (status == 'pending') return Colors.orange;
     return Colors.red;
   }
 
-  List<Map<String, dynamic>> get filteredTransactions {
+  List<TransactionModel> _applyFilter(List<TransactionModel> transactions) {
     if (selectedFilter == 'All') return transactions;
-    return transactions.where((t) => t['status'] == selectedFilter).toList();
+    return transactions.where((t) => t.status == selectedFilter.toLowerCase()).toList();
   }
+
+  String _twoDigits(int n) => n.toString().padLeft(2, '0');
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
         title: const Text('Transaction History'),
         elevation: 0,
       ),
@@ -69,14 +60,14 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selected ? colorScheme.primary : colorScheme.surface,
+                        color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? colorScheme.primary : colorScheme.outlineVariant),
+                        border: Border.all(color: selected ? cs.primary : cs.outlineVariant),
                       ),
                       child: Text(
                         filter,
                         style: TextStyle(
-                          color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
+                          color: selected ? Colors.white : cs.onSurface,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -88,20 +79,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
             ),
             const SizedBox(height: 12),
             Expanded(
-<<<<<<< HEAD
-              child: ListView.builder(
-                itemCount: filteredTransactions.length,
-                itemBuilder: (context, index) {
-                  final tx = filteredTransactions[index];
-                  final statusColor = _statusColor(tx['status']);
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: colorScheme.outlineVariant),
-=======
               child: uid == null
                   ? const Center(child: Text('Not signed in.'))
                   : StreamBuilder<QuerySnapshot>(
@@ -126,7 +103,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           return Center(
                             child: Text(
                               selectedFilter == 'All' ? 'No transactions yet.' : 'No $selectedFilter transactions.',
-                              style: const TextStyle(color: Colors.grey),
+                              style: TextStyle(color: cs.onSurfaceVariant),
                             ),
                           );
                         }
@@ -157,7 +134,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               decoration: BoxDecoration(
                                 color: cs.surface,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade100),
+                                border: Border.all(color: cs.outlineVariant),
                               ),
                               child: Row(
                                 children: [
@@ -179,7 +156,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                         const SizedBox(height: 2),
                                         Text(
                                           '${tx.createdAt.month}/${tx.createdAt.day}/${tx.createdAt.year} at $hour:${_twoDigits(tx.createdAt.minute)} $period',
-                                          style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                          style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
                                         ),
                                       ],
                                     ),
@@ -212,50 +189,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           },
                         );
                       },
->>>>>>> origin/dev
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: tx['isDebit'] as bool ? colorScheme.primary.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(tx['icon'] as IconData, color: tx['isDebit'] as bool ? colorScheme.primary : Colors.green, size: 22),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(tx['name'] as String, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 2),
-                              Text('${tx['date']} at ${tx['time']}', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-                            ],
-                          ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(tx['amount'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: tx['isDebit'] as bool ? colorScheme.onSurface : Colors.green)),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: statusColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(tx['status'] as String, style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
             ),
           ],
         ),

@@ -302,6 +302,7 @@ class StudentDashboardScreen extends StatelessWidget {
           _navItem(context, Icons.home, 'Home', '/home', true, colorScheme),
           _navItem(context, Icons.account_balance_wallet, 'Wallet', '/wallet', false, colorScheme),
           _navItemQR(context),
+          _navItem(context, Icons.local_offer, 'Offers', '/offers', false, colorScheme),
           _navItem(context, Icons.person, 'Account', '/profile', false, colorScheme),
         ],
       ),

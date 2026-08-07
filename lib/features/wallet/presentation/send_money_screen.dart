@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../auth/services/user_service.dart';
 import '../services/money_transfer_service.dart';
@@ -22,12 +23,6 @@ class SendMoneyScreen extends StatefulWidget {
 }
 
 class _SendMoneyScreenState extends State<SendMoneyScreen> {
-<<<<<<< HEAD
-  final TextEditingController _recipientController = TextEditingController(text: 'Student Name');
-  final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _noteController = TextEditingController(text: 'Lunch split');
-  final List<String> _recipients = const ['Alex Johnson', 'Sara Lee', 'Mike Chen', 'Campus Store'];
-=======
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameFilterController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
@@ -38,7 +33,6 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   bool _searching = false;
   bool _sending = false;
   String? _searchError;
->>>>>>> origin/dev
 
   @override
   void dispose() {
@@ -49,12 +43,6 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     super.dispose();
   }
 
-<<<<<<< HEAD
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-=======
   void _selectRecipient(String uid, String name) {
     setState(() {
       _recipientUid = uid;
@@ -161,8 +149,9 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final uid = FirebaseAuth.instance.currentUser?.uid;
->>>>>>> origin/dev
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -178,48 +167,23 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
           children: [
             _headerCard(colorScheme),
             const SizedBox(height: 16),
-<<<<<<< HEAD
-            Text('Recipient', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-=======
-            const Text('Enter phone number', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
->>>>>>> origin/dev
+            Text('Enter phone number', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
               onSubmitted: (_) => _searchByPhone(),
               decoration: InputDecoration(
-<<<<<<< HEAD
-                filled: true,
-                fillColor: colorScheme.surface,
-                hintText: 'Enter student name or wallet ID',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _recipients
-                  .map((name) => ActionChip(
-                        label: Text(name),
-                        onPressed: () => setState(() => _recipientController.text = name),
-                        backgroundColor: colorScheme.surface,
-                        side: BorderSide(color: colorScheme.outlineVariant),
-                      ))
-                  .toList(),
-            ),
-=======
-                prefixIcon: const Icon(Icons.phone, color: Colors.grey),
+                prefixIcon: Icon(Icons.phone, color: colorScheme.onSurfaceVariant),
                 suffixIcon: _searching
                     ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)))
                     : IconButton(icon: const Icon(Icons.arrow_forward), onPressed: _searchByPhone),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: colorScheme.surface,
                 hintText: '(555) 123-4567',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
+                  borderSide: BorderSide(color: colorScheme.outlineVariant),
                 ),
               ),
             ),
@@ -232,7 +196,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFF8B1A2E), width: 1.5),
                 ),
@@ -243,36 +207,39 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                       child: Text(_recipientName!.isNotEmpty ? _recipientName![0].toUpperCase() : '?', style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(child: Text(_recipientName!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14))),
+                    Expanded(child: Text(_recipientName!, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold))),
                     const Icon(Icons.check_circle, color: Color(0xFF8B1A2E)),
                   ],
                 ),
               ),
             ],
             const SizedBox(height: 16),
-            const Text('Approved Recipients', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            Text('Approved Recipients', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
-            const Text('Verified students only. No contact info shown.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            Text('Verified students only. No contact info shown.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
             const SizedBox(height: 8),
             TextField(
               controller: _nameFilterController,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: colorScheme.surface,
                 hintText: 'Search by name',
                 isDense: true,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
               ),
             ),
             const SizedBox(height: 8),
-            if (uid == null) const Text('Not signed in.', style: TextStyle(color: Colors.grey)) else _approvedRecipientsList(uid),
+            if (uid == null)
+              Text('Not signed in.', style: TextStyle(color: colorScheme.onSurfaceVariant))
+            else
+              _approvedRecipientsList(uid),
             const SizedBox(height: 16),
-            const Text('Recent Contacts', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            Text('Recent Contacts', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             if (uid == null)
-              const Text('Not signed in.', style: TextStyle(color: Colors.grey))
+              Text('Not signed in.', style: TextStyle(color: colorScheme.onSurfaceVariant))
             else
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
@@ -296,7 +263,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                     if (contacts.length >= 5) break;
                   }
                   if (contacts.isEmpty) {
-                    return const Text('No recent contacts yet.', style: TextStyle(color: Colors.grey, fontSize: 13));
+                    return Text('No recent contacts yet.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant));
                   }
                   return Column(
                     children: contacts.map((contact) {
@@ -307,10 +274,10 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: selected ? const Color(0xFF8B1A2E) : Colors.grey.shade100,
+                              color: selected ? const Color(0xFF8B1A2E) : colorScheme.outlineVariant,
                               width: selected ? 1.5 : 1.0,
                             ),
                           ),
@@ -324,11 +291,11 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              Expanded(child: Text(contact['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14))),
+                              Expanded(child: Text(contact['name']!, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold))),
                               if (selected)
                                 const Icon(Icons.check_circle, color: Color(0xFF8B1A2E))
                               else
-                                const Icon(Icons.chevron_right, color: Colors.grey),
+                                Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
                             ],
                           ),
                         ),
@@ -337,7 +304,6 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                   );
                 },
               ),
->>>>>>> origin/dev
             const SizedBox(height: 16),
             Row(
               children: [
@@ -364,28 +330,18 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-<<<<<<< HEAD
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Demo transfer prepared. Connect payments later.')),
-                  );
-                },
-=======
               child: ElevatedButton.icon(
                 onPressed: _sending ? null : _send,
                 icon: _sending
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.onPrimary))
                     : const Icon(Icons.send),
                 label: const Text('Send Money', style: TextStyle(fontSize: 16)),
->>>>>>> origin/dev
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B1A2E),
                   foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Review Transfer'),
               ),
             ),
           ],
@@ -394,9 +350,6 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     );
   }
 
-<<<<<<< HEAD
-  Widget _headerCard(ColorScheme colorScheme) {
-=======
   Widget _approvedRecipientsList(String uid) {
     return StreamBuilder<QuerySnapshot>(
       // Single equality + orderBy on a different field — no composite index
@@ -411,6 +364,8 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         if (!snapshot.hasData) {
           return const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: LinearProgressIndicator());
         }
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
         final nameFilter = _nameFilterController.text.trim().toLowerCase();
         final recipients = snapshot.data!.docs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
@@ -426,7 +381,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         if (recipients.isEmpty) {
           return Text(
             nameFilter.isEmpty ? 'No approved recipients yet.' : 'No approved recipients match "$nameFilter".',
-            style: const TextStyle(color: Colors.grey, fontSize: 13),
+            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
           );
         }
         return SizedBox(
@@ -476,8 +431,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     );
   }
 
-  Widget _headerCard() {
->>>>>>> origin/dev
+  Widget _headerCard(ColorScheme colorScheme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -489,14 +443,8 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Fast campus transfers', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 13)),
-          SizedBox(height: 6),
-<<<<<<< HEAD
+          const SizedBox(height: 6),
           Text('Send Red Hawk Dollars instantly', style: TextStyle(color: colorScheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          Text('Demo mode only. Transfers will be connected to payments later.', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 12)),
-=======
-          Text('Send Red Hawk Dollars instantly', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
->>>>>>> origin/dev
         ],
       ),
     );

@@ -8,22 +8,9 @@ class VendorDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
-    final data = vendor ?? const {
-      'name': 'Red Hawk Cafe',
-      'category': 'Dining',
-      'rating': 4.8,
-      'distance': '0.2 mi',
-      'status': 'Open now',
-      'color': Color(0xFF8B1A2E),
-      'hours': '7:00 AM - 9:00 PM',
-      'description': 'Popular stop for coffee, sandwiches, and campus favorites.',
-    };
+    final data = vendor ?? const {'name': 'Vendor', 'category': 'Other', 'uid': ''};
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-=======
-    final data = vendor ?? const {'name': 'Vendor', 'category': 'Other', 'uid': ''};
->>>>>>> origin/dev
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -41,11 +28,6 @@ class VendorDetailsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _infoCard(context, data),
             const SizedBox(height: 16),
-<<<<<<< HEAD
-            _menuPreview(context),
-            const SizedBox(height: 16),
-=======
->>>>>>> origin/dev
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -120,17 +102,10 @@ class VendorDetailsScreen extends StatelessWidget {
         children: [
           Text('Vendor Info', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
-<<<<<<< HEAD
-          _row(context, Icons.place_outlined, 'Distance', data['distance'] as String),
-          _row(context, Icons.schedule_outlined, 'Hours', data['hours'] as String? ?? '7:00 AM - 9:00 PM'),
-          _row(context, Icons.storefront_outlined, 'Category', data['category'] as String),
-          _row(context, Icons.verified_outlined, 'Status', data['status'] as String),
-=======
-          _row(Icons.storefront_outlined, 'Category', data['category'] as String),
-          _row(Icons.verified_outlined, 'Status', 'Approved'),
+          _row(context, Icons.storefront_outlined, 'Category', data['category'] as String? ?? 'Other'),
+          _row(context, Icons.verified_outlined, 'Status', 'Approved'),
           const SizedBox(height: 4),
-          const Text('Menu and hours are managed by the vendor and coming soon.', style: TextStyle(color: Colors.grey, fontSize: 12)),
->>>>>>> origin/dev
+          Text('Menu and hours are managed by the vendor and coming soon.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
         ],
       ),
     );
@@ -153,48 +128,4 @@ class VendorDetailsScreen extends StatelessWidget {
       ),
     );
   }
-<<<<<<< HEAD
-
-  Widget _menuPreview(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    final items = [
-      ('Iced Coffee', '\$ 3.50'),
-      ('Chicken Wrap', '\$ 6.75'),
-      ('Student Combo', '\$ 8.25'),
-    ];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Popular Items', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          ...items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(item.$1, style: theme.textTheme.bodyMedium),
-                  Text(item.$2, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
-=======
-}
->>>>>>> origin/dev
