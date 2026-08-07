@@ -1,75 +1,56 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import '../models/wallet_model.dart';
 
 class UserWalletScreen extends StatelessWidget {
   const UserWalletScreen({super.key});
 
-  List<Map<String, dynamic>> _walletCards(WalletModel? wallet) => [
-        {
-          'name': 'Red Hawk Dollars',
-          'balance': '\$${(wallet?.balance ?? 0.0).toStringAsFixed(2)}',
-          'type': 'Debit',
-          'color': const Color(0xFF8B1A2E),
-          'icon': Icons.account_balance_wallet,
-        },
-        {'name': 'Flex Dollars', 'balance': '\$0.00', 'type': 'Flex', 'color': Colors.blue, 'icon': Icons.payment},
-        {'name': 'Bonus Dollars', 'balance': '\$0.00', 'type': 'Bonus', 'color': Colors.green, 'icon': Icons.card_giftcard},
-        {'name': 'Meal Swipes', 'balance': '0 swipes', 'type': 'Meal', 'color': Colors.orange, 'icon': Icons.restaurant},
-        {
-          'name': 'Points',
-          'balance': '${wallet?.points ?? 0} pts',
-          'type': 'Rewards',
-          'color': Colors.amber,
-          'icon': Icons.stars,
-        },
-      ];
+  final List<Map<String, dynamic>> walletCards = const [
+    {'name': 'Red Hawk Dollars', 'balance': '\$0.00', 'type': 'Debit', 'color': Color(0xFF8B1A2E), 'icon': Icons.account_balance_wallet},
+    {'name': 'Flex Dollars', 'balance': '\$0.00', 'type': 'Flex', 'color': Colors.blue, 'icon': Icons.payment},
+    {'name': 'Bonus Dollars', 'balance': '\$0.00', 'type': 'Bonus', 'color': Colors.green, 'icon': Icons.card_giftcard},
+    {'name': 'Meal Swipes', 'balance': '0 swipes', 'type': 'Meal', 'color': Colors.orange, 'icon': Icons.restaurant},
+    {'name': 'Points', 'balance': '250 pts', 'type': 'Rewards', 'color': Colors.amber, 'icon': Icons.stars},
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('My Wallet'),
         elevation: 0,
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: uid == null ? null : FirebaseFirestore.instance.collection('wallets').doc(uid).snapshots(),
-        builder: (context, snapshot) {
-          final wallet = snapshot.hasData && snapshot.data!.exists ? WalletModel.fromFirestore(snapshot.data!) : null;
-          final walletCards = _walletCards(wallet);
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Demo Wallet', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            Text('Real balances will appear after launch', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+            const SizedBox(height: 16),
+            Row(
               children: [
-                Text('My Wallet', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
-                const SizedBox(height: 4),
-                const Text('Red Hawk Dollars balance updates from your account. Other categories are coming soon.', style: TextStyle(color: Colors.grey, fontSize: 13)),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: _actionButton(context, Icons.send, 'Send Money', '/wallet/send')),
-                    const SizedBox(width: 10),
-                    Expanded(child: _actionButton(context, Icons.qr_code_2, 'Receive', '/wallet/receive')),
-                    const SizedBox(width: 10),
-                    Expanded(child: _actionButton(context, Icons.storefront_outlined, 'Pay Vendor', '/wallet/pay-vendor')),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                ...walletCards.map((card) => Container(
+                Expanded(child: _actionButton(context, Icons.send, 'Send Money', '/wallet/send')),
+                const SizedBox(width: 10),
+                Expanded(child: _actionButton(context, Icons.qr_code_2, 'Receive', '/wallet/receive')),
+                const SizedBox(width: 10),
+                Expanded(child: _actionButton(context, Icons.storefront_outlined, 'Pay Vendor', '/wallet/pay-vendor')),
+              ],
+            ),
+            const SizedBox(height: 18),
+            ...walletCards.map((card) => Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: cs.surface,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Row(
                 children: [
@@ -86,8 +67,8 @@ class UserWalletScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(card['name'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: cs.onSurface)),
-                        Text(card['type'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text(card['name'] as String, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                        Text(card['type'] as String, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                       ],
                     ),
                   ),
@@ -100,26 +81,27 @@ class UserWalletScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
-                'Real money movement (send, receive, pay vendor) is coming in a future update.',
-                style: TextStyle(color: Colors.grey, fontSize: 13),
+              child: Text(
+                'This is a demo wallet. Real payments will be added after security and legal review.',
+                style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                 textAlign: TextAlign.center,
               ),
             ),
-              ],
-            ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
 
   Widget _actionButton(BuildContext context, IconData icon, String label, String route) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Material(
-      color: Colors.white,
+      color: colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -129,14 +111,14 @@ class UserWalletScreen extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.grey.shade100),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: const Color(0xFF8B1A2E)),
+              Icon(icon, color: colorScheme.primary),
               const SizedBox(height: 8),
-              Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              Text(label, textAlign: TextAlign.center, style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600)),
             ],
           ),
         ),

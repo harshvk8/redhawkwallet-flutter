@@ -62,7 +62,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                       decoration: BoxDecoration(
                         color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : cs.outlineVariant),
                       ),
                       child: Text(
                         filter,
@@ -103,7 +103,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           return Center(
                             child: Text(
                               selectedFilter == 'All' ? 'No transactions yet.' : 'No $selectedFilter transactions.',
-                              style: const TextStyle(color: Colors.grey),
+                              style: TextStyle(color: cs.onSurfaceVariant),
                             ),
                           );
                         }
@@ -134,7 +134,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               decoration: BoxDecoration(
                                 color: cs.surface,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade100),
+                                border: Border.all(color: cs.outlineVariant),
                               ),
                               child: Row(
                                 children: [
@@ -156,7 +156,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                         const SizedBox(height: 2),
                                         Text(
                                           '${tx.createdAt.month}/${tx.createdAt.day}/${tx.createdAt.year} at $hour:${_twoDigits(tx.createdAt.minute)} $period',
-                                          style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                          style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
                                         ),
                                       ],
                                     ),
