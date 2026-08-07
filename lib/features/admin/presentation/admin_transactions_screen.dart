@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import '../../../core/widgets/app_states.dart';
 import '../../wallet/models/transaction_model.dart';
 
 class AdminTransactionsScreen extends StatefulWidget {
@@ -32,6 +32,7 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Transactions'),
@@ -74,20 +75,19 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator(color: cs.primary));
+                    return const AppLoadingState(message: 'Loading transactions…');
                   }
                   if (snapshot.hasError) {
-                    return const Center(child: Text('Failed to load transactions.'));
+                    return AppErrorState(onRetry: () => setState(() {}));
                   }
                   final transactions = _applyFilter(
                     (snapshot.data?.docs ?? []).map(TransactionModel.fromFirestore).toList(),
                   );
                   if (transactions.isEmpty) {
-                    return Center(
-                      child: Text(
-                        selectedFilter == 'All' ? 'No transactions yet.' : 'No $selectedFilter transactions.',
-                        style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
-                      ),
+                    return AppEmptyState(
+                      icon: Icons.receipt_long_outlined,
+                      title: selectedFilter == 'All' ? 'No transactions yet' : 'No $selectedFilter transactions',
+                      subtitle: 'There are no transactions matching this filter right now.',
                     );
                   }
                   return ListView.builder(
@@ -148,7 +148,13 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('${tx.createdAt.month}/${tx.createdAt.day}/${tx.createdAt.year}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                  Text('\$${tx.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                  Row(
+                                    children: [
+                                      Text('\$${tx.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                      const SizedBox(width: 6),
+                                      const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],
