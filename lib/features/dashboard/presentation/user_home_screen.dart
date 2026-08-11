@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../wallet/models/transaction_model.dart';
 
 class UserHomeScreen extends StatelessWidget {
   const UserHomeScreen({super.key});
@@ -7,25 +11,28 @@ class UserHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final user = FirebaseAuth.instance.currentUser;
+    final uid = user?.uid;
+    final displayName = user?.displayName?.split(' ').first ?? 'Student';
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(cs),
+            _buildHeader(context, cs, displayName),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSummaryRow(cs),
+                    _buildBalanceRow(cs, uid),
                     const SizedBox(height: 20),
                     Text('Quick Access', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
                     const SizedBox(height: 12),
                     _buildQuickAccessGrid(context, cs),
                     const SizedBox(height: 20),
-                    _buildRecentTransaction(context, cs),
+                    _buildRecentTransactions(context, cs, uid),
                   ],
                 ),
               ),
@@ -36,88 +43,85 @@ class UserHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(ColorScheme cs) {
+  Widget _buildHeader(BuildContext context, ColorScheme cs, String firstName) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       color: cs.primary,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Welcome back,', style: TextStyle(color: Colors.white70, fontSize: 13)),
-              Text('Student Name', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text('Welcome back,', style: TextStyle(color: Colors.white70, fontSize: 13)),
+              Text(firstName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
             ],
           ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
-                child: const Icon(Icons.notifications_none, color: Colors.white, size: 20),
-              ),
-            ],
+          GestureDetector(
+            onTap: () => context.push('/notifications'),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+              child: const Icon(Icons.notifications_none, color: Colors.white, size: 20),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryRow(ColorScheme cs) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: cs.primary,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Wallet Balance', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                SizedBox(height: 4),
-                Text('\$0.00', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                Text('Demo', style: TextStyle(color: Colors.white54, fontSize: 11)),
-              ],
-            ),
-          ),
-        ),
+  Widget _buildBalanceRow(ColorScheme cs, String? uid) {
+    if (uid == null) {
+      return Row(children: [
+        _staticCard('\$0.00', 'Wallet Balance', cs.primary, cs),
         const SizedBox(width: 12),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.amber.shade700,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Points', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                SizedBox(height: 4),
-                Text('250', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                Text('Next reward at 500', style: TextStyle(color: Colors.white70, fontSize: 11)),
-              ],
-            ),
-          ),
+        _staticCard('0 pts', 'Points', Colors.amber.shade700, cs),
+      ]);
+    }
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('wallets').doc(uid).snapshots(),
+      builder: (context, snap) {
+        final data = snap.data?.data() as Map<String, dynamic>?;
+        final balance = (data?['balance'] as num?)?.toDouble() ?? 0.0;
+        final points = (data?['points'] as num?)?.toInt() ?? 0;
+        return Row(
+          children: [
+            _staticCard('\$${balance.toStringAsFixed(2)}', 'Wallet Balance', cs.primary, cs),
+            const SizedBox(width: 12),
+            _staticCard('$points pts', 'Points', Colors.amber.shade700, cs),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _staticCard(String value, String label, Color color, ColorScheme cs) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            const SizedBox(height: 4),
+            Text(value, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+          ],
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildQuickAccessGrid(BuildContext context, ColorScheme cs) {
     final items = [
-      {'icon': Icons.account_balance_wallet, 'label': 'Wallet', 'color': cs.primary},
-      {'icon': Icons.local_offer, 'label': 'Offers', 'color': Colors.orange},
-      {'icon': Icons.event, 'label': 'Events', 'color': Colors.blue},
-      {'icon': Icons.qr_code, 'label': 'QR ID', 'color': Colors.purple},
-      {'icon': Icons.history, 'label': 'Transactions', 'color': Colors.teal},
-      {'icon': Icons.person, 'label': 'Profile', 'color': Colors.green},
-      {'icon': Icons.star, 'label': 'Rewards', 'color': Colors.amber},
-      {'icon': Icons.settings, 'label': 'Settings', 'color': Colors.grey},
+      {'icon': Icons.account_balance_wallet, 'label': 'Wallet', 'color': cs.primary, 'route': '/wallet'},
+      {'icon': Icons.local_offer, 'label': 'Offers', 'color': Colors.orange, 'route': '/offers'},
+      {'icon': Icons.event, 'label': 'Events', 'color': Colors.blue, 'route': '/events'},
+      {'icon': Icons.qr_code, 'label': 'QR ID', 'color': Colors.purple, 'route': '/qr-id'},
+      {'icon': Icons.history, 'label': 'Transactions', 'color': Colors.teal, 'route': '/transactions'},
+      {'icon': Icons.person, 'label': 'Profile', 'color': Colors.green, 'route': '/account'},
+      {'icon': Icons.star, 'label': 'Rewards', 'color': Colors.amber, 'route': '/rewards'},
+      {'icon': Icons.settings, 'label': 'Settings', 'color': Colors.grey, 'route': '/settings'},
     ];
 
     return GridView.builder(
@@ -132,33 +136,36 @@ class UserHomeScreen extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: cs.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade100),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: (item['color'] as Color).withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+        return GestureDetector(
+          onTap: () => context.push(item['route'] as String),
+          child: Container(
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade100),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: (item['color'] as Color).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 22),
                 ),
-                child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 22),
-              ),
-              const SizedBox(height: 6),
-              Text(item['label'] as String, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: cs.onSurface)),
-            ],
+                const SizedBox(height: 6),
+                Text(item['label'] as String, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: cs.onSurface)),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildRecentTransaction(BuildContext context, ColorScheme cs) {
+  Widget _buildRecentTransactions(BuildContext context, ColorScheme cs, String? uid) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -172,27 +179,65 @@ class UserHomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Recent Transaction', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
-              TextButton(onPressed: () => context.push('/transactions'), child: Text('View All', style: TextStyle(color: cs.primary))),
+              Text('Recent Transactions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: cs.onSurface)),
+              TextButton(
+                onPressed: () => context.push('/transactions'),
+                child: Text('View All', style: TextStyle(color: cs.primary)),
+              ),
             ],
           ),
           const Divider(),
-          _txRow('Campus Coffee House', '-\$5.50', 'May 27', cs),
-          _txRow('Added Funds', '+\$25.00', 'May 26', cs),
-          _txRow('Student Bookstore', '-\$42.99', 'May 25', cs),
+          if (uid == null)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Center(child: Text('Sign in to see transactions', style: TextStyle(color: Colors.grey))),
+            )
+          else
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('transactions')
+                  .where('participants', arrayContains: uid)
+                  .orderBy('createdAt', descending: true)
+                  .limit(3)
+                  .snapshots(),
+              builder: (context, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                  );
+                }
+                final docs = snap.data?.docs ?? [];
+                if (docs.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Center(child: Text('No transactions yet', style: TextStyle(color: Colors.grey, fontSize: 13))),
+                  );
+                }
+                return Column(
+                  children: docs.map((doc) {
+                    final tx = TransactionModel.fromFirestore(doc);
+                    final isSent = tx.fromUid == uid;
+                    final label = isSent ? tx.toName.isNotEmpty ? tx.toName : 'Payment' : tx.fromName.isNotEmpty ? tx.fromName : 'Transfer';
+                    final amountStr = isSent ? '-\$${tx.amount.toStringAsFixed(2)}' : '+\$${tx.amount.toStringAsFixed(2)}';
+                    final dateStr = '${tx.createdAt.month}/${tx.createdAt.day}';
+                    return _txRow(label, amountStr, dateStr, isSent, cs);
+                  }).toList(),
+                );
+              },
+            ),
         ],
       ),
     );
   }
 
-  Widget _txRow(String name, String amount, String date, ColorScheme cs) {
-    final isDebit = amount.startsWith('-');
+  Widget _txRow(String name, String amount, String date, bool isDebit, ColorScheme cs) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(name, style: TextStyle(fontSize: 13, color: cs.onSurface)),
+          Expanded(child: Text(name, style: TextStyle(fontSize: 13, color: cs.onSurface), overflow: TextOverflow.ellipsis)),
           Row(
             children: [
               Text(amount, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDebit ? cs.onSurface : Colors.green)),

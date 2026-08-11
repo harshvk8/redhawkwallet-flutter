@@ -196,13 +196,67 @@ class AppRouter {
   );
 }
 
-class _SplashScreen extends StatelessWidget {
+class _SplashScreen extends StatefulWidget {
   const _SplashScreen();
 
   @override
+  State<_SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<_SplashScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
+    _scale = Tween<double>(begin: 0.82, end: 1.0).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack));
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
+    return Scaffold(
+      backgroundColor: const Color(0xFF8B1A2E),
+      body: Center(
+        child: FadeTransition(
+          opacity: _fade,
+          child: ScaleTransition(
+            scale: _scale,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 24, offset: const Offset(0, 8))],
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Image.asset('assets/images/RedHawkWalletGreen.png', fit: BoxFit.contain),
+                ),
+                const SizedBox(height: 24),
+                const Text('Red Hawk Wallet', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                const SizedBox(height: 6),
+                Text('Campus payments, simplified.', style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 14)),
+                const SizedBox(height: 48),
+                SizedBox(width: 28, height: 28, child: CircularProgressIndicator(color: Colors.white.withValues(alpha: 0.6), strokeWidth: 2.5)),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
