@@ -45,6 +45,9 @@ class UserService {
     await _db.collection('users').doc(firebaseUser.uid).set(data);
     await _db.collection('wallets').doc(firebaseUser.uid).set({
       'balance': 0.0,
+      'flexBalance': 0.0,
+      'bonusBalance': 0.0,
+      'mealSwipes': 0,
       'points': 0,
       'updatedAt': Timestamp.fromDate(now),
     });
@@ -71,5 +74,31 @@ class UserService {
       'role': UserRole.verifiedStudent,
       'updatedAt': Timestamp.fromDate(DateTime.now()),
     }, SetOptions(merge: true));
+  }
+
+  /// Normalizes a phone number to digits-only so formatting differences
+  /// ("555-123-4567" vs "5551234567") don't create false mismatches.
+  static String normalizePhone(String input) => input.replaceAll(RegExp(r'[^0-9]'), '');
+
+  /// Updates the caller's own name and/or phone number. Rejects a phone
+  /// number that's already registered to a different account, since the
+  /// Send Money "enter a phone number" lookup depends on numbers being
+  /// unique enough to resolve to a single person.
+  Future<void> updateProfile(String uid, {String? name, String? phoneNumber}) async {
+    if (phoneNumber != null && phoneNumber.isNotEmpty) {
+      final existing = await _db
+          .collection('users')
+          .where('phoneNumber', isEqualTo: phoneNumber)
+          .limit(1)
+          .get();
+      if (existing.docs.isNotEmpty && existing.docs.first.id != uid) {
+        throw Exception('That phone number is already registered to another account.');
+      }
+    }
+
+    final data = <String, dynamic>{'updatedAt': Timestamp.fromDate(DateTime.now())};
+    if (name != null) data['name'] = name;
+    if (phoneNumber != null) data['phoneNumber'] = phoneNumber;
+    await _db.collection('users').doc(uid).set(data, SetOptions(merge: true));
   }
 }

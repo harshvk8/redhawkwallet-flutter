@@ -13,6 +13,9 @@ class AdminTransactionsScreen extends StatefulWidget {
 
 class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
   String selectedFilter = 'All';
+  // Pending/Failed will always be empty today — transferMoney only ever
+  // writes status: "completed" (it throws before writing anything on
+  // failure). Kept for when a pending/async payment path exists.
   final List<String> filters = ['All', 'Completed', 'Pending', 'Failed'];
 
   Color _statusColor(String status) {
@@ -144,7 +147,13 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('${tx.createdAt.month}/${tx.createdAt.day}/${tx.createdAt.year}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                  Text('\$${tx.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                  Row(
+                                    children: [
+                                      Text('\$${tx.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                      const SizedBox(width: 6),
+                                      const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],

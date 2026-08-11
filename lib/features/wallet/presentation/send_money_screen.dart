@@ -1,5 +1,19 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../auth/services/user_service.dart';
+import '../services/money_transfer_service.dart';
+
+/// Recipients eligible for a casual P2P transfer: verified students in good
+/// standing. Vendors have their own dedicated Pay Vendor flow, and suspended
+/// accounts aren't payable here. A missing accountStatus field means "active"
+/// everywhere else in this app (UserModel's parser, the router's suspend
+/// check), so this matches that convention rather than requiring the field
+/// to be explicitly set.
+bool _isApprovedRecipientData(Map<String, dynamic> data) =>
+    data['role'] == 'verified_student' && data['accountStatus'] != 'suspended';
 
 class SendMoneyScreen extends StatefulWidget {
   const SendMoneyScreen({super.key});
@@ -9,113 +23,289 @@ class SendMoneyScreen extends StatefulWidget {
 }
 
 class _SendMoneyScreenState extends State<SendMoneyScreen> {
-  final TextEditingController _recipientController = TextEditingController(text: 'Alex Johnson');
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _nameFilterController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _noteController = TextEditingController(text: 'Lunch split');
+  final TextEditingController _noteController = TextEditingController();
 
-  final List<Map<String, String>> recentContacts = const [
-    {'name': 'Alex Johnson', 'email': 'alex@montclair.edu', 'initial': 'A'},
-    {'name': 'Sara Lee', 'email': 'sara@montclair.edu', 'initial': 'S'},
-    {'name': 'Mike Chen', 'email': 'mike@montclair.edu', 'initial': 'M'},
-  ];
+  String? _recipientUid;
+  String? _recipientName;
+  bool _searching = false;
+  bool _sending = false;
+  String? _searchError;
 
   @override
   void dispose() {
-    _recipientController.dispose();
+    _phoneController.dispose();
+    _nameFilterController.dispose();
     _amountController.dispose();
     _noteController.dispose();
     super.dispose();
   }
 
-  void _selectRecipient(String name) {
+  void _selectRecipient(String uid, String name) {
     setState(() {
-      _recipientController.text = name;
+      _recipientUid = uid;
+      _recipientName = name;
+      _searchError = null;
     });
+  }
+
+  Future<void> _searchByPhone() async {
+    final phone = UserService.normalizePhone(_phoneController.text.trim());
+    if (phone.isEmpty) return;
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    setState(() {
+      _searching = true;
+      _searchError = null;
+    });
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .where('phoneNumber', isEqualTo: phone)
+          .limit(1)
+          .get();
+      if (snap.docs.isEmpty) {
+        setState(() => _searchError = 'No account found for that phone number.');
+        return;
+      }
+      final doc = snap.docs.first;
+      if (doc.id == currentUser?.uid) {
+        setState(() => _searchError = "You can't send money to yourself.");
+        return;
+      }
+      final data = doc.data();
+      if (!_isApprovedRecipientData(data)) {
+        setState(() => _searchError = 'That account is not eligible to receive transfers.');
+        return;
+      }
+      _selectRecipient(doc.id, data['name'] as String? ?? 'User');
+    } catch (e) {
+      setState(() => _searchError = 'Search failed: $e');
+    } finally {
+      if (mounted) setState(() => _searching = false);
+    }
+  }
+
+  Future<void> _send() async {
+    if (_recipientUid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Choose a recipient first'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+    final amount = double.tryParse(_amountController.text.trim());
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a valid amount'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Send \$${amount.toStringAsFixed(2)} to $_recipientName?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B1A2E), foregroundColor: Colors.white),
+            child: const Text('Send'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _sending = true);
+    try {
+      await MoneyTransferService().transfer(
+        toUid: _recipientUid!,
+        amount: amount,
+        note: _noteController.text.trim(),
+        type: 'transfer',
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sent \$${amount.toStringAsFixed(2)} to $_recipientName'), backgroundColor: const Color(0xFF8B1A2E)),
+        );
+        context.pop();
+      }
+    } on MoneyTransferException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Transfer failed: $e'), backgroundColor: Colors.red));
+      }
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('Send Money'),
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _headerCard(),
+            _headerCard(colorScheme),
             const SizedBox(height: 16),
-            const Text('Recipient', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            Text('Enter phone number', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             TextField(
-              controller: _recipientController,
-              onChanged: (_) => setState(() {}),
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              onSubmitted: (_) => _searchByPhone(),
               decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                prefixIcon: Icon(Icons.phone, color: colorScheme.onSurfaceVariant),
+                suffixIcon: _searching
+                    ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)))
+                    : IconButton(icon: const Icon(Icons.arrow_forward), onPressed: _searchByPhone),
                 filled: true,
-                fillColor: Colors.white,
-                hintText: 'Search by name, email, or wallet ID',
+                fillColor: colorScheme.surface,
+                hintText: '(555) 123-4567',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
+                  borderSide: BorderSide(color: colorScheme.outlineVariant),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            const Text('Recent Contacts', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            ...recentContacts.map((contact) => GestureDetector(
-                  onTap: () => _selectRecipient(contact['name']!),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: _recipientController.text == contact['name']
-                            ? const Color(0xFF8B1A2E)
-                            : Colors.grey.shade100,
-                        width: _recipientController.text == contact['name'] ? 1.5 : 1.0,
-                      ),
+            if (_searchError != null) ...[
+              const SizedBox(height: 6),
+              Text(_searchError!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+            ],
+            if (_recipientUid != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF8B1A2E), width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: const Color(0xFFFFF0F0),
+                      child: Text(_recipientName!.isNotEmpty ? _recipientName![0].toUpperCase() : '?', style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold)),
                     ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: const Color(0xFFFFF0F0),
-                          child: Text(
-                            contact['initial']!,
-                            style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(_recipientName!, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold))),
+                    const Icon(Icons.check_circle, color: Color(0xFF8B1A2E)),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            Text('Approved Recipients', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            Text('Verified students only. No contact info shown.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _nameFilterController,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
+                filled: true,
+                fillColor: colorScheme.surface,
+                hintText: 'Search by name',
+                isDense: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (uid == null)
+              Text('Not signed in.', style: TextStyle(color: colorScheme.onSurfaceVariant))
+            else
+              _approvedRecipientsList(uid),
+            const SizedBox(height: 16),
+            Text('Recent Contacts', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            if (uid == null)
+              Text('Not signed in.', style: TextStyle(color: colorScheme.onSurfaceVariant))
+            else
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('transactions')
+                    .where('fromUid', isEqualTo: uid)
+                    .orderBy('createdAt', descending: true)
+                    .limit(50)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: LinearProgressIndicator());
+                  }
+                  final seen = <String>{};
+                  final contacts = <Map<String, String>>[];
+                  for (final doc in snapshot.data!.docs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    if (data['type'] != 'transfer') continue;
+                    final toUid = data['toUid'] as String? ?? '';
+                    if (toUid.isEmpty || !seen.add(toUid)) continue;
+                    contacts.add({'uid': toUid, 'name': data['toName'] as String? ?? 'User'});
+                    if (contacts.length >= 5) break;
+                  }
+                  if (contacts.isEmpty) {
+                    return Text('No recent contacts yet.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant));
+                  }
+                  return Column(
+                    children: contacts.map((contact) {
+                      final selected = _recipientUid == contact['uid'];
+                      return GestureDetector(
+                        onTap: () => _selectRecipient(contact['uid']!, contact['name']!),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: selected ? const Color(0xFF8B1A2E) : colorScheme.outlineVariant,
+                              width: selected ? 1.5 : 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: const Color(0xFFFFF0F0),
+                                child: Text(
+                                  contact['name']!.isNotEmpty ? contact['name']![0].toUpperCase() : '?',
+                                  style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(child: Text(contact['name']!, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold))),
+                              if (selected)
+                                const Icon(Icons.check_circle, color: Color(0xFF8B1A2E))
+                              else
+                                Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(contact['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                            Text(contact['email']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                          ],
-                        ),
-                        const Spacer(),
-                        if (_recipientController.text == contact['name'])
-                          const Icon(Icons.check_circle, color: Color(0xFF8B1A2E))
-                        else
-                          const Icon(Icons.chevron_right, color: Colors.grey),
-                      ],
-                    ),
-                  ),
-                )),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
             const SizedBox(height: 16),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(child: _buildAmountField()),
                 const SizedBox(width: 12),
@@ -127,39 +317,29 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: _noteController,
-              onChanged: (_) => setState(() {}),
-              maxLines: 2,
+              maxLines: 3,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.white,
-                hintText: 'What is this for?',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF8B1A2E), width: 2),
-                ),
+                fillColor: colorScheme.surface,
+                hintText: 'Add a note for the transfer',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
               ),
             ),
             const SizedBox(height: 16),
             _buildSummaryCard(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Demo transfer prepared. Connect payments later.')),
-                  );
-                },
-                icon: const Icon(Icons.send),
+                onPressed: _sending ? null : _send,
+                icon: _sending
+                    ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.onPrimary))
+                    : const Icon(Icons.send),
                 label: const Text('Send Money', style: TextStyle(fontSize: 16)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B1A2E),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  foregroundColor: colorScheme.onPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
@@ -170,7 +350,88 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     );
   }
 
-  Widget _headerCard() {
+  Widget _approvedRecipientsList(String uid) {
+    return StreamBuilder<QuerySnapshot>(
+      // Single equality + orderBy on a different field — no composite index
+      // required. accountStatus is filtered client-side below.
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .where('role', isEqualTo: 'verified_student')
+          .orderBy('createdAt', descending: true)
+          .limit(200)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: LinearProgressIndicator());
+        }
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        final nameFilter = _nameFilterController.text.trim().toLowerCase();
+        final recipients = snapshot.data!.docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return doc.id != uid && _isApprovedRecipientData(data);
+        }).map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return {'uid': doc.id, 'name': data['name'] as String? ?? 'User'};
+        }).where((recipient) {
+          return nameFilter.isEmpty || (recipient['name'] as String).toLowerCase().contains(nameFilter);
+        }).toList()
+          ..sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+
+        if (recipients.isEmpty) {
+          return Text(
+            nameFilter.isEmpty ? 'No approved recipients yet.' : 'No approved recipients match "$nameFilter".',
+            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+          );
+        }
+        return SizedBox(
+          height: 96,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: recipients.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final recipient = recipients[index];
+              final name = recipient['name']!;
+              final selected = _recipientUid == recipient['uid'];
+              return GestureDetector(
+                onTap: () => _selectRecipient(recipient['uid']!, recipient['name']!),
+                child: SizedBox(
+                  width: 72,
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundColor: const Color(0xFFFFF0F0),
+                        child: Text(
+                          name.isNotEmpty ? name[0].toUpperCase() : '?',
+                          style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold, fontSize: 18),
+                        ),
+                      ),
+                      if (selected) ...[
+                        const SizedBox(height: 2),
+                        const Icon(Icons.check_circle, color: Color(0xFF8B1A2E), size: 14),
+                      ] else
+                        const SizedBox(height: 18),
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _headerCard(ColorScheme colorScheme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -178,24 +439,25 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         gradient: const LinearGradient(colors: [Color(0xFF8B1A2E), Color(0xFFC8102E)]),
         borderRadius: BorderRadius.circular(18),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Fast campus transfers', style: TextStyle(color: Colors.white70, fontSize: 13)),
-          SizedBox(height: 6),
-          Text('Send Red Hawk Dollars instantly', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          Text('Demo mode only. Transfers will be connected to payments later.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+          Text('Fast campus transfers', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 13)),
+          const SizedBox(height: 6),
+          Text('Send Red Hawk Dollars instantly', style: TextStyle(color: colorScheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
   Widget _buildAmountField() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Amount', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        Text('Amount', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         TextField(
           controller: _amountController,
@@ -204,16 +466,9 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
           decoration: InputDecoration(
             prefixText: '\$ ',
             filled: true,
-            fillColor: Colors.white,
+            fillColor: colorScheme.surface,
             hintText: '0.00',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade200),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF8B1A2E), width: 2),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
           ),
         ),
       ],
@@ -222,25 +477,28 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
   Widget _buildQuickAmountPanel() {
     final amounts = ['5', '10', '20', '50'];
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Quick Pick', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        Text('Quick Pick', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         Wrap(
-          spacing: 6,
-          runSpacing: 6,
+          spacing: 8,
+          runSpacing: 8,
           children: amounts
               .map((amount) => GestureDetector(
                     onTap: () => setState(() => _amountController.text = amount),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: colorScheme.outlineVariant),
                       ),
-                      child: Text('\$$amount', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text('\$$amount', style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
                     ),
                   ))
               .toList(),
@@ -250,20 +508,23 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   }
 
   Widget _buildSummaryCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Transfer Preview', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text('Transfer Preview', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
-          _summaryRow('To', _recipientController.text.isEmpty ? 'No recipient selected' : _recipientController.text),
+          _summaryRow('To', _recipientName ?? 'No recipient selected'),
           _summaryRow('Amount', _amountController.text.isEmpty ? '\$ 0.00' : '\$${_amountController.text}'),
           _summaryRow('Note', _noteController.text.isEmpty ? 'No note' : _noteController.text),
         ],
@@ -272,14 +533,17 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   }
 
   Widget _summaryRow(String label, String value) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          Text(label, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
           Flexible(
-            child: Text(value, textAlign: TextAlign.right, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+            child: Text(value, textAlign: TextAlign.right, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
           ),
         ],
       ),

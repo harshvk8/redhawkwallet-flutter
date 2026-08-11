@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/widgets/app_states.dart';
 
 import '../../wallet/models/transaction_model.dart';
@@ -16,6 +17,9 @@ class VendorTransactionHistoryScreen extends StatefulWidget {
 class _VendorTransactionHistoryScreenState
     extends State<VendorTransactionHistoryScreen> {
   String selectedFilter = 'All';
+  // Pending/Failed will always be empty today — transferMoney only ever
+  // writes status: "completed" (it throws before writing anything on
+  // failure). Kept for when a pending/async payment path exists.
   final List<String> filters = ['All', 'Completed', 'Pending', 'Failed'];
 
   Color _statusColor(String status) {
@@ -136,7 +140,17 @@ class _VendorTransactionHistoryScreenState
         final name = tx.fromName.isNotEmpty ? tx.fromName : 'Customer';
         final hour = tx.createdAt.hour % 12 == 0 ? 12 : tx.createdAt.hour % 12;
         final period = tx.createdAt.hour >= 12 ? 'PM' : 'AM';
-        return Container(
+        return GestureDetector(
+          onTap: () => context.push('/transaction-details', extra: {
+            'id': tx.id,
+            'fromName': name,
+            'toName': tx.toName.isNotEmpty ? tx.toName : 'You',
+            'amount': tx.amount,
+            'status': tx.status[0].toUpperCase() + tx.status.substring(1),
+            'createdAt': tx.createdAt,
+            'description': tx.description,
+          }),
+          child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -185,6 +199,7 @@ class _VendorTransactionHistoryScreenState
               const SizedBox(height: 8),
               Text('${tx.createdAt.month}/${tx.createdAt.day}/${tx.createdAt.year} at $hour:${tx.createdAt.minute.toString().padLeft(2, '0')} $period', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
             ],
+          ),
           ),
         );
       },

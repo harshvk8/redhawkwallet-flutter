@@ -18,20 +18,43 @@ service cloud.firestore {
 
     match /wallets/{userId} {
       allow read, create: if request.auth != null && request.auth.uid == userId;
-      // Balance is not client-writable — only a trusted process (Cloud Function)
-      // may change it once money-movement features land.
+      // All balance fields are server-granted, not client-writable — only a
+      // trusted process (Cloud Function, admin tooling) may change them.
+      // The owner may still update other wallet fields (e.g. a future
+      // preferences field) as long as none of these move. balance and points
+      // have existed on every wallet doc since account creation, so plain dot
+      // notation is safe; flexBalance/bonusBalance/mealSwipes use
+      // get(key, null) instead because wallets created before those fields
+      // existed don't have them, and dot-accessing a missing map key errors
+      // out the whole rule.
       allow update: if request.auth != null && request.auth.uid == userId &&
-        request.resource.data.balance == resource.data.balance;
+        request.resource.data.balance == resource.data.balance &&
+        request.resource.data.points == resource.data.points &&
+        request.resource.data.get('flexBalance', null) == resource.data.get('flexBalance', null) &&
+        request.resource.data.get('bonusBalance', null) == resource.data.get('bonusBalance', null) &&
+        request.resource.data.get('mealSwipes', null) == resource.data.get('mealSwipes', null);
       allow delete: if false;
     }
 
     match /transactions/{transactionId} {
+      // Firestore validates a list query against this rule using only the
+      // fields the query itself filters on — it can't infer that
+      // `participants` is always [fromUid, toUid] just because that's true
+      // of every doc this app happens to write. Screens that query
+      // `where('participants', arrayContains: uid)` (Transaction History,
+      // dashboards) need the participants clause below to match; screens
+      // that query `fromUid ==` / `toUid ==` directly need those clauses.
+      // Drop any one of the three and its matching query starts silently
+      // failing with permission-denied even though the data is correct.
       allow read: if request.auth != null &&
         (resource.data.fromUid == request.auth.uid ||
          resource.data.toUid == request.auth.uid ||
+         request.auth.uid in resource.data.participants ||
          isAdmin());
-      allow create: if request.auth != null &&
-        request.resource.data.fromUid == request.auth.uid;
+      // All money-moving transactions are written by the transferMoney Cloud
+      // Function (Admin SDK, bypasses rules) so every transfer gets the same
+      // server-side balance/eligibility validation. No client writes.
+      allow create, update, delete: if false;
     }
 
     match /paymentRequests/{requestId} {
