@@ -236,15 +236,14 @@ class _SplashScreenState extends State<_SplashScreen> with SingleTickerProviderS
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 120,
-                  height: 120,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 24, offset: const Offset(0, 8))],
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 24, offset: const Offset(0, 8))],
                   ),
-                  padding: const EdgeInsets.all(16),
-                  child: Image.asset('assets/images/RedHawkWalletGreen.png', fit: BoxFit.contain),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset('assets/images/RedHawkWalletGreen.png', width: 150),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 const Text('Red Hawk Wallet', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold, letterSpacing: 0.5)),

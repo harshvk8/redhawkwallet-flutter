@@ -169,6 +169,37 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                  child: Text('Legal', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                ),
+                ListTile(
+                  leading: Icon(Icons.article_outlined, color: colorScheme.primary),
+                  title: Text('Terms of Service', style: theme.textTheme.bodyMedium),
+                  trailing: Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant, size: 20),
+                  onTap: () => context.push('/vendor-terms'),
+                ),
+                Divider(height: 1, color: colorScheme.outlineVariant),
+                ListTile(
+                  leading: Icon(Icons.privacy_tip_outlined, color: colorScheme.primary),
+                  title: Text('Privacy Policy', style: theme.textTheme.bodyMedium),
+                  trailing: Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant, size: 20),
+                  onTap: () => context.push('/privacy'),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
