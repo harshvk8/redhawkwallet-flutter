@@ -39,10 +39,11 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Add Money'),
         backgroundColor: const Color(0xFF8B1A2E),
@@ -81,7 +82,7 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B1A2E),
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledBackgroundColor: cs.surfaceContainerHighest,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -95,10 +96,10 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
-              child: const Text(
+              decoration: BoxDecoration(color: cs.surfaceContainerHighest.withValues(alpha: 0.45), borderRadius: BorderRadius.circular(12)),
+              child: Text(
                 'Demo mode — real payments will be wired to Stripe in Week 3. Minimum deposit: \$1.00.',
-                style: TextStyle(color: Colors.grey, fontSize: 12),
+                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -135,6 +136,12 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
                     hintText: '0.00',
                     hintStyle: TextStyle(color: Colors.white38, fontSize: 36, fontWeight: FontWeight.bold),
                     border: InputBorder.none,
+                    // The app-wide InputDecorationTheme defaults every field to
+                    // filled: true with a near-white fill in light mode, which
+                    // was painting an opaque patch behind this field and
+                    // swallowing the white digits. This field sits directly on
+                    // the maroon gradient card, so it must stay unfilled.
+                    filled: false,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -206,20 +213,20 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
           color: cs.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? const Color(0xFF8B1A2E) : Colors.grey.shade200,
+            color: selected ? const Color(0xFF8B1A2E) : cs.outlineVariant,
             width: selected ? 2 : 1,
           ),
         ),
         child: Row(
           children: [
-            Icon(icon, color: selected ? const Color(0xFF8B1A2E) : Colors.grey, size: 28),
+            Icon(icon, color: selected ? const Color(0xFF8B1A2E) : cs.onSurfaceVariant, size: 28),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: selected ? const Color(0xFF8B1A2E) : cs.onSurface)),
-                  Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(subtitle, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                 ],
               ),
             ),
@@ -236,7 +243,7 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,7 +252,7 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
           const SizedBox(height: 10),
           _row('Amount', '\$${_parsedAmount.toStringAsFixed(2)}', cs),
           _row('Processing fee', _feeEstimate, cs),
-          Divider(color: Colors.grey.shade200, height: 20),
+          Divider(color: cs.outlineVariant, height: 20),
           _row('Total charged', _totalEstimate, cs, bold: true),
           const SizedBox(height: 6),
           _row('Added to wallet', '\$${_parsedAmount.toStringAsFixed(2)}', cs, color: Colors.green),

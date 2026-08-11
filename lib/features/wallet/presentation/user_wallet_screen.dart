@@ -1,21 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../models/wallet_balance_type.dart';
+
 class UserWalletScreen extends StatelessWidget {
   const UserWalletScreen({super.key});
-
-  final List<Map<String, dynamic>> walletCards = const [
-    {'name': 'Red Hawk Dollars', 'balance': '\$0.00', 'type': 'Debit', 'color': Color(0xFF8B1A2E), 'icon': Icons.account_balance_wallet},
-    {'name': 'Flex Dollars', 'balance': '\$0.00', 'type': 'Flex', 'color': Colors.blue, 'icon': Icons.payment},
-    {'name': 'Bonus Dollars', 'balance': '\$0.00', 'type': 'Bonus', 'color': Colors.green, 'icon': Icons.card_giftcard},
-    {'name': 'Meal Swipes', 'balance': '0 swipes', 'type': 'Meal', 'color': Colors.orange, 'icon': Icons.restaurant},
-    {'name': 'Points', 'balance': '250 pts', 'type': 'Rewards', 'color': Colors.amber, 'icon': Icons.stars},
-  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -30,9 +27,9 @@ class UserWalletScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Demo Wallet', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            Text('My Wallet', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
-            Text('Real balances will appear after launch', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+            Text('Red Hawk Dollars updates in real time.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -44,38 +41,45 @@ class UserWalletScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 18),
-            ...walletCards.map((card) => Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: colorScheme.outlineVariant),
+            if (uid == null)
+              Text('Not signed in.', style: TextStyle(color: colorScheme.onSurfaceVariant))
+            else
+              StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance.collection('wallets').doc(uid).snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: LinearProgressIndicator());
+                  }
+                  final walletData = snapshot.data?.data() as Map<String, dynamic>?;
+                  final points = (walletData?['points'] as num?)?.toInt() ?? 0;
+                  return Column(
+                    children: [
+                      ...WalletBalanceType.values.map((card) => _balanceCard(
+                            theme,
+                            colorScheme,
+                            name: card.label,
+                            type: card.type,
+                            color: card.color,
+                            icon: card.icon,
+                            value: card.format(walletData),
+                          )),
+                      // Points is shown here on the Wallet screen only — it's
+                      // not part of WalletBalanceType, which is also used to
+                      // populate the dashboard's balance picker, and Points
+                      // already has its own dedicated screen at /rewards.
+                      _balanceCard(
+                        theme,
+                        colorScheme,
+                        name: 'Points',
+                        type: 'Rewards',
+                        color: Colors.amber,
+                        icon: Icons.stars,
+                        value: '$points pts',
+                      ),
+                    ],
+                  );
+                },
               ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: (card['color'] as Color).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(card['icon'] as IconData, color: card['color'] as Color, size: 26),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(card['name'] as String, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-                        Text(card['type'] as String, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-                      ],
-                    ),
-                  ),
-                  Text(card['balance'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: card['color'] as Color)),
-                ],
-              ),
-            )),
             const SizedBox(height: 8),
             Container(
               width: double.infinity,
@@ -85,13 +89,56 @@ class UserWalletScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'This is a demo wallet. Real payments will be added after security and legal review.',
+                'Red Hawk Dollars reflects real transfers. Flex Dollars, Bonus Dollars, and Meal Swipes are not issued yet.',
                 style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                 textAlign: TextAlign.center,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _balanceCard(
+    ThemeData theme,
+    ColorScheme colorScheme, {
+    required String name,
+    required String type,
+    required Color color,
+    required IconData icon,
+    required String value,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 26),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                Text(type, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+              ],
+            ),
+          ),
+          Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: color)),
+        ],
       ),
     );
   }

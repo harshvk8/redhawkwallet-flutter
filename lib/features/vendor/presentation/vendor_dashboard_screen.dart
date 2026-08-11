@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/theme_notifier.dart';
+import '../../wallet/models/transaction_model.dart';
 
 class VendorDashboardScreen extends StatefulWidget {
   const VendorDashboardScreen({super.key});
@@ -12,39 +14,6 @@ class VendorDashboardScreen extends StatefulWidget {
 }
 
 class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
-  bool _isLoading = true;
-  bool _hasError = false;
-  List<Map<String, String>> recentTransactions = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-      setState(() {
-        recentTransactions = [
-          {'name': 'Alex Johnson', 'amount': '\$12.50', 'time': '2 min ago', 'status': 'Paid'},
-          {'name': 'Sara Lee', 'amount': '\$8.00', 'time': '15 min ago', 'status': 'Paid'},
-          {'name': 'Mike Chen', 'amount': '\$22.00', 'time': '1 hr ago', 'status': 'Paid'},
-        ];
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _hasError = true;
-        _isLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -208,100 +177,133 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   Widget _buildTransactionsSection(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
-    if (_isLoading) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: CircularProgressIndicator(color: Color(0xFFC8102E)),
-        ),
-      );
+    if (uid == null) {
+      return Text('Not signed in.', style: TextStyle(color: colorScheme.onSurfaceVariant));
     }
-    if (_hasError) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.red.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
-        ),
-        child: Column(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 40),
-            const SizedBox(height: 8),
-            Text('Something went wrong.', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: _loadData,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
-              style: ElevatedButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary),
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('transactions')
+          .where('toUid', isEqualTo: uid)
+          .orderBy('createdAt', descending: true)
+          .limit(5)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24.0),
+              child: CircularProgressIndicator(color: Color(0xFFC8102E)),
             ),
-          ],
-        ),
-      );
-    }
-    if (recentTransactions.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
-        child: Column(
-          children: [
-            Icon(Icons.receipt_long, color: Colors.grey, size: 40),
-            SizedBox(height: 8),
-            Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text('Your transactions will appear here.', style: TextStyle(fontSize: 13)),
-          ],
-        ),
-      );
-    }
-    return Column(
-      children: recentTransactions.map((tx) => Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
+          );
+        }
+        if (snapshot.hasError) {
+          return Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
+            ),
+            child: Column(
               children: [
-                CircleAvatar(
-                  backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
-                  child: Text(tx['name']![0], style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
+                const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                const SizedBox(height: 8),
+                Text('Something went wrong.', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: () => setState(() {}),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Try Again'),
+                  style: ElevatedButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary),
                 ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ],
+            ),
+          );
+        }
+        final recentTransactions = (snapshot.data?.docs ?? []).map(TransactionModel.fromFirestore).toList();
+        if (recentTransactions.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            child: const Column(
+              children: [
+                Icon(Icons.receipt_long, color: Colors.grey, size: 40),
+                SizedBox(height: 8),
+                Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(height: 4),
+                Text('Your transactions will appear here.', style: TextStyle(fontSize: 13)),
+              ],
+            ),
+          );
+        }
+        return Column(
+          children: recentTransactions.map((tx) {
+            final name = tx.fromName.isNotEmpty ? tx.fromName : 'Customer';
+            final hour = tx.createdAt.hour % 12 == 0 ? 12 : tx.createdAt.hour % 12;
+            final period = tx.createdAt.hour >= 12 ? 'PM' : 'AM';
+            final statusLabel = tx.status[0].toUpperCase() + tx.status.substring(1);
+            return GestureDetector(
+              onTap: () => context.push('/transaction-details', extra: {
+                'id': tx.id,
+                'fromName': name,
+                'toName': tx.toName.isNotEmpty ? tx.toName : 'You',
+                'amount': tx.amount,
+                'status': statusLabel,
+                'createdAt': tx.createdAt,
+                'description': tx.description,
+              }),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: colorScheme.outlineVariant),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(tx['name']!, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
-                    Text(tx['time']!, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                          child: Text(name[0].toUpperCase(), style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(name, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
+                            Text('$hour:${tx.createdAt.minute.toString().padLeft(2, '0')} $period', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('\$${tx.amount.toStringAsFixed(2)}', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+                          child: Text(statusLabel, style: TextStyle(color: Colors.green.shade700, fontSize: 11)),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(tx['amount']!, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
-                  child: Text(tx['status']!, style: TextStyle(color: Colors.green.shade700, fontSize: 11)),
-                ),
-              ],
-            ),
-          ],
-        ),
-      )).toList(),
+              ),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 

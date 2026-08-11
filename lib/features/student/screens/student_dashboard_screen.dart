@@ -1,32 +1,44 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class StudentDashboardScreen extends StatelessWidget {
+import '../../auth/models/user_model.dart';
+import '../../wallet/models/transaction_model.dart';
+import '../../wallet/models/wallet_balance_type.dart';
+
+class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
 
-  final List<Map<String, dynamic>> recentTransactions = const [
-    {
-      'name': 'Campus Coffee House',
-      'date': 'May 27, 2026 • 9:45 AM',
-      'amount': '-\$5.50',
-      'isDebit': true,
-      'icon': Icons.local_cafe,
-    },
-    {
-      'name': 'Added Funds',
-      'date': 'May 26, 2026 • 2:30 PM',
-      'amount': '+\$25.00',
-      'isDebit': false,
-      'icon': Icons.add_circle_outline,
-    },
-    {
-      'name': 'Student Bookstore',
-      'date': 'May 25, 2026 • 11:20 AM',
-      'amount': '-\$42.99',
-      'isDebit': true,
-      'icon': Icons.menu_book,
-    },
-  ];
+  @override
+  State<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
+}
+
+class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
+  static const _prefsKey = 'dashboard_wallet_balance_type';
+
+  WalletBalanceType _selectedBalance = WalletBalanceType.redHawkDollars;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSelectedBalance();
+  }
+
+  Future<void> _loadSelectedBalance() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = WalletBalanceType.fromName(prefs.getString(_prefsKey));
+    if (saved != null && mounted) {
+      setState(() => _selectedBalance = saved);
+    }
+  }
+
+  Future<void> _selectBalance(WalletBalanceType type) async {
+    setState(() => _selectedBalance = type);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefsKey, type.name);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +76,7 @@ class StudentDashboardScreen extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -77,7 +90,21 @@ class StudentDashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Welcome back,', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 14)),
-              Text('Student Name', style: TextStyle(color: colorScheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
+              if (uid == null)
+                Text('Student', style: TextStyle(color: colorScheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold))
+              else
+                StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+                  builder: (context, snapshot) {
+                    final name = snapshot.hasData && snapshot.data!.exists
+                        ? UserModel.fromFirestore(snapshot.data!).name
+                        : '';
+                    return Text(
+                      name.isNotEmpty ? name : 'Student',
+                      style: TextStyle(color: colorScheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+                    );
+                  },
+                ),
             ],
           ),
           Container(
@@ -97,6 +124,7 @@ class StudentDashboardScreen extends StatelessWidget {
   Widget _buildWalletCard(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Container(
       width: double.infinity,
@@ -108,24 +136,60 @@ class StudentDashboardScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Demo Wallet Balance', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 14)),
-          const SizedBox(height: 8),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('\$0.00', style: TextStyle(color: colorScheme.onPrimary, fontSize: 36, fontWeight: FontWeight.bold)),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text('USD', style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.7), fontSize: 14)),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => context.push('/wallet'),
+                child: Text(_selectedBalance.label, style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 14)),
+              ),
+              const SizedBox(width: 2),
+              // Sibling of the GestureDetector above, not nested inside it —
+              // nesting a PopupMenuButton inside a tap-to-navigate
+              // GestureDetector makes both fire on a single tap.
+              PopupMenuButton<WalletBalanceType>(
+                tooltip: 'Choose a balance to show',
+                padding: EdgeInsets.zero,
+                icon: Icon(Icons.keyboard_arrow_down, size: 18, color: colorScheme.onPrimary.withValues(alpha: 0.8)),
+                onSelected: _selectBalance,
+                itemBuilder: (context) => WalletBalanceType.values
+                    .map((type) => CheckedPopupMenuItem(
+                          value: type,
+                          checked: type == _selectedBalance,
+                          child: Text(type.label),
+                        ))
+                    .toList(),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => context.push('/wallet'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (uid == null)
+                  Text('\$0.00', style: TextStyle(color: colorScheme.onPrimary, fontSize: 36, fontWeight: FontWeight.bold))
+                else
+                  StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance.collection('wallets').doc(uid).snapshots(),
+                    builder: (context, snapshot) {
+                      final walletData = snapshot.data?.data() as Map<String, dynamic>?;
+                      return Text(
+                        _selectedBalance.format(walletData),
+                        style: TextStyle(color: colorScheme.onPrimary, fontSize: 36, fontWeight: FontWeight.bold),
+                      );
+                    },
+                  ),
+              ],
+            ),
           ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () => context.push('/wallet/add'),
               icon: Icon(Icons.add, size: 18, color: colorScheme.primary),
               label: const Text('Add Funds'),
               style: ElevatedButton.styleFrom(
@@ -211,6 +275,7 @@ class StudentDashboardScreen extends StatelessWidget {
   Widget _buildRecentTransactions(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,46 +291,99 @@ class StudentDashboardScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        ...recentTransactions.map((tx) => Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: colorScheme.outlineVariant),
+        if (uid == null)
+          Text('Not signed in.', style: TextStyle(color: colorScheme.onSurfaceVariant))
+        else
+          StreamBuilder<QuerySnapshot>(
+            // array-contains + orderBy on a different field needs a composite
+            // index, so sort client-side — same approach as Transaction History.
+            stream: FirebaseFirestore.instance
+                .collection('transactions')
+                .where('participants', arrayContains: uid)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: LinearProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Text('Could not load transactions.', style: TextStyle(color: colorScheme.onSurfaceVariant));
+              }
+              final transactions = (snapshot.data?.docs ?? []).map(TransactionModel.fromFirestore).toList()
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+              if (transactions.isEmpty) {
+                return Text('No transactions yet.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant));
+              }
+              return Column(
+                children: transactions.take(3).map((tx) {
+                  final isReceived = tx.toUid == uid;
+                  final counterparty = isReceived
+                      ? (tx.fromName.isNotEmpty ? tx.fromName : 'Someone')
+                      : (tx.toName.isNotEmpty ? tx.toName : 'Vendor');
+                  return GestureDetector(
+                    onTap: () => context.push('/transaction-details', extra: {
+                      'id': tx.id,
+                      'fromName': tx.fromName.isNotEmpty ? tx.fromName : 'Someone',
+                      'toName': tx.toName.isNotEmpty ? tx.toName : 'Vendor',
+                      'amount': tx.amount,
+                      'status': tx.status[0].toUpperCase() + tx.status.substring(1),
+                      'createdAt': tx.createdAt,
+                      'description': tx.description,
+                    }),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colorScheme.outlineVariant),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: isReceived ? Colors.green.withValues(alpha: 0.1) : colorScheme.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              isReceived ? Icons.call_received : Icons.call_made,
+                              color: isReceived ? Colors.green : colorScheme.primary,
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(counterparty, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${tx.createdAt.month}/${tx.createdAt.day}/${tx.createdAt.year}',
+                                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${isReceived ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: isReceived ? Colors.green : colorScheme.onSurface),
+                              ),
+                              Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant, size: 18),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              );
+            },
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: tx['isDebit'] as bool ? colorScheme.primary.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(tx['icon'] as IconData, color: tx['isDebit'] as bool ? colorScheme.primary : Colors.green, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(tx['name'] as String, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 2),
-                    Text(tx['date'] as String, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(tx['amount'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: tx['isDebit'] as bool ? colorScheme.onSurface : Colors.green)),
-                  Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant, size: 18),
-                ],
-              ),
-            ],
-          ),
-        )),
       ],
     );
   }
