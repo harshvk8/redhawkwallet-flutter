@@ -37,11 +37,14 @@ class _VendorListScreenState extends State<VendorListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8B1A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         title: const Text('Browse Vendors'),
       ),
       body: Column(
@@ -55,8 +58,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
                 prefixIcon: const Icon(Icons.search),
                 hintText: 'Search vendors',
                 filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                fillColor: colorScheme.surface,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
               ),
             ),
           ),
@@ -104,9 +107,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
                             label: Text(filter),
                             selected: isActive,
                             onSelected: (_) => setState(() => _selectedFilter = filter),
-                            selectedColor: const Color(0xFF8B1A2E),
-                            labelStyle: TextStyle(color: isActive ? Colors.white : Colors.black87),
-                            backgroundColor: Colors.white,
+                            selectedColor: colorScheme.primary,
+                            labelStyle: TextStyle(color: isActive ? colorScheme.onPrimary : colorScheme.onSurface),
+                            backgroundColor: colorScheme.surface,
                           );
                         },
                         separatorBuilder: (_, _) => const SizedBox(width: 8),
@@ -116,7 +119,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                     const SizedBox(height: 12),
                     Expanded(
                       child: filtered.isEmpty
-                          ? const Center(child: Text('No vendors found.', style: TextStyle(color: Colors.grey)))
+                          ? Center(child: Text('No vendors found.', style: TextStyle(color: colorScheme.onSurfaceVariant)))
                           : ListView.separated(
                               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                               itemCount: filtered.length,
@@ -135,16 +138,19 @@ class _VendorListScreenState extends State<VendorListScreen> {
   }
 
   Widget _vendorCard(BuildContext context, Map<String, dynamic> vendor, int index) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final color = _colors[index % _colors.length];
+
     return InkWell(
       onTap: () => context.push('/vendors/details', extra: vendor),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade100),
+          border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: Row(
           children: [
@@ -162,14 +168,14 @@ class _VendorListScreenState extends State<VendorListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(vendor['name'] as String, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  Text(vendor['name'] as String, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
-                  Text(vendor['category'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(vendor['category'] as String, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: Colors.grey),
+            Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
           ],
         ),
       ),

@@ -10,12 +10,14 @@ class UserHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final user = FirebaseAuth.instance.currentUser;
     final uid = user?.uid;
     final displayName = user?.displayName?.split(' ').first ?? 'Student';
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -28,9 +30,9 @@ class UserHomeScreen extends StatelessWidget {
                   children: [
                     _buildBalanceRow(cs, uid),
                     const SizedBox(height: 20),
-                    Text('Quick Access', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: cs.onSurface)),
+                    Text('Quick Access', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
-                    _buildQuickAccessGrid(context, cs),
+                    _buildQuickAccessGrid(context),
                     const SizedBox(height: 20),
                     _buildRecentTransactions(context, cs, uid),
                   ],
@@ -46,7 +48,9 @@ class UserHomeScreen extends StatelessWidget {
   Widget _buildHeader(BuildContext context, ColorScheme cs, String firstName) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      color: cs.primary,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [cs.primary, const Color(0xFFC8102E)]),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -112,7 +116,9 @@ class UserHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickAccessGrid(BuildContext context, ColorScheme cs) {
+  Widget _buildQuickAccessGrid(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
     final items = [
       {'icon': Icons.account_balance_wallet, 'label': 'Wallet', 'color': cs.primary, 'route': '/wallet'},
       {'icon': Icons.local_offer, 'label': 'Offers', 'color': Colors.orange, 'route': '/offers'},
@@ -142,7 +148,7 @@ class UserHomeScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: cs.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade100),
+              border: Border.all(color: cs.outlineVariant),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -156,7 +162,11 @@ class UserHomeScreen extends StatelessWidget {
                   child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 22),
                 ),
                 const SizedBox(height: 6),
-                Text(item['label'] as String, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: cs.onSurface)),
+                Text(
+                  item['label'] as String,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: cs.onSurface),
+                ),
               ],
             ),
           ),
@@ -171,7 +181,7 @@ class UserHomeScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,7 +228,9 @@ class UserHomeScreen extends StatelessWidget {
                   children: docs.map((doc) {
                     final tx = TransactionModel.fromFirestore(doc);
                     final isSent = tx.fromUid == uid;
-                    final label = isSent ? tx.toName.isNotEmpty ? tx.toName : 'Payment' : tx.fromName.isNotEmpty ? tx.fromName : 'Transfer';
+                    final label = isSent
+                        ? (tx.toName.isNotEmpty ? tx.toName : 'Payment')
+                        : (tx.fromName.isNotEmpty ? tx.fromName : 'Transfer');
                     final amountStr = isSent ? '-\$${tx.amount.toStringAsFixed(2)}' : '+\$${tx.amount.toStringAsFixed(2)}';
                     final dateStr = '${tx.createdAt.month}/${tx.createdAt.day}';
                     return _txRow(label, amountStr, dateStr, isSent, cs);
@@ -242,7 +254,7 @@ class UserHomeScreen extends StatelessWidget {
             children: [
               Text(amount, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDebit ? cs.onSurface : Colors.green)),
               const SizedBox(width: 8),
-              Text(date, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(date, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
             ],
           ),
         ],

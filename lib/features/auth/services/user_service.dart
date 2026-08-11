@@ -45,6 +45,9 @@ class UserService {
     await _db.collection('users').doc(firebaseUser.uid).set(data);
     await _db.collection('wallets').doc(firebaseUser.uid).set({
       'balance': 0.0,
+      'flexBalance': 0.0,
+      'bonusBalance': 0.0,
+      'mealSwipes': 0,
       'points': 0,
       'updatedAt': Timestamp.fromDate(now),
     });

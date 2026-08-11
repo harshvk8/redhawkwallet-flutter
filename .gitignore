@@ -110,11 +110,21 @@ unlinked_spec.ds
 **/linux/flutter/generated_plugin_registrant.h
 **/linux/flutter/generated_plugins.cmake
 
+# Firebase Cloud Functions
+functions/node_modules/
+functions/lib/
+functions/*.log
+
 # Coverage
 coverage/
 
 # Symbols
 app.*.symbols
+
+# Firebase Functions (Node)
+functions/node_modules/
+functions/lib/
+functions/*.log
 
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3

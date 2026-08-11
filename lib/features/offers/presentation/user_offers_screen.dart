@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserOffersScreen extends StatelessWidget {
   const UserOffersScreen({super.key});
@@ -36,29 +37,36 @@ class UserOffersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Offers'), elevation: 0),
-
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+          tooltip: 'Back',
+        ),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        title: const Text('Offers'),
+        elevation: 0,
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Available Offers',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: cs.onSurface,
-              ),
-            ),
+            Text('Available Offers', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
-            const Text(
-              'Verify your university email to unlock more offers',
-              style: TextStyle(color: Colors.grey, fontSize: 13),
-            ),
+            Text('Verify your university email to unlock more offers', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
@@ -69,9 +77,9 @@ class UserOffersScreen extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: cs.surface,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.grey.shade100),
+                      border: Border.all(color: colorScheme.outlineVariant),
                     ),
                     child: Row(
                       children: [
@@ -100,30 +108,11 @@ class UserOffersScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                offer['title'] as String,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                  color: cs.onSurface,
-                                ),
-                              ),
+                              Text(offer['title'] as String, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
                               const SizedBox(height: 2),
-                              Text(
-                                offer['vendor'] as String,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 13,
-                                ),
-                              ),
+                              Text(offer['vendor'] as String, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                               const SizedBox(height: 2),
-                              Text(
-                                'Expires ${offer['expiry']}',
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
-                                ),
-                              ),
+                              Text('Expires ${offer['expiry']}', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                             ],
                           ),
                         ),
@@ -137,20 +126,12 @@ class UserOffersScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: cs.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
-                          child: const Text(
-                            'Redeem',
-                            style: TextStyle(fontSize: 12),
-                          ),
+                          child: const Text('Redeem', style: TextStyle(fontSize: 12)),
                         ),
                       ],
                     ),

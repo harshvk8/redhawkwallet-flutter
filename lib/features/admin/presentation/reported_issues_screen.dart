@@ -24,6 +24,58 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
     return issues.where((i) => i['status'] == selectedFilter).toList();
   }
 
+  void _showIssueDetail(BuildContext context, Map<String, dynamic> issue) {
+    final isOpen = issue['status'] == 'Open';
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.warning_amber, color: isOpen ? Colors.orange : Colors.green),
+                const SizedBox(width: 8),
+                Expanded(child: Text(issue['title'] as String, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isOpen ? Colors.orange.shade50 : Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(issue['status'] as String, style: TextStyle(color: isOpen ? Colors.orange : Colors.green, fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _detailRow(Icons.person_outline, 'Reported by', issue['reportedBy'] as String),
+            _detailRow(Icons.calendar_today_outlined, 'Date', issue['date'] as String),
+            _detailRow(Icons.info_outline, 'Status', issue['status'] as String),
+            const SizedBox(height: 16),
+            const Text('Resolution coming post-MVP. Track via support queue.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.grey),
+          const SizedBox(width: 8),
+          Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,7 +160,7 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
                         Text(issue['date'], style: const TextStyle(color: Colors.grey, fontSize: 12)),
                         const SizedBox(height: 10),
                         OutlinedButton(
-                          onPressed: () {},
+                          onPressed: () => _showIssueDetail(context, issue),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFFC8102E),
                             side: const BorderSide(color: Color(0xFFC8102E)),

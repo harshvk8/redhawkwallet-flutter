@@ -9,6 +9,8 @@ class AuthDarkToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return SafeArea(
       child: Align(
         alignment: Alignment.topRight,
@@ -18,18 +20,49 @@ class AuthDarkToggle extends StatelessWidget {
             valueListenable: ThemeNotifier.instance,
             builder: (context, mode, _) => Material(
               color: mutedBg,
-              borderRadius: BorderRadius.circular(50),
+              borderRadius: BorderRadius.circular(999),
               child: InkWell(
-                borderRadius: BorderRadius.circular(50),
+                borderRadius: BorderRadius.circular(999),
                 onTap: ThemeNotifier.instance.toggle,
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Icon(
-                    mode == ThemeMode.dark
-                        ? Icons.wb_sunny_outlined
-                        : Icons.nightlight_round,
-                    size: 20,
-                    color: isDark ? Colors.white : Colors.black87,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: colorScheme.outlineVariant),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          mode == ThemeMode.dark
+                              ? Icons.dark_mode_outlined
+                              : Icons.dark_mode_outlined,
+                          size: 18,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Dark Mode',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Icon(
+                        mode == ThemeMode.dark ? Icons.toggle_on : Icons.toggle_off,
+                        size: 20,
+                        color: colorScheme.primary,
+                      ),
+                    ],
                   ),
                 ),
               ),
