@@ -60,9 +60,12 @@ class AppRouter {
     initialLocation: '/splash',
     refreshListenable: _authNotifier,
     redirect: (BuildContext context, GoRouterState state) {
+      // Hold on splash until the minimum display duration has elapsed.
+      if (!_authNotifier.ready) return '/splash';
+
       final isLoggedIn = FirebaseAuth.instance.currentUser != null;
       final loc = state.matchedLocation;
-      
+
       // Auth routes: redirect logged-in users away to their dashboard.
       final isAuthRoute = loc == '/login' ||
           loc == '/register' ||
@@ -261,16 +264,24 @@ class _SplashScreenState extends State<_SplashScreen> with SingleTickerProviderS
 }
 
 class _AuthStateNotifier extends ChangeNotifier {
+  bool _ready = false;
   String? _role;
   String? _accountStatus;
   String? _vendorStatus;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSub;
 
+  bool get ready => _ready;
   String? get role => _role;
   String? get accountStatus => _accountStatus;
   String? get vendorStatus => _vendorStatus;
 
   _AuthStateNotifier() {
+    // Keep the splash visible for at least 1800ms so the logo animation
+    // completes before the redirect fires (auth state resolves in <200ms).
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      _ready = true;
+      notifyListeners();
+    });
     FirebaseAuth.instance.authStateChanges().listen((user) {
       _userDocSub?.cancel();
       if (user == null) {
