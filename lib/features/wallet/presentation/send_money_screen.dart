@@ -202,7 +202,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 child: Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: const Color(0xFFFFF0F0),
+                      backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                       child: Text(_recipientName!.isNotEmpty ? _recipientName![0].toUpperCase() : '?', style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(width: 12),
@@ -283,7 +283,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: const Color(0xFFFFF0F0),
+                                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                                 child: Text(
                                   contact['name']!.isNotEmpty ? contact['name']![0].toUpperCase() : '?',
                                   style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold),
@@ -401,7 +401,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                     children: [
                       CircleAvatar(
                         radius: 26,
-                        backgroundColor: const Color(0xFFFFF0F0),
+                        backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                         child: Text(
                           name.isNotEmpty ? name[0].toUpperCase() : '?',
                           style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold, fontSize: 18),

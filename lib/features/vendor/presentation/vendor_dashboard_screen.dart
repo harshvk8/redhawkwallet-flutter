@@ -156,7 +156,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       valueListenable: ThemeNotifier.instance,
                       builder: (context, mode, _) {
                         return Switch.adaptive(
-                          value: mode == ThemeMode.dark,
+                          value: ThemeNotifier.instance.isDarkIn(context),
                           onChanged: (value) {
                             ThemeNotifier.instance.value = value ? ThemeMode.dark : ThemeMode.light;
                           },
@@ -232,13 +232,13 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: colorScheme.outlineVariant),
             ),
-            child: const Column(
+            child: Column(
               children: [
-                Icon(Icons.receipt_long, color: Colors.grey, size: 40),
-                SizedBox(height: 8),
-                Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
-                Text('Your transactions will appear here.', style: TextStyle(fontSize: 13)),
+                Icon(Icons.receipt_long, color: colorScheme.onSurfaceVariant, size: 40),
+                const SizedBox(height: 8),
+                const Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                const Text('Your transactions will appear here.', style: TextStyle(fontSize: 13)),
               ],
             ),
           );

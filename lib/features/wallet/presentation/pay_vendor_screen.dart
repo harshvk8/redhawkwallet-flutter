@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../services/money_transfer_service.dart';
+import '../widgets/payment_account_selector.dart';
 
 class PayVendorScreen extends StatefulWidget {
   const PayVendorScreen({super.key, this.vendor});
@@ -45,6 +46,7 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
       builder: (ctx) => AlertDialog(
         title: Text('Pay \$${amount.toStringAsFixed(2)} to ${vendor['name']}?'),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: const SingleChildScrollView(child: PaymentAccountSelector()),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
@@ -127,7 +129,7 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            _paymentMethods(context),
+            _paymentMethodsCard(context),
             const SizedBox(height: 16),
             _summaryCard(context, vendor),
             const SizedBox(height: 16),
@@ -238,14 +240,8 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
     );
   }
 
-  Widget _paymentMethods(BuildContext context) {
-    final methods = [
-      {'icon': Icons.account_balance_wallet, 'name': 'Red Hawk Dollars', 'enabled': true},
-      {'icon': Icons.credit_card, 'name': 'Flex Dollars', 'enabled': false},
-      {'icon': Icons.stars, 'name': 'Points', 'enabled': false},
-    ];
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+  Widget _paymentMethodsCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       width: double.infinity,
@@ -255,38 +251,7 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Pay with', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          ...methods.map((method) {
-            final enabled = method['enabled'] as bool;
-            return Opacity(
-              opacity: enabled ? 1.0 : 0.4,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  children: [
-                    Icon(method['icon'] as IconData, color: colorScheme.primary),
-                    const SizedBox(width: 10),
-                    Text(method['name'] as String, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                    const Spacer(),
-                    enabled
-                        ? Icon(Icons.check_circle, color: colorScheme.primary, size: 18)
-                        : Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(20)),
-                            child: Text('Coming soon', style: theme.textTheme.bodySmall?.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant)),
-                          ),
-                  ],
-                ),
-              ),
-            );
-          }),
-          Text('Selection state is demo-only.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-        ],
-      ),
+      child: const PaymentAccountSelector(),
     );
   }
 

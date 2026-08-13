@@ -52,4 +52,24 @@ class MoneyTransferService {
       throw MoneyTransferException(e.message ?? 'Payment failed.');
     }
   }
+
+  /// Calls the `sendMoneyViaQr` Cloud Function — student → student payment
+  /// initiated by scanning a Receive Money or Student ID QR code. Capped at
+  /// $100/day server-side; a resource-exhausted error means that cap was hit.
+  Future<String> sendMoneyViaQr({
+    required String toUid,
+    required double amount,
+    String note = '',
+  }) async {
+    try {
+      final result = await _functions.httpsCallable('sendMoneyViaQr').call<Map<String, dynamic>>({
+        'toUid': toUid,
+        'amount': amount,
+        'note': note,
+      });
+      return result.data['transactionId'] as String;
+    } on FirebaseFunctionsException catch (e) {
+      throw MoneyTransferException(e.message ?? 'Payment failed.');
+    }
+  }
 }

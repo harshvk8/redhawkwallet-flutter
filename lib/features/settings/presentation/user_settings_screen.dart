@@ -46,7 +46,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             ]),
             const SizedBox(height: 16),
             _buildSection(context, 'Support', [
-              _settingsTile(Icons.help_outline, 'Help & Support', onTap: () {}),
+              _settingsTile(Icons.help_outline, 'Help & Support', onTap: () => context.push('/support')),
               _settingsTile(Icons.info_outline, 'About Red Hawk Wallet', onTap: () {}),
             ]),
             const SizedBox(height: 16),
@@ -101,7 +101,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                     valueListenable: ThemeNotifier.instance,
                     builder: (context, mode, _) {
                       return Switch.adaptive(
-                        value: mode == ThemeMode.dark,
+                        value: ThemeNotifier.instance.isDarkIn(context),
                         onChanged: (value) {
                           ThemeNotifier.instance.value = value ? ThemeMode.dark : ThemeMode.light;
                         },

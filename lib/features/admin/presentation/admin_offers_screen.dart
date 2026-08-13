@@ -37,7 +37,7 @@ class AdminOffersScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: cs.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,9 +70,9 @@ class AdminOffersScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Text(offer['vendor'], style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text(offer['vendor'], style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
                   const SizedBox(height: 4),
-                  Text('Expires: ${offer['expiry']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text('Expires: ${offer['expiry']}', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                   const SizedBox(height: 10),
                   Row(
                     children: [

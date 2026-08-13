@@ -107,14 +107,17 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 ),
             ],
           ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: colorScheme.onPrimary.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
+          GestureDetector(
+            onTap: () => context.push('/notifications'),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.notifications_none, color: colorScheme.onPrimary, size: 22),
             ),
-            child: Icon(Icons.notifications_none, color: colorScheme.onPrimary, size: 22),
           ),
         ],
       ),

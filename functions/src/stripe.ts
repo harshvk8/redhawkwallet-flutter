@@ -122,6 +122,15 @@ export const confirmStripePayment = onRequest(
         description: "Added via card",
         stripePaymentIntentId: intent.id,
       });
+      tx.set(db.collection("notifications").doc(), {
+        uid,
+        title: `Wallet topped up`,
+        detail: `\$${amount.toFixed(2)} was added to your wallet.`,
+        type: "deposit",
+        transactionId: transactionRef.id,
+        read: false,
+        createdAt: now,
+      });
     });
 
     res.status(200).send("ok");

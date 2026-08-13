@@ -31,7 +31,7 @@ class UserEventsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: cs.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,17 +52,17 @@ class UserEventsScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                      Icon(Icons.calendar_today, size: 14, color: cs.onSurfaceVariant),
                       const SizedBox(width: 4),
-                      Text('${event['date']} at ${event['time']}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                      Text('${event['date']} at ${event['time']}', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                      Icon(Icons.location_on_outlined, size: 14, color: cs.onSurfaceVariant),
                       const SizedBox(width: 4),
-                      Text(event['location']!, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                      Text(event['location']!, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 12),

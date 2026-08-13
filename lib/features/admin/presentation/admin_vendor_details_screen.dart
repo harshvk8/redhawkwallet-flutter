@@ -35,7 +35,7 @@ class AdminVendorDetailsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
@@ -51,7 +51,7 @@ class AdminVendorDetailsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           const Text('Red Hawk Cafe', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          const Text('Food & Drinks', style: TextStyle(color: Colors.grey, fontSize: 14)),
+          Text('Food & Drinks', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 14)),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -73,7 +73,7 @@ class AdminVendorDetailsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,7 +98,7 @@ class AdminVendorDetailsScreen extends StatelessWidget {
         children: [
           Icon(icon, color: cs.primary, size: 20),
           const SizedBox(width: 12),
-          Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          Text('$label: ', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
           Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
         ],
       ),
@@ -112,22 +112,22 @@ class AdminVendorDetailsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Documents', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          _documentRow('Business License', true),
-          _documentRow('Tax ID', true),
-          _documentRow('Health Permit', false),
+          _documentRow(cs, 'Business License', true),
+          _documentRow(cs, 'Tax ID', true),
+          _documentRow(cs, 'Health Permit', false),
         ],
       ),
     );
   }
 
-  Widget _documentRow(String name, bool uploaded) {
+  Widget _documentRow(ColorScheme cs, String name, bool uploaded) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -135,20 +135,20 @@ class AdminVendorDetailsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.description_outlined, color: uploaded ? Colors.green : Colors.grey, size: 20),
+              Icon(Icons.description_outlined, color: uploaded ? Colors.green : cs.onSurfaceVariant, size: 20),
               const SizedBox(width: 10),
-              Text(name, style: const TextStyle(fontSize: 13)),
+              Text(name, style: TextStyle(fontSize: 13, color: cs.onSurface)),
             ],
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: uploaded ? Colors.green.shade50 : Colors.grey.shade100,
+              color: uploaded ? Colors.green.shade50 : cs.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               uploaded ? 'Uploaded' : 'Missing',
-              style: TextStyle(color: uploaded ? Colors.green : Colors.grey, fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(color: uploaded ? Colors.green : cs.onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ),
         ],

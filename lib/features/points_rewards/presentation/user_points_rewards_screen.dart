@@ -69,7 +69,7 @@ class UserPointsRewardsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: cs.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Row(
                 children: [
@@ -87,7 +87,7 @@ class UserPointsRewardsScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(reward['title'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
-                        Text('${reward['points']} points required', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text('${reward['points']} points required', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -96,7 +96,7 @@ class UserPointsRewardsScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cs.primary,
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.grey.shade200,
+                      disabledBackgroundColor: cs.surfaceContainerHighest,
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),

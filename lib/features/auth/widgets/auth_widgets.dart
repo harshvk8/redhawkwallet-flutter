@@ -18,55 +18,56 @@ class AuthDarkToggle extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: ValueListenableBuilder<ThemeMode>(
             valueListenable: ThemeNotifier.instance,
-            builder: (context, mode, _) => Material(
-              color: mutedBg,
-              borderRadius: BorderRadius.circular(999),
-              child: InkWell(
+            builder: (context, mode, _) {
+              final isDarkNow = ThemeNotifier.instance.isDarkIn(context);
+              return Material(
+                color: mutedBg,
                 borderRadius: BorderRadius.circular(999),
-                onTap: ThemeNotifier.instance.toggle,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: colorScheme.outlineVariant),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () => ThemeNotifier.instance.toggle(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.dark_mode_outlined,
+                            size: 18,
+                            color: colorScheme.primary,
+                          ),
                         ),
-                        child: Icon(
-                          mode == ThemeMode.dark
-                              ? Icons.dark_mode_outlined
-                              : Icons.dark_mode_outlined,
-                          size: 18,
+                        const SizedBox(width: 8),
+                        Text(
+                          'Dark Mode',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(
+                          isDarkNow ? Icons.toggle_on : Icons.toggle_off,
+                          size: 20,
                           color: colorScheme.primary,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Dark Mode',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Icon(
-                        mode == ThemeMode.dark ? Icons.toggle_on : Icons.toggle_off,
-                        size: 20,
-                        color: colorScheme.primary,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
       ),

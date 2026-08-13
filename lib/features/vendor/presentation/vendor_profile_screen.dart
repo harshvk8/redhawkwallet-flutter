@@ -7,8 +7,8 @@ class VendorProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Vendor Profile'),
         backgroundColor: const Color(0xFFC8102E),
@@ -26,9 +26,9 @@ class VendorProfileScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Column(
                 children: [
@@ -36,7 +36,7 @@ class VendorProfileScreen extends StatelessWidget {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF0F0),
+                      color: cs.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Icon(Icons.store, color: Color(0xFFC8102E), size: 44),
@@ -44,7 +44,7 @@ class VendorProfileScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   const Text('Red Hawk Cafe', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  const Text('Owner: John Smith', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text('Owner: John Smith', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -59,20 +59,20 @@ class VendorProfileScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Business Information', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  _detailRow(Icons.email_outlined, 'Email', FirebaseAuth.instance.currentUser?.email ?? 'cafe@redhawk.edu'),
-                  _detailRow(Icons.phone_outlined, 'Phone', '+1 (973) 555-0101'),
-                  _detailRow(Icons.category_outlined, 'Category', 'Food & Drinks'),
-                  _detailRow(Icons.location_on_outlined, 'Location', 'Student Center, Floor 1'),
-                  _detailRow(Icons.access_time, 'Hours', 'Mon-Fri 8AM - 6PM'),
+                  _detailRow(cs, Icons.email_outlined, 'Email', FirebaseAuth.instance.currentUser?.email ?? 'cafe@redhawk.edu'),
+                  _detailRow(cs, Icons.phone_outlined, 'Phone', '+1 (973) 555-0101'),
+                  _detailRow(cs, Icons.category_outlined, 'Category', 'Food & Drinks'),
+                  _detailRow(cs, Icons.location_on_outlined, 'Location', 'Student Center, Floor 1'),
+                  _detailRow(cs, Icons.access_time, 'Hours', 'Mon-Fri 8AM - 6PM'),
                 ],
               ),
             ),
@@ -114,15 +114,15 @@ class VendorProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _detailRow(IconData icon, String label, String value) {
+  Widget _detailRow(ColorScheme cs, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
           Icon(icon, color: const Color(0xFFC8102E), size: 20),
           const SizedBox(width: 12),
-          Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
+          Text('$label: ', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+          Expanded(child: Text(value, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: cs.onSurface))),
         ],
       ),
     );

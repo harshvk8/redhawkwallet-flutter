@@ -109,7 +109,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               onChanged: (v) => setState(() => _search = v.toLowerCase()),
               decoration: InputDecoration(
                 hintText: 'Search users...',
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                prefixIcon: Icon(Icons.search, color: cs.onSurfaceVariant),
                 filled: true,
                 fillColor: cs.surface,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -135,9 +135,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       decoration: BoxDecoration(
                         color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : cs.outlineVariant),
                       ),
-                      child: Text(f, style: TextStyle(color: selected ? Colors.white : cs.onSurface, fontSize: 12, fontWeight: FontWeight.w500)),
+                      child: Text(f, style: TextStyle(color: selected ? cs.onPrimary : cs.onSurface, fontSize: 12, fontWeight: FontWeight.w500)),
                     ),
                   );
                 },
@@ -200,10 +200,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.people_outline, color: Colors.grey.shade400, size: 48),
+                        Icon(Icons.people_outline, color: cs.onSurfaceVariant, size: 48),
                         const SizedBox(height: 8),
                         Text(_filter == 'All' ? 'No users yet.' : 'No $_filter users.',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                            style: TextStyle(fontWeight: FontWeight.bold, color: cs.onSurfaceVariant)),
                       ],
                     ),
                   );
@@ -235,7 +235,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       decoration: BoxDecoration(
                         color: cs.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: isSuspended ? Colors.red.shade100 : Colors.grey.shade100),
+                        border: Border.all(color: isSuspended ? Colors.red.shade100 : cs.outlineVariant),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,7 +254,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
-                                      Text(email, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                      Text(email, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                                     ],
                                   ),
                                 ],
@@ -282,11 +282,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              _verifiedBadge('Email', emailVerified),
+                              _verifiedBadge(cs, 'Email', emailVerified),
                               const SizedBox(width: 8),
-                              _verifiedBadge('University', uniVerified),
+                              _verifiedBadge(cs, 'University', uniVerified),
                               const Spacer(),
-                              Text('Joined $joined', style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                              Text('Joined $joined', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 11)),
                             ],
                           ),
                           if (role != 'admin') ...[
@@ -326,18 +326,18 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-  Widget _verifiedBadge(String label, bool verified) {
+  Widget _verifiedBadge(ColorScheme cs, String label, bool verified) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: verified ? Colors.green.shade50 : Colors.grey.shade100,
+        color: verified ? Colors.green.shade50 : cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
-          Icon(verified ? Icons.check_circle : Icons.cancel, size: 12, color: verified ? Colors.green : Colors.grey),
+          Icon(verified ? Icons.check_circle : Icons.cancel, size: 12, color: verified ? Colors.green : cs.onSurfaceVariant),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 11, color: verified ? Colors.green : Colors.grey)),
+          Text(label, style: TextStyle(fontSize: 11, color: verified ? Colors.green : cs.onSurfaceVariant)),
         ],
       ),
     );

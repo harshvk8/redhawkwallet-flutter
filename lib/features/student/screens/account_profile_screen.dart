@@ -174,7 +174,7 @@ class AccountProfileScreen extends StatelessWidget {
       {'icon': Icons.person_outline, 'label': 'Edit Profile', 'route': '/profile/edit'},
       {'icon': Icons.history, 'label': 'Transaction History', 'route': '/transactions'},
       {'icon': Icons.star_outline, 'label': 'Points and Rewards', 'route': '/rewards'},
-      {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': null},
+      {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': '/notifications'},
       {'icon': Icons.help_outline, 'label': 'Help and Support', 'route': null},
     ];
 
@@ -202,7 +202,7 @@ class AccountProfileScreen extends StatelessWidget {
                   valueListenable: ThemeNotifier.instance,
                   builder: (context, mode, _) {
                     return Switch.adaptive(
-                      value: mode == ThemeMode.dark,
+                      value: ThemeNotifier.instance.isDarkIn(context),
                       onChanged: (value) {
                         ThemeNotifier.instance.value = value ? ThemeMode.dark : ThemeMode.light;
                       },
@@ -218,7 +218,7 @@ class AccountProfileScreen extends StatelessWidget {
             final setting = entry.value;
             return Column(
               children: [
-                if (index > 0) Divider(height: 1, color: Colors.grey.shade100),
+                if (index > 0) Divider(height: 1, color: colorScheme.outlineVariant),
                 ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),

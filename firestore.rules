@@ -81,5 +81,56 @@ service cloud.firestore {
           .hasOnly(['status', 'studentUid', 'studentName', 'paidAt', 'transactionId']);
       allow delete: if false;
     }
+
+    match /studentIdTokens/{token} {
+      // Minted exclusively by issueStudentIdToken (Admin SDK) so a client
+      // can't forge a token claiming to be a different uid. Readable by any
+      // authenticated user so a future verifier (vendor/admin scan) can
+      // look one up.
+      allow read: if request.auth != null;
+      allow create, update, delete: if false;
+    }
+
+    match /offers/{offerId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.vendorUid == request.auth.uid;
+      // Vendor manages their own offer (edit/toggle), or any authenticated
+      // user "redeems" an active one — which only bumps usedCount by 1.
+      allow update: if request.auth != null &&
+        (resource.data.vendorUid == request.auth.uid ||
+         (resource.data.active == true &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedCount']) &&
+          request.resource.data.usedCount == resource.data.usedCount + 1));
+      allow delete: if request.auth != null && resource.data.vendorUid == request.auth.uid;
+    }
+
+    match /supportChats/{chatId} {
+      // Written exclusively by sendSupportMessage/claimSupportChat/
+      // sendAdminReply/closeSupportChat (Admin SDK, bypasses rules) so the
+      // AI escalation logic and admin assignment can't be spoofed from the
+      // client. Owner and admins may read.
+      allow read: if request.auth != null &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+
+      match /messages/{messageId} {
+        // Same reasoning as the parent doc — every message (user, assistant,
+        // admin, or system) is written by a Cloud Function so a client can't
+        // forge an assistant/admin reply or read another user's chat.
+        allow read: if request.auth != null &&
+          (get(/databases/$(database)/documents/supportChats/$(chatId)).data.userId == request.auth.uid || isAdmin());
+        allow create, update, delete: if false;
+      }
+    }
+
+    match /notifications/{notificationId} {
+      // Written exclusively by Cloud Functions alongside the event that
+      // triggered them (a transfer, a deposit, a vendor decision). Owner can
+      // only flip `read` — nothing else about their own notifications.
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null && resource.data.uid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create, delete: if false;
+    }
   }
 }

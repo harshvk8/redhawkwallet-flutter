@@ -45,10 +45,21 @@ export const approveVendor = onCall<ApproveVendorRequest, Promise<ApproveVendorR
   }
 
   const vendorStatus = decision === "approve" ? "approved" : "rejected";
+  const now = Timestamp.now();
   await vendorRef.update({
     vendorStatus,
     accountStatus: "active",
-    updatedAt: Timestamp.now(),
+    updatedAt: now,
+  });
+  await db.collection("notifications").add({
+    uid: vendorUid,
+    title: vendorStatus === "approved" ? "Vendor application approved" : "Vendor application declined",
+    detail: vendorStatus === "approved" ?
+      "You're approved! You can now accept payments." :
+      "Your vendor application was declined.",
+    type: "vendor_status",
+    read: false,
+    createdAt: now,
   });
 
   return {vendorStatus};

@@ -165,7 +165,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
               onChanged: (v) => setState(() => _search = v.toLowerCase()),
               decoration: InputDecoration(
                 hintText: 'Search vendors...',
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                prefixIcon: Icon(Icons.search, color: cs.onSurfaceVariant),
                 filled: true,
                 fillColor: cs.surface,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -191,9 +191,9 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                       decoration: BoxDecoration(
                         color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : cs.outlineVariant),
                       ),
-                      child: Text(f, style: TextStyle(color: selected ? Colors.white : cs.onSurface, fontSize: 13, fontWeight: FontWeight.w500)),
+                      child: Text(f, style: TextStyle(color: selected ? cs.onPrimary : cs.onSurface, fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
                   );
                 },
@@ -252,11 +252,11 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.store_mall_directory_outlined, color: Colors.grey.shade400, size: 48),
+                        Icon(Icons.store_mall_directory_outlined, color: cs.onSurfaceVariant, size: 48),
                         const SizedBox(height: 8),
                         Text(
                           _filter == 'All' ? 'No vendors registered yet.' : 'No $_filter vendors.',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: cs.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -286,7 +286,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                       decoration: BoxDecoration(
                         color: cs.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(color: cs.outlineVariant),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,10 +305,10 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Text(email, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                          Text(category, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          Text(email, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+                          Text(category, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                           const SizedBox(height: 4),
-                          Text('Joined $joined', style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                          Text('Joined $joined', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 11)),
                           const SizedBox(height: 10),
                           Row(
                             children: [

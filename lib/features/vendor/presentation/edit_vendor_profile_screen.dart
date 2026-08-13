@@ -6,8 +6,8 @@ class EditVendorProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Edit Profile'),
         backgroundColor: const Color(0xFFC8102E),
@@ -29,7 +29,7 @@ class EditVendorProfileScreen extends StatelessWidget {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF0F0),
+                      color: cs.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Icon(Icons.store, color: Color(0xFFC8102E), size: 56),

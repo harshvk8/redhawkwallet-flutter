@@ -1,39 +1,28 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class UserOffersScreen extends StatelessWidget {
   const UserOffersScreen({super.key});
 
-  final List<Map<String, dynamic>> offers = const [
-    {
-      'title': '10% off coffee',
-      'vendor': 'Red Hawk Cafe',
-      'discount': '10%',
-      'expiry': 'Jun 30, 2026',
-      'color': Color(0xFF8B1A2E),
-    },
-    {
-      'title': 'Free topping',
-      'vendor': 'Hawks Pizza',
-      'discount': 'FREE',
-      'expiry': 'Jun 15, 2026',
-      'color': Colors.orange,
-    },
-    {
-      'title': 'Student lunch combo',
-      'vendor': "Sam's Cafe",
-      'discount': '15%',
-      'expiry': 'Jun 7, 2026',
-      'color': Colors.green,
-    },
-    {
-      'title': 'Buy 1 Get 1 Coffee',
-      'vendor': 'Red Hawk Cafe',
-      'discount': 'BOGO',
-      'expiry': 'Jun 1, 2026',
-      'color': Colors.blue,
-    },
-  ];
+  static const _colors = [Color(0xFF8B1A2E), Colors.orange, Colors.green, Colors.blue, Colors.purple, Colors.teal];
+
+  Future<void> _redeem(BuildContext context, DocumentReference ref, String title) async {
+    try {
+      await ref.update({'usedCount': FieldValue.increment(1)});
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Redeemed: $title! Show this to the vendor.'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not redeem: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,75 +55,87 @@ class UserOffersScreen extends StatelessWidget {
           children: [
             Text('Available Offers', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
-            Text('Verify your university email to unlock more offers', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+            Text('From every approved vendor on campus', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
             const SizedBox(height: 16),
             Expanded(
-              child: ListView.builder(
-                itemCount: offers.length,
-                itemBuilder: (context, index) {
-                  final offer = offers[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: (offer['color'] as Color).withValues(
-                              alpha: 0.1,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Text(
-                              offer['discount'] as String,
-                              style: TextStyle(
-                                color: offer['color'] as Color,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('offers')
+                    .where('active', isEqualTo: true)
+                    .orderBy('createdAt', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator(color: colorScheme.primary));
+                  }
+                  if (snapshot.hasError) {
+                    return const Center(child: Text('Failed to load offers.'));
+                  }
+                  final docs = snapshot.data?.docs ?? [];
+                  if (docs.isEmpty) {
+                    return Center(
+                      child: Text('No offers available right now — check back soon!', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                      final doc = docs[index];
+                      final offer = doc.data() as Map<String, dynamic>;
+                      final color = _colors[index % _colors.length];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: colorScheme.outlineVariant),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: color.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  offer['discount'] as String? ?? '',
+                                  style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(offer['title'] as String, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
-                              const SizedBox(height: 2),
-                              Text(offer['vendor'] as String, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-                              const SizedBox(height: 2),
-                              Text('Expires ${offer['expiry']}', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-                            ],
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Redeemed: ${offer['title']}!'),
-                                backgroundColor: Colors.green,
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(offer['title'] as String? ?? '', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
+                                  const SizedBox(height: 2),
+                                  Text(offer['vendorName'] as String? ?? '', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+                                  if ((offer['description'] as String?)?.isNotEmpty == true) ...[
+                                    const SizedBox(height: 2),
+                                    Text(offer['description'] as String, style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+                                  ],
+                                ],
                               ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: colorScheme.onPrimary,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          child: const Text('Redeem', style: TextStyle(fontSize: 12)),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => _redeem(context, doc.reference, offer['title'] as String? ?? 'offer'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: colorScheme.primary,
+                                foregroundColor: colorScheme.onPrimary,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              child: const Text('Redeem', style: TextStyle(fontSize: 12)),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 },
               ),

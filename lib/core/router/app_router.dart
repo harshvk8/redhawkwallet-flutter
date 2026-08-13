@@ -53,6 +53,9 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/legal/presentation/terms_screen.dart';
 import '../../features/legal/presentation/privacy_policy_screen.dart';
 import '../../features/legal/presentation/vendor_terms_screen.dart';
+import '../../features/support/presentation/support_chat_screen.dart';
+import '../../features/admin/presentation/admin_support_chats_screen.dart';
+import '../../features/admin/presentation/admin_support_chat_detail_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
@@ -85,10 +88,8 @@ class AppRouter {
       }
 
       // Email verification gate: signed-in but unverified users are confined
-      // to the verification screen until they confirm their email. Uses the
-      // live Auth flag (not just the Firestore mirror) since that's what
-      // actually updates the moment the user verifies + reloads.
-      if (FirebaseAuth.instance.currentUser?.emailVerified != true) {
+      // to the verification screen until they confirm their email.
+      if (!_authNotifier.isEmailVerified) {
         return loc == '/email-verification' || isLegalRoute ? null : '/email-verification';
       }
 
@@ -106,8 +107,9 @@ class AppRouter {
 
       if (isLegalRoute) return null;
 
-      // Pending vendors are confined to the waiting screen until approved
-      if (isPendingVendor && loc != '/vendor/waiting') {
+      // Pending vendors are confined to the waiting screen until approved,
+      // except support chat — they may still need help while waiting.
+      if (isPendingVendor && loc != '/vendor/waiting' && loc != '/support') {
         return '/vendor/waiting';
       }
 
@@ -171,6 +173,7 @@ class AppRouter {
       GoRoute(path: '/settings/security', builder: (context, state) => const SecuritySettingsScreen()),
       GoRoute(path: '/events', builder: (context, state) => const UserEventsScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
+      GoRoute(path: '/support', builder: (context, state) => const SupportChatScreen()),
       GoRoute(path: '/terms', builder: (context, state) => const TermsScreen()),
       GoRoute(path: '/privacy', builder: (context, state) => const PrivacyPolicyScreen()),
       GoRoute(path: '/vendor-terms', builder: (context, state) => const VendorTermsScreen()),
@@ -210,6 +213,11 @@ class AppRouter {
       GoRoute(path: '/admin/settings', builder: (context, state) => const AdminSettingsScreen()),
       GoRoute(path: '/admin/reports', builder: (context, state) => const AdminReportsScreen()),
       GoRoute(path: '/admin/issues', builder: (context, state) => const ReportedIssuesScreen()),
+      GoRoute(path: '/admin/support', builder: (context, state) => const AdminSupportChatsScreen()),
+      GoRoute(
+        path: '/admin/support/chat',
+        builder: (context, state) => AdminSupportChatDetailScreen(chatId: state.extra as String),
+      ),
     ],
   );
 }
@@ -241,11 +249,13 @@ class _AuthStateNotifier extends ChangeNotifier {
   String? _role;
   String? _accountStatus;
   String? _vendorStatus;
+  bool _isEmailVerified = false;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSub;
 
   String? get role => _role;
   String? get accountStatus => _accountStatus;
   String? get vendorStatus => _vendorStatus;
+  bool get isEmailVerified => _isEmailVerified;
 
   _AuthStateNotifier() {
     FirebaseAuth.instance.authStateChanges().listen((user) {
@@ -254,6 +264,7 @@ class _AuthStateNotifier extends ChangeNotifier {
         _role = null;
         _accountStatus = null;
         _vendorStatus = null;
+        _isEmailVerified = false;
         notifyListeners();
         return;
       }
@@ -266,6 +277,14 @@ class _AuthStateNotifier extends ChangeNotifier {
         _role = (data?['role'] as String?)?.trim() ?? UserRole.normalUser;
         _accountStatus = (data?['accountStatus'] as String?)?.trim();
         _vendorStatus = (data?['vendorStatus'] as String?)?.trim();
+        // Firestore's isEmailVerified is the field the rest of the app treats
+        // as authoritative (it's what login_screen checks and what
+        // email_verification_screen writes). FirebaseAuth's own
+        // currentUser.emailVerified only updates after an explicit reload(),
+        // so it can lag behind — OR-ing the two avoids the router gate
+        // blocking every navigation for an account that's actually verified.
+        _isEmailVerified = (data?['isEmailVerified'] as bool? ?? false) ||
+            FirebaseAuth.instance.currentUser?.emailVerified == true;
         notifyListeners();
       });
     });

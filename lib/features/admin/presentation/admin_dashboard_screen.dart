@@ -81,7 +81,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             icon: const Icon(Icons.refresh),
             onPressed: _loading ? null : _loadStats,
           ),
-          IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.notifications_none), onPressed: () => context.push('/notifications')),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -159,6 +159,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(height: 8),
               _actionButton(context, Icons.people, 'Manage Users', '/admin/users'),
               const SizedBox(height: 8),
+              _actionButton(context, Icons.support_agent, 'Support Chats', '/admin/support'),
+              const SizedBox(height: 8),
               _actionButton(context, Icons.settings, 'Admin Settings', '/admin/settings'),
               const SizedBox(height: 20),
               const Text('Recent Activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -169,7 +171,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 decoration: BoxDecoration(
                   color: cs.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(color: cs.outlineVariant),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -181,13 +183,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(activity['action']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                            Text(activity['detail']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                            Text(activity['action']!, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cs.onSurface)),
+                            Text(activity['detail']!, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                           ],
                         ),
                       ],
                     ),
-                    Text(activity['time']!, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                    Text(activity['time']!, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 11)),
                   ],
                 ),
               )),
@@ -208,6 +210,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _statCard(String label, String value, IconData icon, Color color) {
+    final cs = Theme.of(context).colorScheme;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -220,8 +223,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             Icon(icon, color: color, size: 20),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+            Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: cs.onSurface)),
+            Text(label, style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
           ],
         ),
       ),
