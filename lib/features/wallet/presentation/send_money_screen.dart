@@ -126,7 +126,6 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         toUid: _recipientUid!,
         amount: amount,
         note: _noteController.text.trim(),
-        type: 'transfer',
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

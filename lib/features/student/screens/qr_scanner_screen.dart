@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../wallet/models/payment_request_model.dart';
 import '../../wallet/services/money_transfer_service.dart';
@@ -13,7 +14,52 @@ class QrScannerScreen extends StatefulWidget {
 }
 
 class _QrScannerScreenState extends State<QrScannerScreen> {
+  final _controller = MobileScannerController();
   bool _processing = false;
+  bool _torchOn = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onDetect(BarcodeCapture capture) async {
+    if (_processing) return;
+    if (capture.barcodes.isEmpty) return;
+    final raw = capture.barcodes.first.rawValue;
+    if (raw == null) return;
+    final requestId = PaymentRequestModel.requestIdFromQr(raw);
+    if (requestId == null) return;
+
+    setState(() => _processing = true);
+    await _controller.stop();
+    try {
+      final doc = await FirebaseFirestore.instance.collection('paymentRequests').doc(requestId).get();
+      if (!doc.exists) {
+        _showMessage('That payment request no longer exists.', Colors.orange);
+        return;
+      }
+      final request = PaymentRequestModel.fromFirestore(doc);
+      if (request.status != 'pending') {
+        _showMessage('That payment request is no longer available.', Colors.orange);
+        return;
+      }
+      await _confirmAndPay(request);
+    } catch (e) {
+      _showMessage('Could not read that code: $e', Colors.red);
+    } finally {
+      if (mounted) {
+        await _controller.start();
+        setState(() => _processing = false);
+      }
+    }
+  }
+
+  void _showMessage(String message, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
+  }
 
   Future<void> _confirmAndPay(PaymentRequestModel request) async {
     final cs = Theme.of(context).colorScheme;
@@ -35,14 +81,12 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     );
     if (confirmed != true) return;
 
-    setState(() => _processing = true);
     try {
       final user = FirebaseAuth.instance.currentUser!;
-      final transactionId = await MoneyTransferService().transfer(
+      final transactionId = await MoneyTransferService().payVendor(
         toUid: request.vendorUid,
         amount: request.amount,
         note: request.note,
-        type: 'payment',
       );
 
       await FirebaseFirestore.instance.collection('paymentRequests').doc(request.id).update({
@@ -55,18 +99,12 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Payment sent'), backgroundColor: cs.primary),
+          SnackBar(content: const Text('Payment sent'), backgroundColor: Theme.of(context).colorScheme.primary),
         );
         Navigator.pop(context);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Payment failed: $e'), backgroundColor: Colors.red),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _processing = false);
+      _showMessage('Payment failed: $e', Colors.red);
     }
   }
 
@@ -79,32 +117,52 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
         foregroundColor: Colors.white,
         title: const Text('Pay a Vendor'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(_torchOn ? Icons.flash_on : Icons.flash_off),
+            onPressed: () {
+              _controller.toggleTorch();
+              setState(() => _torchOn = !_torchOn);
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
+          SizedBox(
+            height: 280,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                MobileScanner(controller: _controller, onDetect: _onDetect),
+                IgnorePointer(
+                  child: Center(
+                    child: Container(
+                      width: 220,
+                      height: 220,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFF8B1A2E), width: 3),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                if (_processing)
+                  Container(
+                    color: Colors.black54,
+                    child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+                  ),
+              ],
+            ),
+          ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-            child: Column(
-              children: [
-                Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFF8B1A2E), width: 3),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.qr_code_scanner, color: Colors.white54, size: 48),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Camera scanning isn\'t available in this build.\nSelect the vendor\'s request below instead.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-              ],
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            color: Colors.black,
+            child: const Text(
+              'Point your camera at the vendor\'s QR code, or pick a request below.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white70, fontSize: 13),
             ),
           ),
           Expanded(

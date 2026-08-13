@@ -84,6 +84,14 @@ class AppRouter {
         return '/login';
       }
 
+      // Email verification gate: signed-in but unverified users are confined
+      // to the verification screen until they confirm their email. Uses the
+      // live Auth flag (not just the Firestore mirror) since that's what
+      // actually updates the moment the user verifies + reloads.
+      if (FirebaseAuth.instance.currentUser?.emailVerified != true) {
+        return loc == '/email-verification' || isLegalRoute ? null : '/email-verification';
+      }
+
       final role = _authNotifier.role!;
       final isPendingVendor =
           role == UserRole.vendor && _authNotifier.vendorStatus != 'approved';
@@ -177,7 +185,17 @@ class AppRouter {
       GoRoute(path: '/vendor/edit-profile', builder: (context, state) => const EditVendorProfileScreen()),
       GoRoute(path: '/vendor/payment-received', builder: (context, state) => const PaymentReceivedScreen()),
       GoRoute(path: '/vendor/payment-request', builder: (context, state) => const VendorCreatePaymentRequestScreen()),
-      GoRoute(path: '/vendor/qr', builder: (context, state) => const VendorQrPaymentScreen()),
+      GoRoute(
+        path: '/vendor/qr',
+        builder: (context, state) {
+          final requestId = state.extra as String?;
+          if (requestId == null) {
+            // Reached without a request id (e.g. deep link) — send back to create one.
+            return const _RedirectToPaymentRequest();
+          }
+          return VendorQrPaymentScreen(requestId: requestId);
+        },
+      ),
       GoRoute(path: '/vendor/offers', builder: (context, state) => const VendorOffersScreen()),
       GoRoute(path: '/vendor/transactions', builder: (context, state) => const VendorTransactionHistoryScreen()),
       GoRoute(path: '/vendor/sales-report', builder: (context, state) => const VendorSalesReportScreen()),
@@ -194,6 +212,18 @@ class AppRouter {
       GoRoute(path: '/admin/issues', builder: (context, state) => const ReportedIssuesScreen()),
     ],
   );
+}
+
+class _RedirectToPaymentRequest extends StatelessWidget {
+  const _RedirectToPaymentRequest();
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) context.go('/vendor/payment-request');
+    });
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  }
 }
 
 class _SplashScreen extends StatelessWidget {

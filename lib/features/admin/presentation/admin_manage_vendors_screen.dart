@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,6 +15,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
   String _search = '';
   final _filters = ['All', 'Active', 'Pending', 'Suspended'];
   final _db = FirebaseFirestore.instance;
+  final _functions = FirebaseFunctions.instance;
 
   /// Maps Firestore fields → a single display status string.
   String _displayStatus(Map<String, dynamic> data) {
@@ -37,20 +39,19 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
     );
     if (!confirmed) return;
     try {
-      await _db.collection('users').doc(uid).update({
-        'vendorStatus': 'approved',
-        'accountStatus': 'active',
-        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      await _functions.httpsCallable('approveVendor').call({
+        'vendorUid': uid,
+        'decision': 'approve',
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('$name approved'), backgroundColor: Colors.green),
         );
       }
-    } catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to approve $name: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Failed to approve $name: ${e.message}'), backgroundColor: Colors.red),
         );
       }
     }
@@ -65,20 +66,19 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
     );
     if (!confirmed) return;
     try {
-      await _db.collection('users').doc(uid).update({
-        'vendorStatus': 'rejected',
-        'accountStatus': 'active',
-        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      await _functions.httpsCallable('approveVendor').call({
+        'vendorUid': uid,
+        'decision': 'reject',
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Vendor application rejected')),
         );
       }
-    } catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to reject $name: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Failed to reject $name: ${e.message}'), backgroundColor: Colors.red),
         );
       }
     }

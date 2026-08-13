@@ -59,11 +59,10 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
 
     setState(() => _paying = true);
     try {
-      await MoneyTransferService().transfer(
+      await MoneyTransferService().payVendor(
         toUid: vendorUid,
         amount: amount,
         note: _noteController.text.trim(),
-        type: 'payment',
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

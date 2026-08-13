@@ -1,5 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Prefix for the QR code payload so the scanner can tell a Red Hawk Wallet
+/// payment request apart from an arbitrary QR code someone might scan.
+const String _qrPrefix = 'redhawkwallet:pay:';
+
 class PaymentRequestModel {
   final String id;
   final String vendorUid;
@@ -46,6 +50,14 @@ class PaymentRequestModel {
       paidAt: (data['paidAt'] as Timestamp?)?.toDate(),
     );
   }
+
+  /// The string encoded into the vendor-facing QR code for this request.
+  String get qrPayload => '$_qrPrefix$id';
+
+  /// Extracts the request id from a scanned QR value, or null if it's not
+  /// a Red Hawk Wallet payment QR.
+  static String? requestIdFromQr(String value) =>
+      value.startsWith(_qrPrefix) ? value.substring(_qrPrefix.length) : null;
 
   Map<String, dynamic> toMap() => {
         'vendorUid': vendorUid,
