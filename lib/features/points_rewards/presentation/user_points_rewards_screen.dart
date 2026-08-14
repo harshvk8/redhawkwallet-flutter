@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserPointsRewardsScreen extends StatelessWidget {
   const UserPointsRewardsScreen({super.key});
@@ -18,12 +19,29 @@ class UserPointsRewardsScreen extends StatelessWidget {
     const int nextRewardPoints = 300;
     const double progress = currentPoints / nextRewardPoints;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Points & Rewards'),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
+    void goBack() {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/home');
+      }
+    }
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) goBack();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Points & Rewards'),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: goBack,
+          ),
+        ),
+        body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
@@ -107,6 +125,7 @@ class UserPointsRewardsScreen extends StatelessWidget {
             )),
           ],
         ),
+      ),
       ),
     );
   }
