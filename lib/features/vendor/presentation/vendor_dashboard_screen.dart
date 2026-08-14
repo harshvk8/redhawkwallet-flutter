@@ -58,7 +58,10 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
           actions: [
-            IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
+            IconButton(
+              icon: const Icon(Icons.notifications_none),
+              onPressed: () => context.push('/notifications'),
+            ),
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () async {

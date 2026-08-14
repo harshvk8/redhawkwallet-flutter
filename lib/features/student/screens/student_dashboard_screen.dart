@@ -87,7 +87,11 @@ class StudentDashboardScreen extends StatelessWidget {
               color: colorScheme.onPrimary.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.notifications_none, color: colorScheme.onPrimary, size: 22),
+            child: IconButton(
+              onPressed: () => context.push('/notifications'),
+              icon: Icon(Icons.notifications_none, color: colorScheme.onPrimary, size: 22),
+              tooltip: 'Notifications',
+            ),
           ),
         ],
       ),
@@ -125,7 +129,7 @@ class StudentDashboardScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () => context.push('/wallet/add'),
               icon: Icon(Icons.add, size: 18, color: colorScheme.primary),
               label: const Text('Add Funds'),
               style: ElevatedButton.styleFrom(
@@ -158,7 +162,7 @@ class StudentDashboardScreen extends StatelessWidget {
           children: [
             const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
             GestureDetector(
-              onTap: () {},
+              onTap: () => context.push('/notifications'),
               child: Container(
                 width: 28,
                 height: 28,
