@@ -125,6 +125,18 @@ class _AdminSupportChatDetailScreenState extends State<AdminSupportChatDetailScr
                 child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: _service.messages(widget.chatId),
                   builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(
+                            'Could not load this conversation.\n${snapshot.error}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
+                          ),
+                        ),
+                      );
+                    }
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }

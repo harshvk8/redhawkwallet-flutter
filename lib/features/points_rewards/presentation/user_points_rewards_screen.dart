@@ -19,8 +19,9 @@ class UserPointsRewardsScreen extends StatelessWidget {
     const int nextRewardPoints = 300;
     const double progress = currentPoints / nextRewardPoints;
 
+    final canPop = context.canPop();
     void goBack() {
-      if (context.canPop()) {
+      if (canPop) {
         context.pop();
       } else {
         context.go('/home');
@@ -28,7 +29,11 @@ class UserPointsRewardsScreen extends StatelessWidget {
     }
 
     return PopScope(
-      canPop: false,
+      // Let the pop actually happen when there's something to pop — this
+      // must not be unconditionally false, or the fallback below vetoes
+      // its own context.pop() call and neither the button nor the system
+      // back gesture can ever complete a pop.
+      canPop: canPop,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) goBack();
       },

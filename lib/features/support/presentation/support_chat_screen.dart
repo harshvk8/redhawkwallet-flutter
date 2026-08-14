@@ -28,6 +28,28 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _service.myChats(),
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            final cs = Theme.of(context).colorScheme;
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.error_outline, color: cs.error, size: 40),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Could not load Help & Support.\n${snapshot.error}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
+                    ),
+                    const SizedBox(height: 16),
+                    OutlinedButton(onPressed: () => setState(() {}), child: const Text('Retry')),
+                  ],
+                ),
+              ),
+            );
+          }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -110,6 +132,18 @@ class _ChatBodyState extends State<_ChatBody> {
               : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: _service.messages(widget.chatId!),
                   builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(
+                            'Could not load this conversation.\n${snapshot.error}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
+                          ),
+                        ),
+                      );
+                    }
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
