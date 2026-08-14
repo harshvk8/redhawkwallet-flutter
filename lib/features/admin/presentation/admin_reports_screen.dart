@@ -268,32 +268,35 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: cs.outlineVariant),
       ),
-      child: Column(
-        children: vendors.asMap().entries.map((entry) {
-          final i = entry.key;
-          final v = entry.value;
-          return Column(
-            children: [
-              if (i > 0) Divider(height: 1, color: cs.outlineVariant),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: cs.primary.withValues(alpha: 0.1),
-                  child: Text('${i + 1}', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          children: vendors.asMap().entries.map((entry) {
+            final i = entry.key;
+            final v = entry.value;
+            return Column(
+              children: [
+                if (i > 0) Divider(height: 1, color: cs.outlineVariant),
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: cs.primary.withValues(alpha: 0.1),
+                    child: Text('${i + 1}', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
+                  ),
+                  title: Text(v['name'] as String, style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
+                  subtitle: Text('${v['txns']} transactions', style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(v['revenue'] as String, style: TextStyle(fontWeight: FontWeight.bold, color: cs.onSurface)),
+                      Text(v['growth'] as String, style: TextStyle(fontSize: 12, color: Colors.green.shade600, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
                 ),
-                title: Text(v['name'] as String, style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
-                subtitle: Text('${v['txns']} transactions', style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(v['revenue'] as String, style: TextStyle(fontWeight: FontWeight.bold, color: cs.onSurface)),
-                    Text(v['growth'] as String, style: TextStyle(fontSize: 12, color: Colors.green.shade600, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-            ],
-          );
-        }).toList(),
+              ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }

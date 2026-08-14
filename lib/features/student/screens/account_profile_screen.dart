@@ -175,7 +175,7 @@ class AccountProfileScreen extends StatelessWidget {
       {'icon': Icons.history, 'label': 'Transaction History', 'route': '/transactions'},
       {'icon': Icons.star_outline, 'label': 'Points and Rewards', 'route': '/rewards'},
       {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': '/notifications'},
-      {'icon': Icons.help_outline, 'label': 'Help and Support', 'route': null},
+      {'icon': Icons.help_outline, 'label': 'Help and Support', 'route': '/support'},
     ];
 
     return Container(
@@ -184,67 +184,70 @@ class AccountProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-            child: Row(
-              children: [
-                Text('Settings', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-                const Spacer(),
-                Text(
-                  'Dark Mode',
-                  style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-                ),
-                const SizedBox(width: 8),
-                ValueListenableBuilder<ThemeMode>(
-                  valueListenable: ThemeNotifier.instance,
-                  builder: (context, mode, _) {
-                    return Switch.adaptive(
-                      value: ThemeNotifier.instance.isDarkIn(context),
-                      onChanged: (value) {
-                        ThemeNotifier.instance.value = value ? ThemeMode.dark : ThemeMode.light;
-                      },
-                      activeThumbColor: colorScheme.primary,
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          ...settings.asMap().entries.map((entry) {
-            final index = entry.key;
-            final setting = entry.value;
-            return Column(
-              children: [
-                if (index > 0) Divider(height: 1, color: colorScheme.outlineVariant),
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(setting['icon'] as IconData, color: colorScheme.primary, size: 20),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+              child: Row(
+                children: [
+                  Text('Settings', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                  const Spacer(),
+                  Text(
+                    'Dark Mode',
+                    style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
                   ),
-                  title: Text(setting['label'] as String, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
-                  trailing: Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant, size: 20),
-                  onTap: () {
-                    final route = setting['route'] as String?;
-                    if (route != null) {
-                      context.push(route);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${setting['label']} coming in MVP')),
+                  const SizedBox(width: 8),
+                  ValueListenableBuilder<ThemeMode>(
+                    valueListenable: ThemeNotifier.instance,
+                    builder: (context, mode, _) {
+                      return Switch.adaptive(
+                        value: ThemeNotifier.instance.isDarkIn(context),
+                        onChanged: (value) {
+                          ThemeNotifier.instance.value = value ? ThemeMode.dark : ThemeMode.light;
+                        },
+                        activeThumbColor: colorScheme.primary,
                       );
-                    }
-                  },
-                ),
-              ],
-            );
-          }),
-        ],
+                    },
+                  ),
+                ],
+              ),
+            ),
+            ...settings.asMap().entries.map((entry) {
+              final index = entry.key;
+              final setting = entry.value;
+              return Column(
+                children: [
+                  if (index > 0) Divider(height: 1, color: colorScheme.outlineVariant),
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(setting['icon'] as IconData, color: colorScheme.primary, size: 20),
+                    ),
+                    title: Text(setting['label'] as String, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+                    trailing: Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant, size: 20),
+                    onTap: () {
+                      final route = setting['route'] as String?;
+                      if (route != null) {
+                        context.push(route);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('${setting['label']} coming in MVP')),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              );
+            }),
+          ],
+        ),
       ),
     );
   }

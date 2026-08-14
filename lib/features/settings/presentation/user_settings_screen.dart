@@ -82,44 +82,47 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-            child: Row(
-              children: [
-                Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-                const Spacer(),
-                if (title == 'Preferences') ...[
-                  Text(
-                    'Dark Mode',
-                    style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-                  ),
-                  const SizedBox(width: 8),
-                  ValueListenableBuilder<ThemeMode>(
-                    valueListenable: ThemeNotifier.instance,
-                    builder: (context, mode, _) {
-                      return Switch.adaptive(
-                        value: ThemeNotifier.instance.isDarkIn(context),
-                        onChanged: (value) {
-                          ThemeNotifier.instance.value = value ? ThemeMode.dark : ThemeMode.light;
-                        },
-                        activeThumbColor: colorScheme.primary,
-                      );
-                    },
-                  ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+              child: Row(
+                children: [
+                  Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                  const Spacer(),
+                  if (title == 'Preferences') ...[
+                    Text(
+                      'Dark Mode',
+                      style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(width: 8),
+                    ValueListenableBuilder<ThemeMode>(
+                      valueListenable: ThemeNotifier.instance,
+                      builder: (context, mode, _) {
+                        return Switch.adaptive(
+                          value: ThemeNotifier.instance.isDarkIn(context),
+                          onChanged: (value) {
+                            ThemeNotifier.instance.value = value ? ThemeMode.dark : ThemeMode.light;
+                          },
+                          activeThumbColor: colorScheme.primary,
+                        );
+                      },
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          ...children.asMap().entries.map((e) => Column(
-            children: [
-              if (e.key > 0) Divider(height: 1, color: colorScheme.outlineVariant),
-              e.value,
-            ],
-          )),
-        ],
+            ...children.asMap().entries.map((e) => Column(
+              children: [
+                if (e.key > 0) Divider(height: 1, color: colorScheme.outlineVariant),
+                e.value,
+              ],
+            )),
+          ],
+        ),
       ),
     );
   }
