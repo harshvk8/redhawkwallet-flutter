@@ -27,7 +27,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Red Hawk Wallet uses the camera to scan a vendor's payment QR code.</string>
+	<string>Red Hawk Wallet uses the camera to scan a vendor's payment QR code and to take a profile photo.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Red Hawk Wallet uses your photo library to set a profile photo.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

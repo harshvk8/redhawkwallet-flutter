@@ -1,11 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/theme/theme_notifier.dart';
+import '../../account/services/avatar_service.dart';
 
-class AccountProfileScreen extends StatelessWidget {
+class AccountProfileScreen extends StatefulWidget {
   const AccountProfileScreen({super.key});
+
+  @override
+  State<AccountProfileScreen> createState() => _AccountProfileScreenState();
+}
+
+class _AccountProfileScreenState extends State<AccountProfileScreen> {
+  final _avatarService = AvatarService();
+  bool _uploadingAvatar = false;
+
+  Future<void> _changePhoto(BuildContext context) async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Take Photo'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from Library'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null || !context.mounted) return;
+
+    try {
+      final path = await _avatarService.pickImage(source);
+      if (path == null || !context.mounted) return;
+
+      setState(() => _uploadingAvatar = true);
+      await _avatarService.uploadAvatar(path);
+      if (!context.mounted) return;
+      setState(() => _uploadingAvatar = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile photo updated'), backgroundColor: Colors.green),
+      );
+    } on AvatarUploadException catch (e) {
+      if (!context.mounted) return;
+      setState(() => _uploadingAvatar = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      setState(() => _uploadingAvatar = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not update photo: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,23 +128,42 @@ class AccountProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Center(
-            child: Stack(
-              children: [
-                const CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.white24,
-                  child: Icon(Icons.person, color: Colors.white, size: 44),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                    child: const Icon(Icons.camera_alt, color: Color(0xFF8B1A2E), size: 16),
+            child: GestureDetector(
+              onTap: _uploadingAvatar ? null : () => _changePhoto(context),
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.white24,
+                    backgroundImage: FirebaseAuth.instance.currentUser?.photoURL != null
+                        ? NetworkImage(FirebaseAuth.instance.currentUser!.photoURL!)
+                        : null,
+                    child: FirebaseAuth.instance.currentUser?.photoURL == null
+                        ? const Icon(Icons.person, color: Colors.white, size: 44)
+                        : null,
                   ),
-                ),
-              ],
+                  if (_uploadingAvatar)
+                    const Positioned.fill(
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black45,
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      child: const Icon(Icons.camera_alt, color: Color(0xFF8B1A2E), size: 16),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),
