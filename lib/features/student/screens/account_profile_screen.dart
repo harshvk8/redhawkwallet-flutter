@@ -174,8 +174,8 @@ class AccountProfileScreen extends StatelessWidget {
       {'icon': Icons.person_outline, 'label': 'Edit Profile', 'route': '/profile/edit'},
       {'icon': Icons.history, 'label': 'Transaction History', 'route': '/transactions'},
       {'icon': Icons.star_outline, 'label': 'Points and Rewards', 'route': '/rewards'},
-      {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': null},
-      {'icon': Icons.help_outline, 'label': 'Help and Support', 'route': null},
+      {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': '/notifications'},
+      {'icon': Icons.help_outline, 'label': 'Help and Support', 'route': '/settings'},
     ];
 
     return Container(
@@ -232,13 +232,8 @@ class AccountProfileScreen extends StatelessWidget {
                   trailing: Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant, size: 20),
                   onTap: () {
                     final route = setting['route'] as String?;
-                    if (route != null) {
-                      context.push(route);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${setting['label']} coming in MVP')),
-                      );
-                    }
+                    if (route == null) return;
+                    context.push(route);
                   },
                 ),
               ],
