@@ -19,21 +19,15 @@ class UserPointsRewardsScreen extends StatelessWidget {
     const int nextRewardPoints = 300;
     const double progress = currentPoints / nextRewardPoints;
 
-    final canPop = context.canPop();
-    void goBack() {
-      if (canPop) {
-        context.pop();
-      } else {
-        context.go('/home');
-      }
-    }
+    // Navigate explicitly to /profile rather than context.pop() — this
+    // screen is only ever reached from there (see AccountProfileScreen's
+    // settings list), and go() sidesteps whatever was making the pop
+    // transition itself throw and get stuck (see git history on this
+    // file for the two earlier attempts at a pop-based fix).
+    void goBack() => context.go('/profile');
 
     return PopScope(
-      // Let the pop actually happen when there's something to pop — this
-      // must not be unconditionally false, or the fallback below vetoes
-      // its own context.pop() call and neither the button nor the system
-      // back gesture can ever complete a pop.
-      canPop: canPop,
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) goBack();
       },
