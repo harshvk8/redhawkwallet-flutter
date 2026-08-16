@@ -151,12 +151,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _showComingSoon(BuildContext context, String provider) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$provider sign-in coming soon')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -337,65 +331,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   )
                                 : const Text('Log In'),
-                          ),
-                          const SizedBox(height: 20),
-
-                          AuthOrDivider(
-                              mutedText: mutedText, borderColor: borderColor),
-                          const SizedBox(height: 16),
-
-                          // Google
-                          AuthSocialButton(
-                            onTap: () => _showComingSoon(context, 'Google'),
-                            borderColor: borderColor,
-                            cardColor: cardColor,
-                            mutedBg: mutedBg,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const AuthGoogleLogo(),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Continue with Google',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: isDark
-                                        ? Colors.white
-                                        : Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-
-                          // Apple
-                          AuthSocialButton(
-                            onTap: () => _showComingSoon(context, 'Apple'),
-                            borderColor: borderColor,
-                            cardColor: cardColor,
-                            mutedBg: mutedBg,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.apple,
-                                    size: 20,
-                                    color:
-                                        isDark ? Colors.white : Colors.black),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Continue with Apple ID',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: isDark
-                                        ? Colors.white
-                                        : Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
                           const SizedBox(height: 20),
 

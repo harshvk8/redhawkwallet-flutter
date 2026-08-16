@@ -61,7 +61,7 @@ class VendorWaitingApprovalScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () => _showContactSupport(context),
                 icon: const Icon(Icons.support_agent, color: Color(0xFFC8102E)),
                 label: const Text('Contact Support', style: TextStyle(color: Color(0xFFC8102E))),
                 style: OutlinedButton.styleFrom(
@@ -90,6 +90,17 @@ class VendorWaitingApprovalScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showContactSupport(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Contact Support'),
+        content: const Text('Questions about your vendor application? Reach the Red Hawk Wallet team at vendor-support@redhawkwallet.edu.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close'))],
       ),
     );
   }

@@ -14,6 +14,79 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
     {'title': 'Free Delivery', 'description': 'Orders above \$15', 'discount': 'FREE', 'used': 5, 'active': false},
   ];
 
+  Future<void> _openOfferForm({Map<String, dynamic>? existing, int? index}) async {
+    final titleCtrl = TextEditingController(text: existing?['title'] as String?);
+    final descriptionCtrl = TextEditingController(text: existing?['description'] as String?);
+    final discountCtrl = TextEditingController(text: existing?['discount'] as String?);
+
+    try {
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(existing == null ? 'New Offer' : 'Edit Offer'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Title')),
+                TextField(controller: descriptionCtrl, decoration: const InputDecoration(labelText: 'Description')),
+                TextField(controller: discountCtrl, decoration: const InputDecoration(labelText: 'Discount (e.g. 10%, BOGO)')),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: titleCtrl.text.trim().isEmpty ? null : () => Navigator.pop(ctx, true),
+              child: Text(existing == null ? 'Add' : 'Save'),
+            ),
+          ],
+        ),
+      );
+
+      if (result != true || !mounted) return;
+      final offer = {
+        'title': titleCtrl.text.trim(),
+        'description': descriptionCtrl.text.trim(),
+        'discount': discountCtrl.text.trim().isEmpty ? '—' : discountCtrl.text.trim(),
+        'used': existing?['used'] ?? 0,
+        'active': existing?['active'] ?? true,
+      };
+      setState(() {
+        if (index != null) {
+          offers[index] = offer;
+        } else {
+          offers.insert(0, offer);
+        }
+      });
+    } finally {
+      titleCtrl.dispose();
+      descriptionCtrl.dispose();
+      discountCtrl.dispose();
+    }
+  }
+
+  Future<void> _deleteOffer(int index) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete this offer?'),
+        content: Text('"${offers[index]['title']}" will be removed.'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) setState(() => offers.removeAt(index));
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -32,7 +105,7 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () => _openOfferForm(),
                 icon: const Icon(Icons.add),
                 label: const Text('Add New Offer'),
                 style: ElevatedButton.styleFrom(
@@ -93,8 +166,8 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
                             Text('Used ${offer['used']} times', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
                             Row(
                               children: [
-                                TextButton(onPressed: () {}, child: Text('Edit', style: TextStyle(color: colorScheme.primary))),
-                                TextButton(onPressed: () {}, child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                                TextButton(onPressed: () => _openOfferForm(existing: offer, index: index), child: Text('Edit', style: TextStyle(color: colorScheme.primary))),
+                                TextButton(onPressed: () => _deleteOffer(index), child: const Text('Delete', style: TextStyle(color: Colors.red))),
                               ],
                             ),
                           ],

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -31,9 +32,9 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         child: Column(
           children: [
             _buildSection(context, 'Account', [
-              _settingsTile(Icons.person_outline, 'Edit Profile', onTap: () {}),
+              _settingsTile(Icons.person_outline, 'Edit Profile', onTap: () => context.push('/profile/edit')),
               _settingsTile(Icons.lock_outline, 'Change Password', onTap: () => context.push('/settings/security')),
-              _settingsTile(Icons.school_outlined, 'University Verification', onTap: () {}),
+              _settingsTile(Icons.school_outlined, 'University Verification', onTap: () => context.push('/verify')),
             ]),
             const SizedBox(height: 16),
             _buildSection(context, 'Preferences', [
@@ -41,19 +42,19 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             ]),
             const SizedBox(height: 16),
             _buildSection(context, 'Privacy & Security', [
-              _settingsTile(Icons.privacy_tip_outlined, 'Privacy Policy', onTap: () {}),
+              _settingsTile(Icons.privacy_tip_outlined, 'Privacy Policy', onTap: () => context.push('/privacy')),
               _settingsTile(Icons.security_outlined, 'Security Settings', onTap: () => context.push('/settings/security')),
             ]),
             const SizedBox(height: 16),
             _buildSection(context, 'Support', [
-              _settingsTile(Icons.help_outline, 'Help & Support', onTap: () {}),
-              _settingsTile(Icons.info_outline, 'About Red Hawk Wallet', onTap: () {}),
+              _settingsTile(Icons.help_outline, 'Help & Support', onTap: () => _showHelpDialog(context)),
+              _settingsTile(Icons.info_outline, 'About Red Hawk Wallet', onTap: () => _showAboutDialog(context)),
             ]),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () => _logout(context),
                 icon: const Icon(Icons.logout, color: Color(0xFF8B1A2E)),
                 label: const Text('Logout', style: TextStyle(color: Color(0xFF8B1A2E), fontSize: 15)),
                 style: OutlinedButton.styleFrom(
@@ -68,6 +69,33 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             Text('Demo Mode • Real payments coming soon', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    if (context.mounted) context.go('/login');
+  }
+
+  void _showHelpDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Help & Support'),
+        content: const Text('Need a hand? Reach the Red Hawk Wallet team at support@redhawkwallet.edu.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close'))],
+      ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('About Red Hawk Wallet'),
+        content: const Text('Red Hawk Wallet v1.0.0\nA campus wallet for payments, rewards, and student ID.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close'))],
       ),
     );
   }

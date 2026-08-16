@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
-class AdminOffersScreen extends StatelessWidget {
+class AdminOffersScreen extends StatefulWidget {
   const AdminOffersScreen({super.key});
 
-  final List<Map<String, dynamic>> offers = const [
+  @override
+  State<AdminOffersScreen> createState() => _AdminOffersScreenState();
+}
+
+class _AdminOffersScreenState extends State<AdminOffersScreen> {
+  final List<Map<String, String>> _offers = [
     {'title': '10% Student Discount', 'vendor': 'Red Hawk Cafe', 'discount': '10%', 'expiry': 'Jun 30, 2026', 'status': 'Active'},
     {'title': 'Buy 1 Get 1 Coffee', 'vendor': 'Red Hawk Cafe', 'discount': 'BOGO', 'expiry': 'Jun 15, 2026', 'status': 'Active'},
     {'title': 'Free Delivery', 'vendor': 'Hawks Pizza', 'discount': 'FREE', 'expiry': 'May 31, 2026', 'status': 'Pending'},
@@ -14,6 +19,10 @@ class AdminOffersScreen extends StatelessWidget {
     if (status == 'Active') return Colors.green;
     if (status == 'Pending') return Colors.orange;
     return Colors.red;
+  }
+
+  void _setStatus(int index, String status) {
+    setState(() => _offers[index] = {..._offers[index], 'status': status});
   }
 
   @override
@@ -27,10 +36,11 @@ class AdminOffersScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView.builder(
-          itemCount: offers.length,
+          itemCount: _offers.length,
           itemBuilder: (context, index) {
-            final offer = offers[index];
-            final statusColor = _statusColor(offer['status']);
+            final offer = _offers[index];
+            final status = offer['status']!;
+            final statusColor = _statusColor(status);
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(14),
@@ -53,10 +63,10 @@ class AdminOffersScreen extends StatelessWidget {
                               color: cs.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(offer['discount'], style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                            child: Text(offer['discount']!, style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold, fontSize: 12)),
                           ),
                           const SizedBox(width: 10),
-                          Text(offer['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(offer['title']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                         ],
                       ),
                       Container(
@@ -65,38 +75,61 @@ class AdminOffersScreen extends StatelessWidget {
                           color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text(offer['status'], style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                        child: Text(status, style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Text(offer['vendor'], style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text(offer['vendor']!, style: const TextStyle(color: Colors.grey, fontSize: 13)),
                   const SizedBox(height: 4),
                   Text('Expires: ${offer['expiry']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      if (status == 'Pending') ...[
+                        ElevatedButton(
+                          onPressed: () => _setStatus(index, 'Active'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: const Text('Approve', style: TextStyle(fontSize: 13)),
                         ),
-                        child: const Text('Approve', style: TextStyle(fontSize: 13)),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () => _setStatus(index, 'Disabled'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: const Text('Reject', style: TextStyle(fontSize: 13)),
                         ),
-                        child: const Text('Disable', style: TextStyle(fontSize: 13)),
-                      ),
+                      ] else if (status == 'Active')
+                        ElevatedButton(
+                          onPressed: () => _setStatus(index, 'Disabled'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: const Text('Disable', style: TextStyle(fontSize: 13)),
+                        )
+                      else
+                        ElevatedButton(
+                          onPressed: () => _setStatus(index, 'Active'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: const Text('Enable', style: TextStyle(fontSize: 13)),
+                        ),
                     ],
                   ),
                 ],

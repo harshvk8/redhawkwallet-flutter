@@ -1,7 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-class VendorQrPaymentScreen extends StatelessWidget {
-  const VendorQrPaymentScreen({super.key});
+class VendorQrPaymentScreen extends StatefulWidget {
+  const VendorQrPaymentScreen({super.key, this.payment});
+
+  final Map<String, dynamic>? payment;
+
+  @override
+  State<VendorQrPaymentScreen> createState() => _VendorQrPaymentScreenState();
+}
+
+class _VendorQrPaymentScreenState extends State<VendorQrPaymentScreen> {
+  int _generation = 0;
+
+  double get _amount => (widget.payment?['amount'] as num?)?.toDouble() ?? 12.50;
+  String get _note => widget.payment?['note'] as String? ?? 'Coffee order';
+
+  void _regenerate() {
+    setState(() => _generation++);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('New QR code generated')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +43,7 @@ class VendorQrPaymentScreen extends StatelessWidget {
               Text('Show this QR to the customer', style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
               const SizedBox(height: 24),
               Container(
+                key: ValueKey(_generation),
                 width: 220,
                 height: 220,
                 decoration: BoxDecoration(
@@ -35,9 +56,9 @@ class VendorQrPaymentScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('\$12.50', style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700, color: colorScheme.primary)),
+              Text('\$${_amount.toStringAsFixed(2)}', style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700, color: colorScheme.primary)),
               const SizedBox(height: 4),
-              Text('Coffee order', style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+              Text(_note, style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -52,7 +73,7 @@ class VendorQrPaymentScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: _regenerate,
                       icon: const Icon(Icons.refresh),
                       label: const Text('Regenerate'),
                       style: ElevatedButton.styleFrom(
@@ -66,7 +87,7 @@ class VendorQrPaymentScreen extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () => context.pop(),
                       icon: const Icon(Icons.cancel_outlined),
                       label: const Text('Cancel'),
                       style: ElevatedButton.styleFrom(
