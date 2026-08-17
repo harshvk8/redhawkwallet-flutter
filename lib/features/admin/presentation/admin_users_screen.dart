@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../../core/widgets/app_states.dart';
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -149,19 +150,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               stream: _db.collection('users').orderBy('createdAt', descending: true).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator(color: cs.primary));
+                  return const AppLoadingState(message: 'Loading users…');
                 }
                 if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                        const SizedBox(height: 8),
-                        const Text('Failed to load users', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  );
+                  return AppErrorState(onRetry: () => setState(() {}));
                 }
 
                 var docs = snapshot.data?.docs ?? [];
@@ -196,16 +188,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 }
 
                 if (docs.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.people_outline, color: Colors.grey.shade400, size: 48),
-                        const SizedBox(height: 8),
-                        Text(_filter == 'All' ? 'No users yet.' : 'No $_filter users.',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                      ],
-                    ),
+                  return AppEmptyState(
+                    icon: Icons.people_outline,
+                    title: _filter == 'All' ? 'No users yet' : 'No $_filter users',
+                    subtitle: _search.isNotEmpty ? 'Try a different search term.' : 'Users will appear here once they register.',
                   );
                 }
 
