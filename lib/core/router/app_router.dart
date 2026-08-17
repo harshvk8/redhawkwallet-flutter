@@ -214,9 +214,9 @@ class _SplashScreenState extends State<_SplashScreen> with SingleTickerProviderS
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
-    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
-    _scale = Tween<double>(begin: 0.82, end: 1.0).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack));
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _scale = Tween<double>(begin: 0.92, end: 1.0).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
     _ctrl.forward();
   }
 
@@ -245,7 +245,11 @@ class _SplashScreenState extends State<_SplashScreen> with SingleTickerProviderS
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Image.asset('assets/images/RedHawkWalletGreen.png', width: 150),
+                    child: Image.asset(
+                      'assets/images/RedHawkWalletGreen.png',
+                      width: 150,
+                      cacheWidth: 450,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -276,9 +280,9 @@ class _AuthStateNotifier extends ChangeNotifier {
   String? get vendorStatus => _vendorStatus;
 
   _AuthStateNotifier() {
-    // Keep the splash visible for at least 1800ms so the logo animation
+    // Keep the splash visible for at least 2000ms so the logo animation
     // completes before the redirect fires (auth state resolves in <200ms).
-    Future.delayed(const Duration(milliseconds: 1800), () {
+    Future.delayed(const Duration(milliseconds: 2000), () {
       _ready = true;
       notifyListeners();
     });
