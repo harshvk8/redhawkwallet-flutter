@@ -113,9 +113,12 @@ class AppRouter {
         return '/vendor/waiting';
       }
 
-      // Prevent cross-role access
-      final isVendorRoute = loc.startsWith('/vendor');
-      final isAdminRoute = loc.startsWith('/admin');
+      // Prevent cross-role access. Exact-match the bare prefix or require a
+      // trailing slash — loc.startsWith('/vendor') would also match the
+      // student-facing '/vendors' (Browse Vendors) route and incorrectly
+      // treat it as vendor-role-only.
+      final isVendorRoute = loc == '/vendor' || loc.startsWith('/vendor/');
+      final isAdminRoute = loc == '/admin' || loc.startsWith('/admin/');
       if (isVendorRoute && role != UserRole.vendor) return '/home';
       if (isAdminRoute && role != UserRole.admin) return '/home';
 
