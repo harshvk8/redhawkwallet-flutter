@@ -41,8 +41,12 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
               _settingsTileSwitch(Icons.notifications_none, 'Notifications', notificationsEnabled, (val) => setState(() => notificationsEnabled = val)),
             ]),
             const SizedBox(height: 16),
-            _buildSection(context, 'Privacy & Security', [
+            _buildSection(context, 'Legal', [
+              _settingsTile(Icons.article_outlined, 'Terms of Service', onTap: () => context.push('/terms')),
               _settingsTile(Icons.privacy_tip_outlined, 'Privacy Policy', onTap: () => context.push('/privacy')),
+            ]),
+            const SizedBox(height: 16),
+            _buildSection(context, 'Privacy & Security', [
               _settingsTile(Icons.security_outlined, 'Security Settings', onTap: () => context.push('/settings/security')),
             ]),
             const SizedBox(height: 16),
