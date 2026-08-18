@@ -155,6 +155,12 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: cs.primary,
                           foregroundColor: Colors.white,
+                          // Overrides the app-wide ElevatedButtonTheme's
+                          // minimumSize: Size(double.infinity, 52) — two
+                          // of these side by side in a bare Row would
+                          // otherwise both demand full width and overflow.
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
@@ -167,6 +173,8 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey.shade200,
                           foregroundColor: cs.onSurface,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
