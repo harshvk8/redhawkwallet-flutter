@@ -128,6 +128,16 @@ class UserOffersScreen extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colorScheme.primary,
                             foregroundColor: colorScheme.onPrimary,
+                            // Overrides the app-wide ElevatedButtonTheme's
+                            // minimumSize: Size(double.infinity, 52) —
+                            // without this, this button (unconstrained
+                            // inside a Row) claims all available width and
+                            // squeezes the Expanded title/vendor column to
+                            // ~0, which renders as vertically
+                            // character-wrapped text stretching the card
+                            // to thousands of pixels tall.
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
