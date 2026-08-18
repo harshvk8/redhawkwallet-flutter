@@ -64,6 +64,7 @@ class UserPointsRewardsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             ...rewards.map((reward) => Container(
+              width: double.infinity,
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -97,6 +98,14 @@ class UserPointsRewardsScreen extends StatelessWidget {
                       backgroundColor: cs.primary,
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: Colors.grey.shade200,
+                      // Overrides the app-wide ElevatedButtonTheme's
+                      // minimumSize: Size(double.infinity, 52) — without
+                      // this, this button (unconstrained inside a Row)
+                      // claims all available width and squeezes the
+                      // Expanded title/points column to ~0, which renders
+                      // as vertically character-wrapped text.
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
