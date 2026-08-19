@@ -100,6 +100,10 @@ export const transferMoney = onCall<TransferRequest, Promise<TransferResult>>(as
     }
 
     const now = Timestamp.now();
+    const fromName = (fromUserData.name as string | undefined) ?? "";
+    const toName = (toUserData.businessName as string | undefined) ?? (toUserData.name as string | undefined) ?? "";
+    const amountLabel = `$${safeAmount.toFixed(2)}`;
+    const verb = transferType === "payment" ? "Payment" : "Money";
 
     tx.set(fromWalletRef, {balance: fromBalance - safeAmount, updatedAt: now}, {merge: true});
     tx.set(toWalletRef, {balance: toBalance + safeAmount, updatedAt: now}, {merge: true});
@@ -107,13 +111,30 @@ export const transferMoney = onCall<TransferRequest, Promise<TransferResult>>(as
       fromUid,
       toUid,
       participants: [fromUid, toUid],
-      fromName: (fromUserData.name as string | undefined) ?? "",
-      toName: (toUserData.businessName as string | undefined) ?? (toUserData.name as string | undefined) ?? "",
+      fromName,
+      toName,
       amount: safeAmount,
       type: transferType,
       status: "completed",
       createdAt: now,
       description,
+    });
+
+    // Notify both sides of the transfer. Written here (Admin SDK, bypasses
+    // rules) so a client can never forge a notification for someone else.
+    tx.set(db.collection("notifications").doc(), {
+      uid: toUid,
+      title: `${verb} received`,
+      detail: `You received ${amountLabel} from ${fromName || "someone"}.`,
+      read: false,
+      createdAt: now,
+    });
+    tx.set(db.collection("notifications").doc(), {
+      uid: fromUid,
+      title: `${verb} sent`,
+      detail: `You sent ${amountLabel} to ${toName || "the recipient"}.`,
+      read: false,
+      createdAt: now,
     });
 
     return {transactionId: transactionRef.id};
