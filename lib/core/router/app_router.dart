@@ -108,8 +108,12 @@ class AppRouter {
       if (isLegalRoute) return null;
 
       // Pending vendors are confined to the waiting screen until approved,
-      // except support chat — they may still need help while waiting.
-      if (isPendingVendor && loc != '/vendor/waiting' && loc != '/support') {
+      // except support chat — they may still need help while waiting. Return
+      // outright instead of falling through: the role-changed check further
+      // down doesn't know about this carve-out and would bounce '/support'
+      // back to '/vendor' (which then redirects to '/vendor/waiting' anyway).
+      if (isPendingVendor) {
+        if (loc == '/vendor/waiting' || loc == '/support') return null;
         return '/vendor/waiting';
       }
 

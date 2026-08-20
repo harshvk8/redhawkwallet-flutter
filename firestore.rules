@@ -94,14 +94,17 @@ service cloud.firestore {
     match /offers/{offerId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.resource.data.vendorUid == request.auth.uid;
-      // Vendor manages their own offer (edit/toggle), or any authenticated
-      // user "redeems" an active one — which only bumps usedCount by 1.
-      allow update: if request.auth != null &&
-        (resource.data.vendorUid == request.auth.uid ||
-         (resource.data.active == true &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedCount']) &&
-          request.resource.data.usedCount == resource.data.usedCount + 1));
+      // Vendor manages their own offer (edit/toggle). Redemption (which
+      // bumps usedCount) goes exclusively through redeemOffer (Admin SDK,
+      // bypasses rules) so a client can't inflate the count by calling
+      // update() in a loop with no per-user record.
+      allow update: if request.auth != null && resource.data.vendorUid == request.auth.uid;
       allow delete: if request.auth != null && resource.data.vendorUid == request.auth.uid;
+
+      match /redemptions/{uid} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow write: if false;
+      }
     }
 
     match /supportChats/{chatId} {

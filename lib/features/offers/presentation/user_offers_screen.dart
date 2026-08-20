@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,18 +8,23 @@ class UserOffersScreen extends StatelessWidget {
 
   static const _colors = [Color(0xFF8B1A2E), Colors.orange, Colors.green, Colors.blue, Colors.purple, Colors.teal];
 
-  Future<void> _redeem(BuildContext context, DocumentReference ref, String title) async {
+  // Goes through redeemOffer rather than writing usedCount directly —
+  // firestore.rules no longer allows that write, since it had no per-user
+  // record and let anyone inflate the count by calling update() in a loop.
+  Future<void> _redeem(BuildContext context, String offerId, String title) async {
     try {
-      await ref.update({'usedCount': FieldValue.increment(1)});
+      await FirebaseFunctions.instance.httpsCallable('redeemOffer').call<Map<String, dynamic>>({
+        'offerId': offerId,
+      });
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Redeemed: $title! Show this to the vendor.'), backgroundColor: Colors.green),
         );
       }
-    } catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not redeem: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(e.message ?? 'Could not redeem this offer.'), backgroundColor: Colors.red),
         );
       }
     }
@@ -123,7 +129,7 @@ class UserOffersScreen extends StatelessWidget {
                               ),
                             ),
                             ElevatedButton(
-                              onPressed: () => _redeem(context, doc.reference, offer['title'] as String? ?? 'offer'),
+                              onPressed: () => _redeem(context, doc.id, offer['title'] as String? ?? 'offer'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: colorScheme.primary,
                                 foregroundColor: colorScheme.onPrimary,
