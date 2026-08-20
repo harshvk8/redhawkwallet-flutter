@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -27,6 +28,18 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Bank transfer (ACH) is coming soon — pay by card for now.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    // flutter_stripe has no web implementation — Stripe.instance is never
+    // initialized there (see main.dart), so StripeService.addFunds would
+    // throw a raw MissingPluginException instead of failing cleanly.
+    if (kIsWeb) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Adding funds isn\'t available on web yet — use the iOS or Android app.'),
           backgroundColor: Colors.orange,
         ),
       );
