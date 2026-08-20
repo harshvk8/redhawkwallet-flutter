@@ -254,6 +254,8 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
       {'icon': Icons.history, 'label': 'Transaction History', 'route': '/transactions'},
       {'icon': Icons.star_outline, 'label': 'Points and Rewards', 'route': '/rewards'},
       {'icon': Icons.notifications_none, 'label': 'Notifications', 'route': '/notifications'},
+      {'icon': Icons.article_outlined, 'label': 'Terms of Service', 'route': '/terms'},
+      {'icon': Icons.privacy_tip_outlined, 'label': 'Privacy Policy', 'route': '/privacy'},
       {'icon': Icons.help_outline, 'label': 'Help and Support', 'route': '/support'},
     ];
 

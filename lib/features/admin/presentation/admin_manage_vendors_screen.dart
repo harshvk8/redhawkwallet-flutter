@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/widgets/app_states.dart';
 
 class AdminManageVendorsScreen extends StatefulWidget {
   const AdminManageVendorsScreen({super.key});
@@ -205,26 +206,10 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
               stream: _db.collection('users').where('role', isEqualTo: 'vendor').orderBy('createdAt', descending: true).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator(color: cs.primary));
+                  return const AppLoadingState(message: 'Loading vendors…');
                 }
                 if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                        const SizedBox(height: 8),
-                        const Text('Failed to load vendors', style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 12),
-                        ElevatedButton.icon(
-                          onPressed: () => setState(() {}),
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                          style: ElevatedButton.styleFrom(backgroundColor: cs.primary, foregroundColor: Colors.white),
-                        ),
-                      ],
-                    ),
-                  );
+                  return AppErrorState(onRetry: () => setState(() {}));
                 }
 
                 var docs = snapshot.data?.docs ?? [];
@@ -248,18 +233,10 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                 }
 
                 if (docs.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.store_mall_directory_outlined, color: cs.onSurfaceVariant, size: 48),
-                        const SizedBox(height: 8),
-                        Text(
-                          _filter == 'All' ? 'No vendors registered yet.' : 'No $_filter vendors.',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: cs.onSurfaceVariant),
-                        ),
-                      ],
-                    ),
+                  return AppEmptyState(
+                    icon: Icons.store_mall_directory_outlined,
+                    title: _filter == 'All' ? 'No vendors yet' : 'No $_filter vendors',
+                    subtitle: _search.isNotEmpty ? 'Try a different search term.' : 'Vendor applications will appear here once submitted.',
                   );
                 }
 
