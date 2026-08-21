@@ -46,6 +46,7 @@ import '../../features/wallet/presentation/receive_money_screen.dart';
 import '../../features/wallet/presentation/pay_vendor_screen.dart';
 import '../../features/wallet/presentation/transaction_details_screen.dart';
 import '../../features/offers/presentation/user_offers_screen.dart';
+import '../../features/offers/presentation/offer_redemption_screen.dart';
 import '../../features/points_rewards/presentation/user_points_rewards_screen.dart';
 import '../../features/settings/presentation/user_settings_screen.dart';
 import '../../features/settings/presentation/security_settings_screen.dart';
@@ -179,6 +180,17 @@ class AppRouter {
       ),
       GoRoute(path: '/wallet/pay', builder: (context, state) => const PayVendorScreen()),
       GoRoute(path: '/offers', builder: (context, state) => const UserOffersScreen()),
+      GoRoute(
+        path: '/offers/redemption',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          return OfferRedemptionScreen(
+            offerId: extra['offerId'] as String,
+            uid: extra['uid'] as String,
+            title: extra['title'] as String,
+          );
+        },
+      ),
       GoRoute(path: '/rewards', builder: (context, state) => const UserPointsRewardsScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const UserSettingsScreen()),
       GoRoute(path: '/settings/security', builder: (context, state) => const SecuritySettingsScreen()),

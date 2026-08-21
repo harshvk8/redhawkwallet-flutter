@@ -3,9 +3,6 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-
-import '../../wallet/utils/qr_payloads.dart';
 
 class UserOffersScreen extends StatefulWidget {
   const UserOffersScreen({super.key});
@@ -44,7 +41,7 @@ class _UserOffersScreenState extends State<UserOffersScreen> {
           .call<Map<String, dynamic>>({'offerId': offerId});
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (context.mounted && uid != null) {
-        await _showRedemptionQr(context, offerId, uid, title);
+        _openRedemptionScreen(context, offerId, uid, title);
       }
     } on FirebaseFunctionsException catch (e) {
       // Already redeemed isn't really a failure from the student's point of
@@ -54,7 +51,7 @@ class _UserOffersScreenState extends State<UserOffersScreen> {
       if (e.code == 'already-exists') {
         final uid = FirebaseAuth.instance.currentUser?.uid;
         if (context.mounted && uid != null) {
-          await _showRedemptionQr(context, offerId, uid, title);
+          _openRedemptionScreen(context, offerId, uid, title);
         }
         return;
       }
@@ -70,57 +67,12 @@ class _UserOffersScreenState extends State<UserOffersScreen> {
   }
 
   // A toast alone gives the student nothing durable to show once it fades —
-  // this stays on screen until dismissed, and the vendor scans it (via
+  // a full screen (not a dialog — a dialog rendered blank/invisible on some
+  // builds) stays up until they navigate away, and the vendor scans it (via
   // verifyOfferRedemption) rather than trusting a claimed screenshot, same
   // pattern as the payment-request and student-ID QR flows.
-  Future<void> _showRedemptionQr(
-    BuildContext context,
-    String offerId,
-    String uid,
-    String title,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Redeemed: $title'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Show this to the vendor to redeem'),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: 200,
-                height: 200,
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    border: Border.all(color: colorScheme.primary, width: 3),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: QrImageView(
-                    data: redeemQrPayload(offerId, uid),
-                    backgroundColor: Colors.white,
-                    eyeStyle: QrEyeStyle(color: colorScheme.primary),
-                    dataModuleStyle: QrDataModuleStyle(color: colorScheme.primary),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: Colors.white),
-            child: const Text('Done'),
-          ),
-        ],
-      ),
-    );
+  void _openRedemptionScreen(BuildContext context, String offerId, String uid, String title) {
+    context.push('/offers/redemption', extra: {'offerId': offerId, 'uid': uid, 'title': title});
   }
 
   @override
