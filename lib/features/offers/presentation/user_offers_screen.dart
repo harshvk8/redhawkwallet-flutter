@@ -47,6 +47,17 @@ class _UserOffersScreenState extends State<UserOffersScreen> {
         await _showRedemptionQr(context, offerId, uid, title);
       }
     } on FirebaseFunctionsException catch (e) {
+      // Already redeemed isn't really a failure from the student's point of
+      // view — they still need to be able to pull the QR back up to show
+      // the vendor, and verifyOfferRedemption already handles a rescanned
+      // code gracefully (flags it "Already Redeemed" instead of erroring).
+      if (e.code == 'already-exists') {
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (context.mounted && uid != null) {
+          await _showRedemptionQr(context, offerId, uid, title);
+        }
+        return;
+      }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -74,26 +85,32 @@ class _UserOffersScreenState extends State<UserOffersScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Redeemed: $title'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Show this to the vendor to redeem'),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: colorScheme.primary, width: 3),
-                borderRadius: BorderRadius.circular(16),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Show this to the vendor to redeem'),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: 200,
+                height: 200,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    border: Border.all(color: colorScheme.primary, width: 3),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: QrImageView(
+                    data: redeemQrPayload(offerId, uid),
+                    backgroundColor: Colors.white,
+                    eyeStyle: QrEyeStyle(color: colorScheme.primary),
+                    dataModuleStyle: QrDataModuleStyle(color: colorScheme.primary),
+                  ),
+                ),
               ),
-              child: QrImageView(
-                data: redeemQrPayload(offerId, uid),
-                backgroundColor: Colors.white,
-                size: 200,
-                eyeStyle: QrEyeStyle(color: colorScheme.primary),
-                dataModuleStyle: QrDataModuleStyle(color: colorScheme.primary),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           ElevatedButton(
