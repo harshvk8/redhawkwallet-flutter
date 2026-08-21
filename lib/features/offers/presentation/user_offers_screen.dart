@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
+import '../../wallet/utils/qr_payloads.dart';
 
 class UserOffersScreen extends StatefulWidget {
   const UserOffersScreen({super.key});
@@ -38,13 +42,9 @@ class _UserOffersScreenState extends State<UserOffersScreen> {
       await FirebaseFunctions.instance
           .httpsCallable('redeemOffer')
           .call<Map<String, dynamic>>({'offerId': offerId});
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Redeemed: $title! Show this to the vendor.'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (context.mounted && uid != null) {
+        await _showRedemptionQr(context, offerId, uid, title);
       }
     } on FirebaseFunctionsException catch (e) {
       if (context.mounted) {
@@ -56,6 +56,54 @@ class _UserOffersScreenState extends State<UserOffersScreen> {
         );
       }
     }
+  }
+
+  // A toast alone gives the student nothing durable to show once it fades —
+  // this stays on screen until dismissed, and the vendor scans it (via
+  // verifyOfferRedemption) rather than trusting a claimed screenshot, same
+  // pattern as the payment-request and student-ID QR flows.
+  Future<void> _showRedemptionQr(
+    BuildContext context,
+    String offerId,
+    String uid,
+    String title,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Redeemed: $title'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Show this to the vendor to redeem'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(color: colorScheme.primary, width: 3),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: QrImageView(
+                data: redeemQrPayload(offerId, uid),
+                backgroundColor: Colors.white,
+                size: 200,
+                eyeStyle: QrEyeStyle(color: colorScheme.primary),
+                dataModuleStyle: QrDataModuleStyle(color: colorScheme.primary),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: Colors.white),
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

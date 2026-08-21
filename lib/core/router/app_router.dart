@@ -21,6 +21,7 @@ import '../../features/vendor/presentation/vendor_list_screen.dart';
 import '../../features/vendor/presentation/vendor_details_screen.dart';
 import '../../features/vendor/presentation/vendor_qr_payment_screen.dart';
 import '../../features/vendor/presentation/vendor_offers_screen.dart';
+import '../../features/vendor/presentation/vendor_redemption_scanner_screen.dart';
 import '../../features/vendor/presentation/vendor_transaction_history_screen.dart';
 import '../../features/vendor/presentation/vendor_waiting_approval_screen.dart';
 import '../../features/vendor/presentation/vendor_profile_screen.dart';
@@ -210,6 +211,7 @@ class AppRouter {
         },
       ),
       GoRoute(path: '/vendor/offers', builder: (context, state) => const VendorOffersScreen()),
+      GoRoute(path: '/vendor/scan-redemption', builder: (context, state) => const VendorRedemptionScannerScreen()),
       GoRoute(path: '/vendor/transactions', builder: (context, state) => const VendorTransactionHistoryScreen()),
       GoRoute(path: '/vendor/sales-report', builder: (context, state) => const VendorSalesReportScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),

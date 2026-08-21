@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class VendorOffersScreen extends StatefulWidget {
   const VendorOffersScreen({super.key});
@@ -107,6 +108,13 @@ class _VendorOffersScreenState extends State<VendorOffersScreen> {
         title: const Text('My Offers'),
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            tooltip: 'Scan Redemption',
+            onPressed: () => context.push('/vendor/scan-redemption'),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
