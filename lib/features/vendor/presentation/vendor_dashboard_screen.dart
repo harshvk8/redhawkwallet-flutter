@@ -64,15 +64,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _statCard(context, 'Orders', '0', Icons.receipt_long),
-                      const SizedBox(width: 10),
-                      _statCard(context, 'Offers', '3', Icons.local_offer),
-                      const SizedBox(width: 10),
-                      _statCard(context, 'Points Given', '0', Icons.stars),
-                    ],
-                  ),
+                  _buildStatsRow(context),
                   const SizedBox(height: 20),
                   const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
@@ -202,6 +194,49 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatsRow(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return Row(
+        children: [
+          _statCard(context, 'Orders', '0', Icons.receipt_long),
+          const SizedBox(width: 10),
+          _statCard(context, 'Offers', '0', Icons.local_offer),
+          const SizedBox(width: 10),
+          _statCard(context, 'Points Given', '0', Icons.stars),
+        ],
+      );
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('transactions').where('toUid', isEqualTo: uid).snapshots(),
+      builder: (context, txSnapshot) {
+        final txDocs = txSnapshot.data?.docs ?? [];
+        final ordersCount = txDocs.length;
+        final pointsGiven = txDocs.fold<int>(0, (total, doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return total + ((data['pointsEarned'] as num?)?.toInt() ?? 0);
+        });
+
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('offers').where('vendorUid', isEqualTo: uid).snapshots(),
+          builder: (context, offersSnapshot) {
+            final offersCount = offersSnapshot.data?.docs.length ?? 0;
+            return Row(
+              children: [
+                _statCard(context, 'Orders', '$ordersCount', Icons.receipt_long),
+                const SizedBox(width: 10),
+                _statCard(context, 'Offers', '$offersCount', Icons.local_offer),
+                const SizedBox(width: 10),
+                _statCard(context, 'Points Given', '$pointsGiven', Icons.stars),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

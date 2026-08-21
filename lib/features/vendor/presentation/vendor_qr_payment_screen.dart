@@ -89,6 +89,16 @@ class _VendorQrPaymentScreenState extends State<VendorQrPaymentScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  if (request.hasDiscount) ...[
+                    Text(
+                      '\$${request.originalAmount!.toStringAsFixed(2)}',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                  ],
                   Text(
                     '\$${request.amount.toStringAsFixed(2)}',
                     style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700, color: colorScheme.primary),
