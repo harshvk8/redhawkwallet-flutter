@@ -94,11 +94,15 @@ service cloud.firestore {
     match /offers/{offerId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.resource.data.vendorUid == request.auth.uid;
-      // Vendor manages their own offer (edit/toggle). Redemption (which
+      // Vendor manages their own offer (edit/toggle); admin may force an
+      // offer off (moderation) but nothing else on it. Redemption (which
       // bumps usedCount) goes exclusively through redeemOffer (Admin SDK,
       // bypasses rules) so a client can't inflate the count by calling
       // update() in a loop with no per-user record.
-      allow update: if request.auth != null && resource.data.vendorUid == request.auth.uid;
+      allow update: if request.auth != null &&
+        (resource.data.vendorUid == request.auth.uid ||
+         (isAdmin() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active', 'updatedAt'])));
       allow delete: if request.auth != null && resource.data.vendorUid == request.auth.uid;
 
       match /redemptions/{uid} {
