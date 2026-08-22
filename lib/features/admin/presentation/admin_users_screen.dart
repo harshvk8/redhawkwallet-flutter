@@ -229,22 +229,27 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: cs.primary.withValues(alpha: 0.1),
-                                    child: Text(name.isNotEmpty ? name[0] : '?', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
-                                      Text(email, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
-                                    ],
-                                  ),
-                                ],
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: cs.primary.withValues(alpha: 0.1),
+                                      child: Text(name.isNotEmpty ? name[0] : '?', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
+                                          Text(email, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
