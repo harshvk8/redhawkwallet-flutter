@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../services/stripe_service.dart';
 
 class AddMoneyScreen extends StatefulWidget {
   const AddMoneyScreen({super.key});
@@ -11,12 +14,61 @@ class AddMoneyScreen extends StatefulWidget {
 class _AddMoneyScreenState extends State<AddMoneyScreen> {
   final _amountController = TextEditingController();
   int _selectedMethod = 0;
+  bool _processing = false;
   final _quickAmounts = [10, 25, 50, 100];
 
   @override
   void dispose() {
     _amountController.dispose();
     super.dispose();
+  }
+
+  Future<void> _addFunds() async {
+    if (_selectedMethod != 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bank transfer (ACH) is coming soon — pay by card for now.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    // flutter_stripe has no web implementation — Stripe.instance is never
+    // initialized there (see main.dart), so StripeService.addFunds would
+    // throw a raw MissingPluginException instead of failing cleanly.
+    if (kIsWeb) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Adding funds isn\'t available on web yet — use the iOS or Android app.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    setState(() => _processing = true);
+    try {
+      await StripeService().addFunds(amount: _parsedAmount);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Payment received — funds will appear in your wallet shortly.'),
+          backgroundColor: Color(0xFF8B1A2E),
+        ),
+      );
+      context.pop();
+    } on AddFundsException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payment failed: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _processing = false);
+    }
   }
 
   double get _parsedAmount {
@@ -69,16 +121,7 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _parsedAmount >= 1.0
-                    ? () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Stripe PaymentSheet coming in Week 3 — wiring ready.'),
-                            backgroundColor: Color(0xFF8B1A2E),
-                          ),
-                        );
-                      }
-                    : null,
+                onPressed: (_parsedAmount >= 1.0 && !_processing) ? _addFunds : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B1A2E),
                   foregroundColor: Colors.white,
@@ -86,10 +129,16 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(
-                  _parsedAmount >= 1.0 ? 'Review Payment · $_totalEstimate' : 'Enter an amount',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
+                child: _processing
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : Text(
+                        _parsedAmount >= 1.0 ? 'Review Payment · $_totalEstimate' : 'Enter an amount',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
               ),
             ),
             const SizedBox(height: 16),
@@ -98,7 +147,7 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(color: cs.surfaceContainerHighest.withValues(alpha: 0.45), borderRadius: BorderRadius.circular(12)),
               child: Text(
-                'Demo mode — real payments will be wired to Stripe in Week 3. Minimum deposit: \$1.00.',
+                'Sandbox mode — Stripe test cards only, no real money moves. Minimum deposit: \$1.00.',
                 style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
                 textAlign: TextAlign.center,
               ),

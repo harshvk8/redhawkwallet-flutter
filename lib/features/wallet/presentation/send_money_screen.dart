@@ -6,14 +6,22 @@ import 'package:go_router/go_router.dart';
 import '../../auth/services/user_service.dart';
 import '../services/money_transfer_service.dart';
 
-/// Recipients eligible for a casual P2P transfer: verified students in good
-/// standing. Vendors have their own dedicated Pay Vendor flow, and suspended
-/// accounts aren't payable here. A missing accountStatus field means "active"
-/// everywhere else in this app (UserModel's parser, the router's suspend
-/// check), so this matches that convention rather than requiring the field
-/// to be explicitly set.
+/// Recipients eligible for a casual P2P transfer: university-verified
+/// students in good standing. Keyed off isUniversityVerified rather than
+/// role=='verified_student' — the two are supposed to be set atomically
+/// (see UserService.updateUniversityVerification) but role can lag on older
+/// or manually-edited records, which would otherwise make a genuinely
+/// verified user unfindable here. Vendors/admins are excluded since they
+/// have their own dedicated flows, and suspended accounts aren't payable
+/// here. A missing accountStatus field means "active" everywhere else in
+/// this app (UserModel's parser, the router's suspend check), so this
+/// matches that convention rather than requiring the field to be explicitly
+/// set.
 bool _isApprovedRecipientData(Map<String, dynamic> data) =>
-    data['role'] == 'verified_student' && data['accountStatus'] != 'suspended';
+    data['isUniversityVerified'] == true &&
+    data['role'] != 'vendor' &&
+    data['role'] != 'admin' &&
+    data['accountStatus'] != 'suspended';
 
 class SendMoneyScreen extends StatefulWidget {
   const SendMoneyScreen({super.key});
@@ -126,7 +134,6 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         toUid: _recipientUid!,
         amount: amount,
         note: _noteController.text.trim(),
-        type: 'transfer',
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -203,7 +210,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 child: Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: const Color(0xFFFFF0F0),
+                      backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                       child: Text(_recipientName!.isNotEmpty ? _recipientName![0].toUpperCase() : '?', style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(width: 12),
@@ -284,7 +291,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: const Color(0xFFFFF0F0),
+                                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                                 child: Text(
                                   contact['name']!.isNotEmpty ? contact['name']![0].toUpperCase() : '?',
                                   style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold),
@@ -352,11 +359,12 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
   Widget _approvedRecipientsList(String uid) {
     return StreamBuilder<QuerySnapshot>(
-      // Single equality + orderBy on a different field — no composite index
-      // required. accountStatus is filtered client-side below.
+      // Equality + orderBy on a different field needs the composite index
+      // in firestore.indexes.json (isUniversityVerified + createdAt).
+      // role/accountStatus are filtered client-side below.
       stream: FirebaseFirestore.instance
           .collection('users')
-          .where('role', isEqualTo: 'verified_student')
+          .where('isUniversityVerified', isEqualTo: true)
           .orderBy('createdAt', descending: true)
           .limit(200)
           .snapshots(),
@@ -402,7 +410,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                     children: [
                       CircleAvatar(
                         radius: 26,
-                        backgroundColor: const Color(0xFFFFF0F0),
+                        backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                         child: Text(
                           name.isNotEmpty ? name[0].toUpperCase() : '?',
                           style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold, fontSize: 18),

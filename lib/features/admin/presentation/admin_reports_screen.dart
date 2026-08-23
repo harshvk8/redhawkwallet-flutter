@@ -72,7 +72,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: _periods.map((p) {
@@ -94,7 +94,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: selected ? Colors.white : cs.onSurface.withValues(alpha: 0.6),
+                    color: selected ? cs.onPrimary : cs.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ),
@@ -149,7 +149,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: cs.onSurface)),
-                  Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text(label, style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
                   Text(change, style: TextStyle(fontSize: 11, color: Colors.green.shade600, fontWeight: FontWeight.w600)),
                 ],
               ),
@@ -167,7 +167,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -212,7 +212,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: segments.map((s) {
@@ -240,7 +240,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                       child: LinearProgressIndicator(
                         value: pct,
                         minHeight: 6,
-                        backgroundColor: Colors.grey.shade200,
+                        backgroundColor: cs.surfaceContainerHighest,
                         valueColor: AlwaysStoppedAnimation<Color>(color),
                       ),
                     ),
@@ -266,34 +266,37 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outlineVariant),
       ),
-      child: Column(
-        children: vendors.asMap().entries.map((entry) {
-          final i = entry.key;
-          final v = entry.value;
-          return Column(
-            children: [
-              if (i > 0) Divider(height: 1, color: Colors.grey.shade100),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: cs.primary.withValues(alpha: 0.1),
-                  child: Text('${i + 1}', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          children: vendors.asMap().entries.map((entry) {
+            final i = entry.key;
+            final v = entry.value;
+            return Column(
+              children: [
+                if (i > 0) Divider(height: 1, color: cs.outlineVariant),
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: cs.primary.withValues(alpha: 0.1),
+                    child: Text('${i + 1}', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
+                  ),
+                  title: Text(v['name'] as String, style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
+                  subtitle: Text('${v['txns']} transactions', style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(v['revenue'] as String, style: TextStyle(fontWeight: FontWeight.bold, color: cs.onSurface)),
+                      Text(v['growth'] as String, style: TextStyle(fontSize: 12, color: Colors.green.shade600, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
                 ),
-                title: Text(v['name'] as String, style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
-                subtitle: Text('${v['txns']} transactions', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(v['revenue'] as String, style: TextStyle(fontWeight: FontWeight.bold, color: cs.onSurface)),
-                    Text(v['growth'] as String, style: TextStyle(fontSize: 12, color: Colors.green.shade600, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-            ],
-          );
-        }).toList(),
+              ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }

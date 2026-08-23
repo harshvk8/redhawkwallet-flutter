@@ -7,8 +7,8 @@ class VendorWaitingApprovalScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Red Hawk Wallet'),
         backgroundColor: const Color(0xFFC8102E),
@@ -22,8 +22,8 @@ class VendorWaitingApprovalScreen extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFF0F0),
+              decoration: BoxDecoration(
+                color: cs.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.pending_actions, color: Color(0xFFC8102E), size: 72),
@@ -31,9 +31,9 @@ class VendorWaitingApprovalScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const Text('Account Under Review', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Your vendor account is being reviewed by our team. You will be notified once approved.',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              style: TextStyle(color: cs.onSurfaceVariant, fontSize: 14),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -41,19 +41,19 @@ class VendorWaitingApprovalScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Submitted Details', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  _detailRow(Icons.store, 'Business Name', 'Red Hawk Cafe'),
-                  _detailRow(Icons.category, 'Category', 'Food & Drinks'),
-                  _detailRow(Icons.email_outlined, 'Email', FirebaseAuth.instance.currentUser?.email ?? 'vendor@example.com'),
-                  _detailRow(Icons.calendar_today, 'Submitted', 'May 18, 2026'),
+                  _detailRow(cs, Icons.store, 'Business Name', 'Red Hawk Cafe'),
+                  _detailRow(cs, Icons.category, 'Category', 'Food & Drinks'),
+                  _detailRow(cs, Icons.email_outlined, 'Email', FirebaseAuth.instance.currentUser?.email ?? 'vendor@example.com'),
+                  _detailRow(cs, Icons.calendar_today, 'Submitted', 'May 18, 2026'),
                 ],
               ),
             ),
@@ -61,7 +61,7 @@ class VendorWaitingApprovalScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () => context.push('/support'),
                 icon: const Icon(Icons.support_agent, color: Color(0xFFC8102E)),
                 label: const Text('Contact Support', style: TextStyle(color: Color(0xFFC8102E))),
                 style: OutlinedButton.styleFrom(
@@ -94,15 +94,15 @@ class VendorWaitingApprovalScreen extends StatelessWidget {
     );
   }
 
-  Widget _detailRow(IconData icon, String label, String value) {
+  Widget _detailRow(ColorScheme cs, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Icon(icon, size: 18, color: const Color(0xFFC8102E)),
           const SizedBox(width: 10),
-          Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
+          Text('$label: ', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+          Expanded(child: Text(value, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: cs.onSurface))),
         ],
       ),
     );

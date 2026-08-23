@@ -31,7 +31,7 @@ class VendorTermsScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         Text('Vendor Terms of Service', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: cs.onSurface)),
                         const SizedBox(height: 4),
-                        const Text('Effective: January 1, 2025 • Version 1.0', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        const Text('Effective: August 1, 2026 • Version 1.0', style: TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                   ),

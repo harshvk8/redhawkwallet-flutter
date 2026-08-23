@@ -121,6 +121,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -145,30 +146,30 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Check Your Email',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(height: 10),
               Text(
                 'We sent a verification link to\n$_email',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textSecondary,
+                  color: cs.onSurfaceVariant,
                   height: 1.5,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Click the link in the email to verify your account, then come back here.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
               ),
               const Spacer(),
               ElevatedButton(
@@ -218,9 +219,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                     if (!context.mounted) return;
                     context.go('/login');
                   },
-                  child: const Text(
+                  child: Text(
                     'Back to Login',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: cs.onSurfaceVariant),
                   ),
                 ),
               ),

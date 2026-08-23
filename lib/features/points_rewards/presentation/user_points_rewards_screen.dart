@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class UserPointsRewardsScreen extends StatelessWidget {
   const UserPointsRewardsScreen({super.key});
@@ -18,12 +19,28 @@ class UserPointsRewardsScreen extends StatelessWidget {
     const int nextRewardPoints = 300;
     const double progress = currentPoints / nextRewardPoints;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Points & Rewards'),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
+    // Navigate explicitly to /profile rather than context.pop() — this
+    // screen is only ever reached from there (see AccountProfileScreen's
+    // settings list), and go() sidesteps whatever was making the pop
+    // transition itself throw and get stuck (see git history on this
+    // file for the two earlier attempts at a pop-based fix).
+    void goBack() => context.go('/profile');
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) goBack();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Points & Rewards'),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: goBack,
+          ),
+        ),
+        body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
@@ -69,7 +86,7 @@ class UserPointsRewardsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: cs.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Row(
                 children: [
@@ -87,7 +104,7 @@ class UserPointsRewardsScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(reward['title'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
-                        Text('${reward['points']} points required', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text('${reward['points']} points required', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -96,7 +113,7 @@ class UserPointsRewardsScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cs.primary,
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.grey.shade200,
+                      disabledBackgroundColor: cs.surfaceContainerHighest,
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
@@ -107,6 +124,7 @@ class UserPointsRewardsScreen extends StatelessWidget {
             )),
           ],
         ),
+      ),
       ),
     );
   }

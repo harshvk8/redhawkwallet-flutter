@@ -58,9 +58,9 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                       decoration: BoxDecoration(
                         color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : cs.outlineVariant),
                       ),
-                      child: Text(filter, style: TextStyle(color: selected ? Colors.white : cs.onSurface, fontSize: 13, fontWeight: FontWeight.w500)),
+                      child: Text(filter, style: TextStyle(color: selected ? cs.onPrimary : cs.onSurface, fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
                   );
                 },
@@ -112,7 +112,7 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                           decoration: BoxDecoration(
                             color: cs.surface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade100),
+                            border: Border.all(color: cs.outlineVariant),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,25 +134,25 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  const Icon(Icons.person_outline, size: 14, color: Colors.grey),
+                                  Icon(Icons.person_outline, size: 14, color: cs.onSurfaceVariant),
                                   const SizedBox(width: 4),
-                                  Text(tx.fromName.isNotEmpty ? tx.fromName : 'Unknown', style: const TextStyle(fontSize: 13)),
+                                  Text(tx.fromName.isNotEmpty ? tx.fromName : 'Unknown', style: TextStyle(fontSize: 13, color: cs.onSurface)),
                                   const SizedBox(width: 12),
-                                  const Icon(Icons.store_outlined, size: 14, color: Colors.grey),
+                                  Icon(Icons.store_outlined, size: 14, color: cs.onSurfaceVariant),
                                   const SizedBox(width: 4),
-                                  Text(tx.toName.isNotEmpty ? tx.toName : 'Unknown', style: const TextStyle(fontSize: 13)),
+                                  Text(tx.toName.isNotEmpty ? tx.toName : 'Unknown', style: TextStyle(fontSize: 13, color: cs.onSurface)),
                                 ],
                               ),
                               const SizedBox(height: 6),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('${tx.createdAt.month}/${tx.createdAt.day}/${tx.createdAt.year}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                  Text('${tx.createdAt.month}/${tx.createdAt.day}/${tx.createdAt.year}', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                                   Row(
                                     children: [
-                                      Text('\$${tx.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                      Text('\$${tx.amount.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: cs.onSurface)),
                                       const SizedBox(width: 6),
-                                      const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+                                      Icon(Icons.chevron_right, size: 16, color: cs.onSurfaceVariant),
                                     ],
                                   ),
                                 ],
