@@ -6,6 +6,7 @@ class TransactionDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
     final id = extra?['id'] as String? ?? '—';
     final fromName = extra?['fromName'] as String? ?? 'Unknown';
@@ -25,7 +26,6 @@ class TransactionDetailsScreen extends StatelessWidget {
             : Colors.red;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Transaction Details'),
         backgroundColor: const Color(0xFFC8102E),
@@ -55,18 +55,18 @@ class TransactionDetailsScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade100),
+                      border: Border.all(color: cs.outlineVariant),
                     ),
                     child: Column(
                       children: [
                         CircleAvatar(
-                          backgroundColor: const Color(0xFFFFF0F0),
+                          backgroundColor: cs.primary.withValues(alpha: 0.1),
                           child: Text(fromName.isNotEmpty ? fromName[0].toUpperCase() : '?', style: const TextStyle(color: Color(0xFFC8102E), fontWeight: FontWeight.bold)),
                         ),
                         const SizedBox(height: 8),
-                        const Text('From', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text('From', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                         Text(fromName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
                       ],
                     ),
@@ -80,18 +80,18 @@ class TransactionDetailsScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade100),
+                      border: Border.all(color: cs.outlineVariant),
                     ),
                     child: Column(
                       children: [
                         CircleAvatar(
-                          backgroundColor: const Color(0xFFFFF0F0),
+                          backgroundColor: cs.primary.withValues(alpha: 0.1),
                           child: Text(toName.isNotEmpty ? toName[0].toUpperCase() : '?', style: const TextStyle(color: Color(0xFFC8102E), fontWeight: FontWeight.bold)),
                         ),
                         const SizedBox(height: 8),
-                        const Text('To', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text('To', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                         Text(toName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
                       ],
                     ),
@@ -104,18 +104,18 @@ class TransactionDetailsScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Details', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  _detailRow('Date', dateStr),
-                  _detailRow('Time', timeStr),
-                  if (description.isNotEmpty) _detailRow('Note', description),
+                  _detailRow(cs, 'Date', dateStr),
+                  _detailRow(cs, 'Time', timeStr),
+                  if (description.isNotEmpty) _detailRow(cs, 'Note', description),
                 ],
               ),
             ),
@@ -125,13 +125,13 @@ class TransactionDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _detailRow(String label, String value) {
+  Widget _detailRow(ColorScheme cs, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          Text(label, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
           Flexible(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13), textAlign: TextAlign.right)),
         ],
       ),

@@ -59,7 +59,7 @@ class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScr
                       decoration: BoxDecoration(
                         color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : cs.outlineVariant),
                       ),
                       child: Text(filter, style: TextStyle(color: selected ? cs.onPrimary : cs.onSurface, fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
@@ -81,7 +81,7 @@ class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScr
                     decoration: BoxDecoration(
                       color: cs.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade100),
+                      border: Border.all(color: cs.outlineVariant),
                     ),
                     child: Row(
                       children: [
@@ -99,9 +99,9 @@ class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScr
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(tx['vendor'] as String, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                              Text(tx['type'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                              Text(tx['date'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              Text(tx['vendor'] as String, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: cs.onSurface)),
+                              Text(tx['type'] as String, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+                              Text(tx['date'] as String, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                             ],
                           ),
                         ),

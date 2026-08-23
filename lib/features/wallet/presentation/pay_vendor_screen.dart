@@ -1,10 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../models/wallet_balance_type.dart';
 import '../services/money_transfer_service.dart';
+import '../widgets/payment_account_selector.dart';
 
 class PayVendorScreen extends StatefulWidget {
   const PayVendorScreen({super.key, this.vendor});
@@ -19,7 +17,6 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   bool _paying = false;
-  WalletBalanceType _selectedBalanceType = WalletBalanceType.redHawkDollars;
 
   @override
   void dispose() {
@@ -29,12 +26,6 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
   }
 
   Future<void> _pay(Map<String, dynamic> vendor) async {
-    if (_selectedBalanceType != WalletBalanceType.redHawkDollars) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${_selectedBalanceType.label} payments aren\'t issued yet — pay with Red Hawk Dollars for now.'), backgroundColor: Colors.orange),
-      );
-      return;
-    }
     final vendorUid = vendor['uid'] as String?;
     if (vendorUid == null || vendorUid.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -55,6 +46,7 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
       builder: (ctx) => AlertDialog(
         title: Text('Pay \$${amount.toStringAsFixed(2)} to ${vendor['name']}?'),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: const SingleChildScrollView(child: PaymentAccountSelector()),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
@@ -69,11 +61,10 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
 
     setState(() => _paying = true);
     try {
-      await MoneyTransferService().transfer(
+      await MoneyTransferService().payVendor(
         toUid: vendorUid,
         amount: amount,
         note: _noteController.text.trim(),
-        type: 'payment',
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -138,7 +129,7 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            _paymentMethods(context),
+            _paymentMethodsCard(context),
             const SizedBox(height: 16),
             _summaryCard(context, vendor),
             const SizedBox(height: 16),
@@ -249,10 +240,8 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
     );
   }
 
-  Widget _paymentMethods(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+  Widget _paymentMethodsCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       width: double.infinity,
@@ -262,56 +251,7 @@ class _PayVendorScreenState extends State<PayVendorScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Pay with', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          if (uid == null)
-            Text('Not signed in.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant))
-          else
-            StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance.collection('wallets').doc(uid).snapshots(),
-              builder: (context, snapshot) {
-                final walletData = snapshot.data?.data() as Map<String, dynamic>?;
-                return Column(
-                  children: WalletBalanceType.values.map((type) {
-                    final selected = _selectedBalanceType == type;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedBalanceType = type),
-                        child: Row(
-                          children: [
-                            Icon(type.icon, color: selected ? type.color : colorScheme.onSurfaceVariant),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(type.label, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                            ),
-                            Text(type.format(walletData), style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-                            const SizedBox(width: 8),
-                            Icon(
-                              selected ? Icons.radio_button_checked : Icons.radio_button_off,
-                              color: selected ? type.color : colorScheme.onSurfaceVariant,
-                              size: 18,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-          if (_selectedBalanceType != WalletBalanceType.redHawkDollars) ...[
-            const SizedBox(height: 4),
-            Text(
-              '${_selectedBalanceType.label} aren\'t issued yet — pay with Red Hawk Dollars for now.',
-              style: theme.textTheme.bodySmall?.copyWith(color: Colors.orange.shade700),
-            ),
-          ],
-        ],
-      ),
+      child: const PaymentAccountSelector(),
     );
   }
 

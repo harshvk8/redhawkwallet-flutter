@@ -21,6 +21,7 @@ import '../../features/vendor/presentation/vendor_list_screen.dart';
 import '../../features/vendor/presentation/vendor_details_screen.dart';
 import '../../features/vendor/presentation/vendor_qr_payment_screen.dart';
 import '../../features/vendor/presentation/vendor_offers_screen.dart';
+import '../../features/vendor/presentation/vendor_redemption_scanner_screen.dart';
 import '../../features/vendor/presentation/vendor_transaction_history_screen.dart';
 import '../../features/vendor/presentation/vendor_waiting_approval_screen.dart';
 import '../../features/vendor/presentation/vendor_profile_screen.dart';
@@ -45,6 +46,7 @@ import '../../features/wallet/presentation/receive_money_screen.dart';
 import '../../features/wallet/presentation/pay_vendor_screen.dart';
 import '../../features/wallet/presentation/transaction_details_screen.dart';
 import '../../features/offers/presentation/user_offers_screen.dart';
+import '../../features/offers/presentation/offer_redemption_screen.dart';
 import '../../features/points_rewards/presentation/user_points_rewards_screen.dart';
 import '../../features/settings/presentation/user_settings_screen.dart';
 import '../../features/settings/presentation/security_settings_screen.dart';
@@ -53,6 +55,9 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/legal/presentation/terms_screen.dart';
 import '../../features/legal/presentation/privacy_policy_screen.dart';
 import '../../features/legal/presentation/vendor_terms_screen.dart';
+import '../../features/support/presentation/support_chat_screen.dart';
+import '../../features/admin/presentation/admin_support_chats_screen.dart';
+import '../../features/admin/presentation/admin_support_chat_detail_screen.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
@@ -87,6 +92,12 @@ class AppRouter {
         return '/login';
       }
 
+      // Email verification gate: signed-in but unverified users are confined
+      // to the verification screen until they confirm their email.
+      if (!_authNotifier.isEmailVerified) {
+        return loc == '/email-verification' || isLegalRoute ? null : '/email-verification';
+      }
+
       final role = _authNotifier.role!;
       final isPendingVendor =
           role == UserRole.vendor && _authNotifier.vendorStatus != 'approved';
@@ -101,14 +112,22 @@ class AppRouter {
 
       if (isLegalRoute) return null;
 
-      // Pending vendors are confined to the waiting screen until approved
-      if (isPendingVendor && loc != '/vendor/waiting') {
+      // Pending vendors are confined to the waiting screen until approved,
+      // except support chat — they may still need help while waiting. Return
+      // outright instead of falling through: the role-changed check further
+      // down doesn't know about this carve-out and would bounce '/support'
+      // back to '/vendor' (which then redirects to '/vendor/waiting' anyway).
+      if (isPendingVendor) {
+        if (loc == '/vendor/waiting' || loc == '/support') return null;
         return '/vendor/waiting';
       }
 
-      // Prevent cross-role access
-      final isVendorRoute = loc.startsWith('/vendor');
-      final isAdminRoute = loc.startsWith('/admin');
+      // Prevent cross-role access. Exact-match the bare prefix or require a
+      // trailing slash — loc.startsWith('/vendor') would also match the
+      // student-facing '/vendors' (Browse Vendors) route and incorrectly
+      // treat it as vendor-role-only.
+      final isVendorRoute = loc == '/vendor' || loc.startsWith('/vendor/');
+      final isAdminRoute = loc == '/admin' || loc.startsWith('/admin/');
       if (isVendorRoute && role != UserRole.vendor) return '/home';
       if (isAdminRoute && role != UserRole.admin) return '/home';
 
@@ -161,11 +180,23 @@ class AppRouter {
       ),
       GoRoute(path: '/wallet/pay', builder: (context, state) => const PayVendorScreen()),
       GoRoute(path: '/offers', builder: (context, state) => const UserOffersScreen()),
+      GoRoute(
+        path: '/offers/redemption',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          return OfferRedemptionScreen(
+            offerId: extra['offerId'] as String,
+            uid: extra['uid'] as String,
+            title: extra['title'] as String,
+          );
+        },
+      ),
       GoRoute(path: '/rewards', builder: (context, state) => const UserPointsRewardsScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const UserSettingsScreen()),
       GoRoute(path: '/settings/security', builder: (context, state) => const SecuritySettingsScreen()),
       GoRoute(path: '/events', builder: (context, state) => const UserEventsScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
+      GoRoute(path: '/support', builder: (context, state) => const SupportChatScreen()),
       GoRoute(path: '/terms', builder: (context, state) => const TermsScreen()),
       GoRoute(path: '/privacy', builder: (context, state) => const PrivacyPolicyScreen()),
       GoRoute(path: '/vendor-terms', builder: (context, state) => const VendorTermsScreen()),
@@ -182,9 +213,17 @@ class AppRouter {
       GoRoute(path: '/vendor/payment-request', builder: (context, state) => const VendorCreatePaymentRequestScreen()),
       GoRoute(
         path: '/vendor/qr',
-        builder: (context, state) => VendorQrPaymentScreen(payment: state.extra as Map<String, dynamic>?),
+        builder: (context, state) {
+          final requestId = state.extra as String?;
+          if (requestId == null) {
+            // Reached without a request id (e.g. deep link) — send back to create one.
+            return const _RedirectToPaymentRequest();
+          }
+          return VendorQrPaymentScreen(requestId: requestId);
+        },
       ),
       GoRoute(path: '/vendor/offers', builder: (context, state) => const VendorOffersScreen()),
+      GoRoute(path: '/vendor/scan-redemption', builder: (context, state) => const VendorRedemptionScannerScreen()),
       GoRoute(path: '/vendor/transactions', builder: (context, state) => const VendorTransactionHistoryScreen()),
       GoRoute(path: '/vendor/sales-report', builder: (context, state) => const VendorSalesReportScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),
@@ -201,8 +240,25 @@ class AppRouter {
       GoRoute(path: '/admin/settings', builder: (context, state) => const AdminSettingsScreen()),
       GoRoute(path: '/admin/reports', builder: (context, state) => const AdminReportsScreen()),
       GoRoute(path: '/admin/issues', builder: (context, state) => const ReportedIssuesScreen()),
+      GoRoute(path: '/admin/support', builder: (context, state) => const AdminSupportChatsScreen()),
+      GoRoute(
+        path: '/admin/support/chat',
+        builder: (context, state) => AdminSupportChatDetailScreen(chatId: state.extra as String),
+      ),
     ],
   );
+}
+
+class _RedirectToPaymentRequest extends StatelessWidget {
+  const _RedirectToPaymentRequest();
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) context.go('/vendor/payment-request');
+    });
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  }
 }
 
 class _SplashScreen extends StatefulWidget {
@@ -278,12 +334,14 @@ class _AuthStateNotifier extends ChangeNotifier {
   String? _role;
   String? _accountStatus;
   String? _vendorStatus;
+  bool _isEmailVerified = false;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSub;
 
   bool get ready => _ready;
   String? get role => _role;
   String? get accountStatus => _accountStatus;
   String? get vendorStatus => _vendorStatus;
+  bool get isEmailVerified => _isEmailVerified;
 
   _AuthStateNotifier() {
     // Keep the splash visible for at least 2000ms so the logo animation
@@ -298,6 +356,7 @@ class _AuthStateNotifier extends ChangeNotifier {
         _role = null;
         _accountStatus = null;
         _vendorStatus = null;
+        _isEmailVerified = false;
         notifyListeners();
         return;
       }
@@ -310,6 +369,14 @@ class _AuthStateNotifier extends ChangeNotifier {
         _role = (data?['role'] as String?)?.trim() ?? UserRole.normalUser;
         _accountStatus = (data?['accountStatus'] as String?)?.trim();
         _vendorStatus = (data?['vendorStatus'] as String?)?.trim();
+        // Firestore's isEmailVerified is the field the rest of the app treats
+        // as authoritative (it's what login_screen checks and what
+        // email_verification_screen writes). FirebaseAuth's own
+        // currentUser.emailVerified only updates after an explicit reload(),
+        // so it can lag behind — OR-ing the two avoids the router gate
+        // blocking every navigation for an account that's actually verified.
+        _isEmailVerified = (data?['isEmailVerified'] as bool? ?? false) ||
+            FirebaseAuth.instance.currentUser?.emailVerified == true;
         notifyListeners();
       });
     });

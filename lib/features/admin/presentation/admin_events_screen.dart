@@ -102,7 +102,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
               decoration: BoxDecoration(
                 color: cs.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,25 +124,25 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                      Icon(Icons.calendar_today, size: 14, color: cs.onSurfaceVariant),
                       const SizedBox(width: 4),
-                      Text('${event['date']} at ${event['time']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text('${event['date']} at ${event['time']}', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                      Icon(Icons.location_on_outlined, size: 14, color: cs.onSurfaceVariant),
                       const SizedBox(width: 4),
-                      Text(event['location']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text(event['location']!, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.person_outline, size: 14, color: Colors.grey),
+                      Icon(Icons.person_outline, size: 14, color: cs.onSurfaceVariant),
                       const SizedBox(width: 4),
-                      Text('Created by ${event['createdBy']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text('Created by ${event['createdBy']}', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -171,7 +171,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
                         icon: Icon(isActive ? Icons.block : Icons.check_circle_outline, size: 16),
                         label: Text(isActive ? 'Disable' : 'Enable', style: const TextStyle(fontSize: 13)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey.shade200,
+                          backgroundColor: cs.surfaceContainerHighest,
                           foregroundColor: cs.onSurface,
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,

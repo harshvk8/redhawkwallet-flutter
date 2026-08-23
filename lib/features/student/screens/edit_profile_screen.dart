@@ -109,7 +109,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       filled: true,
                       fillColor: cs.surface,
                       hintText: 'Your name',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outlineVariant)),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -122,13 +122,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       filled: true,
                       fillColor: cs.surface,
                       hintText: 'e.g. (555) 123-4567',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: cs.outlineVariant)),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     'Lets friends send you money by phone number in Send Money. Leave blank to remove it.',
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 12),

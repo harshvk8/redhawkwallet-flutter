@@ -342,13 +342,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             validator: (v) {
                               if (v == null || v.length < 8) return 'Password must be at least 8 characters';
                               if (!RegExp(r'\d').hasMatch(v)) return 'Password must contain at least 1 number';
+                              // Matches Firebase Auth's actual password policy, which
+                              // rejects passwords without this even though it isn't
+                              // obvious from the Firebase console — confirmed by a
+                              // real signup attempt hitting the "must contain a
+                              // non-alphanumeric character" error.
+                              if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(v)) return 'Password must contain at least 1 special character';
                               return null;
                             },
                           ),
                           Padding(
                             padding: const EdgeInsets.only(top: 4, left: 4),
                             child: Text(
-                              'Use 8+ characters with at least 1 number',
+                              'Use 8+ characters with at least 1 number and 1 special character',
                               style: TextStyle(fontSize: 11, color: mutedText),
                             ),
                           ),

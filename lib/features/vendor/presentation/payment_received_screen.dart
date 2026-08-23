@@ -8,6 +8,7 @@ class PaymentReceivedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
     final amount = extra?['amount'] as double? ?? 0.0;
     final studentName = extra?['studentName'] as String? ?? 'Customer';
@@ -20,7 +21,6 @@ class PaymentReceivedScreen extends StatelessWidget {
     final timeStr = '$hour:${_twoDigits(paidAt.minute)} $period';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Payment Received'),
         backgroundColor: const Color(0xFFC8102E),
@@ -46,17 +46,17 @@ class PaymentReceivedScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: Column(
                 children: [
-                  _receiptRow('Customer', studentName),
-                  _receiptRow('Transaction ID', transactionId),
-                  _receiptRow('Date', dateStr),
-                  _receiptRow('Time', timeStr),
-                  if (note.isNotEmpty) _receiptRow('Note', note),
+                  _receiptRow(cs, 'Customer', studentName),
+                  _receiptRow(cs, 'Transaction ID', transactionId),
+                  _receiptRow(cs, 'Date', dateStr),
+                  _receiptRow(cs, 'Time', timeStr),
+                  if (note.isNotEmpty) _receiptRow(cs, 'Note', note),
                 ],
               ),
             ),
@@ -85,14 +85,14 @@ class PaymentReceivedScreen extends StatelessWidget {
     );
   }
 
-  Widget _receiptRow(String label, String value) {
+  Widget _receiptRow(ColorScheme cs, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(label, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: cs.onSurface)),
         ],
       ),
     );

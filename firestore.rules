@@ -9,11 +9,16 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if request.auth != null;
       allow create, delete: if request.auth != null && request.auth.uid == userId;
+      // vendorStatus is intentionally not in this list — vendor approval/
+      // rejection goes exclusively through the approveVendor Cloud Function
+      // (Admin SDK, bypasses rules) so it gets the isAdmin + role/status
+      // checks server-side. Admin's direct client writes stay limited to
+      // suspend/reactivate (accountStatus).
       allow update: if request.auth != null &&
         (request.auth.uid == userId ||
          (isAdmin() &&
           request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['vendorStatus', 'accountStatus', 'updatedAt'])));
+            .hasOnly(['accountStatus', 'updatedAt'])));
     }
 
     match /wallets/{userId} {
@@ -85,6 +90,64 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['status', 'studentUid', 'studentName', 'paidAt', 'transactionId']);
       allow delete: if false;
+    }
+
+    match /studentIdTokens/{token} {
+      // Minted exclusively by issueStudentIdToken (Admin SDK) so a client
+      // can't forge a token claiming to be a different uid. Readable by any
+      // authenticated user so a future verifier (vendor/admin scan) can
+      // look one up.
+      allow read: if request.auth != null;
+      allow create, update, delete: if false;
+    }
+
+    match /offers/{offerId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.vendorUid == request.auth.uid;
+      // Vendor manages their own offer (edit/toggle); admin may force an
+      // offer off (moderation) but nothing else on it. Redemption (which
+      // bumps usedCount) goes exclusively through redeemOffer (Admin SDK,
+      // bypasses rules) so a client can't inflate the count by calling
+      // update() in a loop with no per-user record.
+      allow update: if request.auth != null &&
+        (resource.data.vendorUid == request.auth.uid ||
+         (isAdmin() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active', 'updatedAt'])));
+      allow delete: if request.auth != null && resource.data.vendorUid == request.auth.uid;
+
+      match /redemptions/{uid} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow write: if false;
+      }
+    }
+
+    match /supportChats/{chatId} {
+      // Written exclusively by sendSupportMessage/claimSupportChat/
+      // sendAdminReply/closeSupportChat (Admin SDK, bypasses rules) so the
+      // AI escalation logic and admin assignment can't be spoofed from the
+      // client. Owner and admins may read.
+      allow read: if request.auth != null &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+
+      match /messages/{messageId} {
+        // Same reasoning as the parent doc — every message (user, assistant,
+        // admin, or system) is written by a Cloud Function so a client can't
+        // forge an assistant/admin reply or read another user's chat.
+        allow read: if request.auth != null &&
+          (get(/databases/$(database)/documents/supportChats/$(chatId)).data.userId == request.auth.uid || isAdmin());
+        allow create, update, delete: if false;
+      }
+    }
+
+    match /notifications/{notificationId} {
+      // Written exclusively by Cloud Functions alongside the event that
+      // triggered them (a transfer, a deposit, a vendor decision). Owner can
+      // only flip `read` — nothing else about their own notifications.
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null && resource.data.uid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create, delete: if false;
     }
   }
 }

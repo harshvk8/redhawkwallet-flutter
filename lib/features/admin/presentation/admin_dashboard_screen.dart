@@ -22,18 +22,92 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   int _suspended = 0;
   int _verified = 0;
 
-  final List<Map<String, String>> recentActivity = const [
-    {'action': 'New vendor registered', 'detail': 'Hawks Pizza', 'time': '5 min ago'},
-    {'action': 'Vendor approved', 'detail': 'Campus Bookstore', 'time': '1 hr ago'},
-    {'action': 'New user joined', 'detail': 'student@montclair.edu', 'time': '2 hr ago'},
-    {'action': 'Transaction completed', 'detail': '\$12.50 at Red Hawk Cafe', 'time': '3 hr ago'},
-    {'action': 'Offer created', 'detail': '10% Student Discount', 'time': '5 hr ago'},
-  ];
+  bool _activityLoading = true;
+  List<_ActivityItem> _recentActivity = [];
 
   @override
   void initState() {
     super.initState();
-    _loadStats();
+    _loadAll();
+  }
+
+  Future<void> _loadRecentActivity() async {
+    setState(() => _activityLoading = true);
+    try {
+      final results = await Future.wait([
+        _db.collection('users').orderBy('createdAt', descending: true).limit(5).get(),
+        _db.collection('transactions').orderBy('createdAt', descending: true).limit(5).get(),
+        _db.collection('offers').orderBy('createdAt', descending: true).limit(5).get(),
+      ]);
+
+      final items = <_ActivityItem>[];
+
+      for (final doc in results[0].docs) {
+        final data = doc.data();
+        final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
+        if (createdAt == null) continue;
+        final isVendor = data['role'] == 'vendor';
+        items.add(_ActivityItem(
+          action: isVendor ? 'New vendor registered' : 'New user joined',
+          detail: isVendor
+              ? (data['businessName'] as String?) ?? (data['name'] as String?) ?? 'Unknown vendor'
+              : (data['name'] as String?) ?? (data['email'] as String?) ?? 'Unknown user',
+          time: createdAt,
+        ));
+      }
+
+      for (final doc in results[1].docs) {
+        final data = doc.data();
+        final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
+        if (createdAt == null) continue;
+        final status = data['status'] as String? ?? 'pending';
+        final amount = (data['amount'] as num?)?.toDouble() ?? 0;
+        final counterparty = (data['toName'] as String?) ?? (data['fromName'] as String?) ?? '';
+        items.add(_ActivityItem(
+          action: switch (status) {
+            'completed' => 'Transaction completed',
+            'failed' => 'Transaction failed',
+            _ => 'Transaction pending',
+          },
+          detail: '\$${amount.toStringAsFixed(2)}${counterparty.isNotEmpty ? ' at $counterparty' : ''}',
+          time: createdAt,
+        ));
+      }
+
+      for (final doc in results[2].docs) {
+        final data = doc.data();
+        final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
+        if (createdAt == null) continue;
+        items.add(_ActivityItem(
+          action: 'Offer created',
+          detail: (data['title'] as String?) ?? 'Untitled offer',
+          time: createdAt,
+        ));
+      }
+
+      items.sort((a, b) => b.time.compareTo(a.time));
+      if (!mounted) return;
+      setState(() {
+        _recentActivity = items.take(6).toList();
+        _activityLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _activityLoading = false);
+    }
+  }
+
+  Future<void> _loadAll() async {
+    await Future.wait([_loadStats(), _loadRecentActivity()]);
+  }
+
+  String _formatRelativeTime(DateTime time) {
+    final diff = DateTime.now().difference(time);
+    if (diff.inSeconds < 60) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+    if (diff.inHours < 24) return '${diff.inHours} hr ago';
+    if (diff.inDays < 7) return '${diff.inDays} d ago';
+    return '${time.month}/${time.day}/${time.year}';
   }
 
   Future<void> _loadStats() async {
@@ -79,7 +153,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loading ? null : _loadStats,
+            onPressed: _loading ? null : _loadAll,
           ),
           IconButton(
             icon: const Icon(Icons.notifications_none),
@@ -95,7 +169,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadStats,
+        onRefresh: _loadAll,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16.0),
@@ -162,38 +236,55 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(height: 8),
               _actionButton(context, Icons.people, 'Manage Users', '/admin/users'),
               const SizedBox(height: 8),
+              _actionButton(context, Icons.support_agent, 'Support Chats', '/admin/support'),
+              const SizedBox(height: 8),
               _actionButton(context, Icons.settings, 'Admin Settings', '/admin/settings'),
               const SizedBox(height: 20),
               const Text('Recent Activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
-              ...recentActivity.map((activity) => Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: cs.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.circle, size: 8, color: cs.primary),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+              if (_activityLoading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_recentActivity.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text('No recent activity yet', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+                )
+              else
+                ..._recentActivity.map((activity) => Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: cs.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: cs.outlineVariant),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
                           children: [
-                            Text(activity['action']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                            Text(activity['detail']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                            Icon(Icons.circle, size: 8, color: cs.primary),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(activity.action, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cs.onSurface)),
+                                  Text(activity.detail, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                    Text(activity['time']!, style: const TextStyle(color: Colors.grey, fontSize: 11)),
-                  ],
-                ),
-              )),
+                      ),
+                      Text(_formatRelativeTime(activity.time), style: TextStyle(color: cs.onSurfaceVariant, fontSize: 11)),
+                    ],
+                  ),
+                )),
             ],
           ),
         ),
@@ -211,6 +302,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _statCard(String label, String value, IconData icon, Color color) {
+    final cs = Theme.of(context).colorScheme;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -223,8 +315,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             Icon(icon, color: color, size: 20),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+            Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: cs.onSurface)),
+            Text(label, style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
           ],
         ),
       ),
@@ -256,4 +348,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
     );
   }
+}
+
+class _ActivityItem {
+  final String action;
+  final String detail;
+  final DateTime time;
+
+  const _ActivityItem({required this.action, required this.detail, required this.time});
 }

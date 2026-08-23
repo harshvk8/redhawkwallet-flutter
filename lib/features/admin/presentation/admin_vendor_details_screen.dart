@@ -120,7 +120,7 @@ class _AdminVendorDetailsScreenState extends State<AdminVendorDetailsScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
@@ -162,7 +162,7 @@ class _AdminVendorDetailsScreenState extends State<AdminVendorDetailsScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,7 +186,7 @@ class _AdminVendorDetailsScreenState extends State<AdminVendorDetailsScreen> {
         children: [
           Icon(icon, color: cs.primary, size: 20),
           const SizedBox(width: 12),
-          Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          Text('$label: ', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
           Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
         ],
       ),
