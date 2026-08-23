@@ -75,10 +75,61 @@ class _UserOffersScreenState extends State<UserOffersScreen> {
     context.push('/offers/redemption', extra: {'offerId': offerId, 'uid': uid, 'title': title});
   }
 
+  // Listens to the same offers/{offerId}/redemptions/{uid} doc the
+  // redemption screen watches, so the button flips to "Redeemed" as soon as
+  // redeemOffer creates it — no need to leave and re-enter this screen.
+  Widget _redeemButton(BuildContext context, ColorScheme colorScheme, String offerId, String title, String? uid) {
+    if (uid == null) {
+      return SizedBox(
+        width: 84,
+        child: ElevatedButton(
+          onPressed: () => _redeem(context, offerId, title),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+          child: const Text('Redeem', style: TextStyle(fontSize: 12)),
+        ),
+      );
+    }
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('offers')
+          .doc(offerId)
+          .collection('redemptions')
+          .doc(uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        final redeemed = snapshot.data?.exists == true;
+        return SizedBox(
+          width: 84,
+          child: ElevatedButton(
+            onPressed: redeemed
+                ? () => _openRedemptionScreen(context, offerId, uid, title)
+                : () => _redeem(context, offerId, title),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: redeemed ? colorScheme.surfaceContainerHighest : colorScheme.primary,
+              foregroundColor: redeemed ? colorScheme.onSurfaceVariant : colorScheme.onPrimary,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(redeemed ? 'Redeemed' : 'Redeem', style: const TextStyle(fontSize: 12)),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -261,30 +312,12 @@ class _UserOffersScreenState extends State<UserOffersScreen> {
                                   ],
                                 ),
                               ),
-                              SizedBox(
-                                width: 84,
-                                child: ElevatedButton(
-                                  onPressed: () => _redeem(
-                                    context,
-                                    doc.id,
-                                    offer['title'] as String? ?? 'offer',
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: colorScheme.primary,
-                                    foregroundColor: colorScheme.onPrimary,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 8,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Redeem',
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                ),
+                              _redeemButton(
+                                context,
+                                colorScheme,
+                                doc.id,
+                                offer['title'] as String? ?? 'offer',
+                                uid,
                               ),
                             ],
                           ),
