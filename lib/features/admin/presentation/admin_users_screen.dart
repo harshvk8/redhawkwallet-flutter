@@ -164,10 +164,20 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     final data = d.data() as Map<String, dynamic>;
                     return data['accountStatus'] == 'suspended';
                   }).toList();
+                } else if (_filter == 'Verified Student') {
+                  // Check isUniversityVerified directly rather than trusting
+                  // role == 'verified_student' — the two are meant to move
+                  // together (updateUniversityVerification sets both), but
+                  // a role edited outside that flow (e.g. directly in the
+                  // Firestore console) would make an actually-verified user
+                  // invisible under this filter otherwise.
+                  docs = docs.where((d) {
+                    final data = d.data() as Map<String, dynamic>;
+                    return data['isUniversityVerified'] == true;
+                  }).toList();
                 } else if (_filter != 'All') {
                   final roleMap = {
                     'Normal User': 'normal_user',
-                    'Verified Student': 'verified_student',
                     'Vendor': 'vendor',
                     'Admin': 'admin',
                   };
