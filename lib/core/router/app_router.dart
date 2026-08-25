@@ -58,6 +58,7 @@ import '../../features/legal/presentation/vendor_terms_screen.dart';
 import '../../features/support/presentation/support_chat_screen.dart';
 import '../../features/admin/presentation/admin_support_chats_screen.dart';
 import '../../features/admin/presentation/admin_support_chat_detail_screen.dart';
+import '../services/push_notification_service.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
@@ -360,6 +361,7 @@ class _AuthStateNotifier extends ChangeNotifier {
         notifyListeners();
         return;
       }
+      PushNotificationService.instance.registerForUser(user.uid);
       _userDocSub = FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)

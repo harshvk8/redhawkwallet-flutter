@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- Runtime prompt for showing notifications on Android 13+ (API 33) —
+         requested at runtime via FirebaseMessaging.requestPermission(). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:label="redhawkwallet_flutter"
         android:name="${applicationName}"
@@ -32,6 +35,16 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Matches the channel PushNotificationService creates at startup —
+             sets the default icon/channel for notifications sent without one
+             (e.g. FCM's own background display), so they don't fall back to
+             a blank/generic icon. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="default_channel" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
