@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/app_states.dart';
 
 class UserTransactionHistoryScreen extends StatefulWidget {
   const UserTransactionHistoryScreen({super.key});
@@ -10,6 +11,24 @@ class UserTransactionHistoryScreen extends StatefulWidget {
 class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScreen> {
   String selectedFilter = 'All';
   final List<String> filters = ['All', 'Completed', 'Pending', 'Failed'];
+  bool _isLoading = true;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() { _isLoading = true; _hasError = false; });
+    try {
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (mounted) setState(() => _isLoading = false);
+    } catch (_) {
+      if (mounted) setState(() { _isLoading = false; _hasError = true; });
+    }
+  }
 
   final List<Map<String, dynamic>> transactions = [
     {'vendor': "Sam's Cafe", 'amount': '-\$7.50', 'date': 'May 27, 2026', 'status': 'Completed', 'type': 'Red Hawk Dollars', 'icon': Icons.local_cafe},
@@ -69,7 +88,17 @@ class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScr
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: ListView.builder(
+              child: _isLoading
+                  ? const AppLoadingState(message: 'Loading transactions…')
+                  : _hasError
+                      ? AppErrorState(onRetry: _load)
+                      : filteredTransactions.isEmpty
+                          ? AppEmptyState(
+                              icon: Icons.receipt_long_outlined,
+                              title: 'No $selectedFilter transactions',
+                              subtitle: 'There are no transactions matching this filter.',
+                            )
+                          : ListView.builder(
                 itemCount: filteredTransactions.length,
                 itemBuilder: (context, index) {
                   final tx = filteredTransactions[index];
@@ -129,3 +158,4 @@ class _UserTransactionHistoryScreenState extends State<UserTransactionHistoryScr
     );
   }
 }
+

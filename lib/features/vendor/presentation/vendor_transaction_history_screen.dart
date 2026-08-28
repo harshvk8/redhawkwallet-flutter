@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/widgets/app_states.dart';
 
 import '../../wallet/models/transaction_model.dart';
 
@@ -118,39 +119,17 @@ class _VendorTransactionHistoryScreenState
   }
 
   Widget _errorState(ColorScheme cs, VoidCallback onRetry) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, color: cs.error, size: 48),
-          const SizedBox(height: 12),
-          const Text('Something went wrong.', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          const SizedBox(height: 4),
-          Text('Could not load transactions.', style: TextStyle(color: cs.onSurfaceVariant)),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Try Again'),
-          ),
-        ],
-      ),
-    );
+    return AppErrorState(onRetry: onRetry);
   }
 
   Widget _buildList(ColorScheme cs, List<TransactionModel> transactions) {
     if (transactions.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.receipt_long, color: cs.onSurfaceVariant, size: 48),
-            const SizedBox(height: 12),
-            const Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 4),
-            Text('Transactions will appear here once customers pay.', style: TextStyle(color: cs.onSurfaceVariant), textAlign: TextAlign.center),
-          ],
-        ),
+      return AppEmptyState(
+        icon: Icons.receipt_long_outlined,
+        title: selectedFilter == 'All' ? 'No transactions yet' : 'No $selectedFilter transactions',
+        subtitle: selectedFilter == 'All'
+            ? 'Transactions will appear here once customers pay.'
+            : 'Try a different filter to see more results.',
       );
     }
     return ListView.builder(

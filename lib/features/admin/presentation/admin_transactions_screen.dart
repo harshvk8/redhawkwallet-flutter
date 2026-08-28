@@ -34,10 +34,7 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('All Transactions'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('All Transactions'), elevation: 0),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -87,7 +84,9 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                     return AppEmptyState(
                       icon: Icons.receipt_long_outlined,
                       title: selectedFilter == 'All' ? 'No transactions yet' : 'No $selectedFilter transactions',
-                      subtitle: 'There are no transactions matching this filter right now.',
+                      subtitle: selectedFilter == 'All'
+                          ? 'Transactions will appear here once payments are made.'
+                          : 'Try a different filter to see more results.',
                     );
                   }
                   return ListView.builder(
