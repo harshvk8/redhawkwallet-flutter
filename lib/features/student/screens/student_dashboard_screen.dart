@@ -107,14 +107,22 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 ),
             ],
           ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: colorScheme.onPrimary.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
+          Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => context.push('/notifications'),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.notifications_none, color: colorScheme.onPrimary, size: 22),
+              ),
             ),
-            child: Icon(Icons.notifications_none, color: colorScheme.onPrimary, size: 22),
           ),
         ],
       ),
@@ -217,24 +225,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-            GestureDetector(
-              onTap: () {},
-              child: Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.add, color: colorScheme.onPrimary, size: 18),
-              ),
-            ),
-          ],
-        ),
+        const Text('Quick Actions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Row(
           children: actions.map((action) {

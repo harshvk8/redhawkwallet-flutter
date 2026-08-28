@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/widgets/app_states.dart';
 
 class AdminManageVendorsScreen extends StatefulWidget {
   const AdminManageVendorsScreen({super.key});
@@ -14,6 +16,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
   String _search = '';
   final _filters = ['All', 'Active', 'Pending', 'Suspended'];
   final _db = FirebaseFirestore.instance;
+  final _functions = FirebaseFunctions.instance;
 
   /// Maps Firestore fields → a single display status string.
   String _displayStatus(Map<String, dynamic> data) {
@@ -37,20 +40,19 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
     );
     if (!confirmed) return;
     try {
-      await _db.collection('users').doc(uid).update({
-        'vendorStatus': 'approved',
-        'accountStatus': 'active',
-        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      await _functions.httpsCallable('approveVendor').call({
+        'vendorUid': uid,
+        'decision': 'approve',
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('$name approved'), backgroundColor: Colors.green),
         );
       }
-    } catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to approve $name: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Failed to approve $name: ${e.message}'), backgroundColor: Colors.red),
         );
       }
     }
@@ -65,20 +67,19 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
     );
     if (!confirmed) return;
     try {
-      await _db.collection('users').doc(uid).update({
-        'vendorStatus': 'rejected',
-        'accountStatus': 'active',
-        'updatedAt': Timestamp.fromDate(DateTime.now()),
+      await _functions.httpsCallable('approveVendor').call({
+        'vendorUid': uid,
+        'decision': 'reject',
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Vendor application rejected')),
         );
       }
-    } catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to reject $name: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Failed to reject $name: ${e.message}'), backgroundColor: Colors.red),
         );
       }
     }
@@ -165,7 +166,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
               onChanged: (v) => setState(() => _search = v.toLowerCase()),
               decoration: InputDecoration(
                 hintText: 'Search vendors...',
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                prefixIcon: Icon(Icons.search, color: cs.onSurfaceVariant),
                 filled: true,
                 fillColor: cs.surface,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -191,9 +192,9 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                       decoration: BoxDecoration(
                         color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : cs.outlineVariant),
                       ),
-                      child: Text(f, style: TextStyle(color: selected ? Colors.white : cs.onSurface, fontSize: 13, fontWeight: FontWeight.w500)),
+                      child: Text(f, style: TextStyle(color: selected ? cs.onPrimary : cs.onSurface, fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
                   );
                 },
@@ -205,26 +206,10 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
               stream: _db.collection('users').where('role', isEqualTo: 'vendor').orderBy('createdAt', descending: true).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator(color: cs.primary));
+                  return const AppLoadingState(message: 'Loading vendors…');
                 }
                 if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                        const SizedBox(height: 8),
-                        const Text('Failed to load vendors', style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 12),
-                        ElevatedButton.icon(
-                          onPressed: () => setState(() {}),
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                          style: ElevatedButton.styleFrom(backgroundColor: cs.primary, foregroundColor: Colors.white),
-                        ),
-                      ],
-                    ),
-                  );
+                  return AppErrorState(onRetry: () => setState(() {}));
                 }
 
                 var docs = snapshot.data?.docs ?? [];
@@ -248,18 +233,10 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                 }
 
                 if (docs.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.store_mall_directory_outlined, color: Colors.grey.shade400, size: 48),
-                        const SizedBox(height: 8),
-                        Text(
-                          _filter == 'All' ? 'No vendors registered yet.' : 'No $_filter vendors.',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
-                        ),
-                      ],
-                    ),
+                  return AppEmptyState(
+                    icon: Icons.store_mall_directory_outlined,
+                    title: _filter == 'All' ? 'No vendors yet' : 'No $_filter vendors',
+                    subtitle: _search.isNotEmpty ? 'Try a different search term.' : 'Vendor applications will appear here once submitted.',
                   );
                 }
 
@@ -286,7 +263,7 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                       decoration: BoxDecoration(
                         color: cs.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(color: cs.outlineVariant),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,10 +282,10 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Text(email, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                          Text(category, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          Text(email, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+                          Text(category, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                           const SizedBox(height: 4),
-                          Text('Joined $joined', style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                          Text('Joined $joined', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 11)),
                           const SizedBox(height: 10),
                           Row(
                             children: [
@@ -319,11 +296,11 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                               ] else if (displayStatus == 'Active') ...[
                                 Expanded(child: _actionBtn('Suspend', Colors.red, () => _suspendVendor(uid, businessName))),
                                 const SizedBox(width: 8),
-                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data))),
+                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: {...data, 'uid': uid}))),
                               ] else if (displayStatus == 'Suspended') ...[
                                 Expanded(child: _actionBtn('Reactivate', Colors.green, () => _reactivateVendor(uid, businessName))),
                                 const SizedBox(width: 8),
-                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data))),
+                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: {...data, 'uid': uid}))),
                               ],
                             ],
                           ),

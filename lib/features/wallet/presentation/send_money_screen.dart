@@ -6,14 +6,22 @@ import 'package:go_router/go_router.dart';
 import '../../auth/services/user_service.dart';
 import '../services/money_transfer_service.dart';
 
-/// Recipients eligible for a casual P2P transfer: verified students in good
-/// standing. Vendors have their own dedicated Pay Vendor flow, and suspended
-/// accounts aren't payable here. A missing accountStatus field means "active"
-/// everywhere else in this app (UserModel's parser, the router's suspend
-/// check), so this matches that convention rather than requiring the field
-/// to be explicitly set.
+/// Recipients eligible for a casual P2P transfer: university-verified
+/// students in good standing. Keyed off isUniversityVerified rather than
+/// role=='verified_student' — the two are supposed to be set atomically
+/// (see UserService.updateUniversityVerification) but role can lag on older
+/// or manually-edited records, which would otherwise make a genuinely
+/// verified user unfindable here. Vendors/admins are excluded since they
+/// have their own dedicated flows, and suspended accounts aren't payable
+/// here. A missing accountStatus field means "active" everywhere else in
+/// this app (UserModel's parser, the router's suspend check), so this
+/// matches that convention rather than requiring the field to be explicitly
+/// set.
 bool _isApprovedRecipientData(Map<String, dynamic> data) =>
-    data['role'] == 'verified_student' && data['accountStatus'] != 'suspended';
+    data['isUniversityVerified'] == true &&
+    data['role'] != 'vendor' &&
+    data['role'] != 'admin' &&
+    data['accountStatus'] != 'suspended';
 
 class SendMoneyScreen extends StatefulWidget {
   const SendMoneyScreen({super.key});
@@ -23,8 +31,7 @@ class SendMoneyScreen extends StatefulWidget {
 }
 
 class _SendMoneyScreenState extends State<SendMoneyScreen> {
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _nameFilterController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
 
@@ -36,8 +43,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
   @override
   void dispose() {
-    _phoneController.dispose();
-    _nameFilterController.dispose();
+    _searchController.dispose();
     _amountController.dispose();
     _noteController.dispose();
     super.dispose();
@@ -51,23 +57,45 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     });
   }
 
-  Future<void> _searchByPhone() async {
-    final phone = UserService.normalizePhone(_phoneController.text.trim());
-    if (phone.isEmpty) return;
+  /// A query counts as a phone number once it's nothing but digits and
+  /// common phone punctuation ((), -, +, spaces) with 7+ digits — enough to
+  /// match "(555) 123-4567" while still treating plain names as names.
+  bool _looksLikePhone(String query) {
+    if (!RegExp(r'^[0-9()\-+.\s]+$').hasMatch(query)) return false;
+    final digits = query.replaceAll(RegExp(r'[^0-9]'), '');
+    return digits.length >= 7;
+  }
+
+  Future<void> _search() async {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) return;
     final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (!query.contains('@') && !_looksLikePhone(query)) {
+      // Plain name — the "Approved Recipients" list below already filters
+      // live as the user types, so there's no separate lookup to run.
+      setState(() => _searchError = null);
+      return;
+    }
 
     setState(() {
       _searching = true;
       _searchError = null;
     });
     try {
+      final field = query.contains('@') ? 'email' : 'phoneNumber';
+      final value = query.contains('@') ? query.toLowerCase() : UserService.normalizePhone(query);
+      if (value.isEmpty) {
+        setState(() => _searchError = 'Enter a valid phone number or email.');
+        return;
+      }
       final snap = await FirebaseFirestore.instance
           .collection('users')
-          .where('phoneNumber', isEqualTo: phone)
+          .where(field, isEqualTo: value)
           .limit(1)
           .get();
       if (snap.docs.isEmpty) {
-        setState(() => _searchError = 'No account found for that phone number.');
+        setState(() => _searchError = 'No account found for "$query".');
         return;
       }
       final doc = snap.docs.first;
@@ -126,7 +154,6 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         toUid: _recipientUid!,
         amount: amount,
         note: _noteController.text.trim(),
-        type: 'transfer',
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -167,20 +194,20 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
           children: [
             _headerCard(colorScheme),
             const SizedBox(height: 16),
-            Text('Enter phone number', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+            Text('Find a recipient', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              onSubmitted: (_) => _searchByPhone(),
+              controller: _searchController,
+              onChanged: (_) => setState(() {}),
+              onSubmitted: (_) => _search(),
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.phone, color: colorScheme.onSurfaceVariant),
+                prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
                 suffixIcon: _searching
                     ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)))
-                    : IconButton(icon: const Icon(Icons.arrow_forward), onPressed: _searchByPhone),
+                    : IconButton(icon: const Icon(Icons.arrow_forward), onPressed: _search),
                 filled: true,
                 fillColor: colorScheme.surface,
-                hintText: '(555) 123-4567',
+                hintText: 'Phone, email, or name',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: colorScheme.outlineVariant),
@@ -203,7 +230,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 child: Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: const Color(0xFFFFF0F0),
+                      backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                       child: Text(_recipientName!.isNotEmpty ? _recipientName![0].toUpperCase() : '?', style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(width: 12),
@@ -217,19 +244,6 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
             Text('Approved Recipients', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
             Text('Verified students only. No contact info shown.', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _nameFilterController,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
-                filled: true,
-                fillColor: colorScheme.surface,
-                hintText: 'Search by name',
-                isDense: true,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-              ),
-            ),
             const SizedBox(height: 8),
             if (uid == null)
               Text('Not signed in.', style: TextStyle(color: colorScheme.onSurfaceVariant))
@@ -284,7 +298,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: const Color(0xFFFFF0F0),
+                                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                                 child: Text(
                                   contact['name']!.isNotEmpty ? contact['name']![0].toUpperCase() : '?',
                                   style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold),
@@ -352,11 +366,12 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
   Widget _approvedRecipientsList(String uid) {
     return StreamBuilder<QuerySnapshot>(
-      // Single equality + orderBy on a different field — no composite index
-      // required. accountStatus is filtered client-side below.
+      // Equality + orderBy on a different field needs the composite index
+      // in firestore.indexes.json (isUniversityVerified + createdAt).
+      // role/accountStatus are filtered client-side below.
       stream: FirebaseFirestore.instance
           .collection('users')
-          .where('role', isEqualTo: 'verified_student')
+          .where('isUniversityVerified', isEqualTo: true)
           .orderBy('createdAt', descending: true)
           .limit(200)
           .snapshots(),
@@ -366,7 +381,8 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
         }
         final theme = Theme.of(context);
         final colorScheme = theme.colorScheme;
-        final nameFilter = _nameFilterController.text.trim().toLowerCase();
+        final rawQuery = _searchController.text.trim();
+        final nameFilter = (rawQuery.contains('@') || _looksLikePhone(rawQuery)) ? '' : rawQuery.toLowerCase();
         final recipients = snapshot.data!.docs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
           return doc.id != uid && _isApprovedRecipientData(data);
@@ -402,7 +418,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                     children: [
                       CircleAvatar(
                         radius: 26,
-                        backgroundColor: const Color(0xFFFFF0F0),
+                        backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                         child: Text(
                           name.isNotEmpty ? name[0].toUpperCase() : '?',
                           style: const TextStyle(color: Color(0xFF8B1A2E), fontWeight: FontWeight.bold, fontSize: 18),

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../../core/widgets/app_states.dart';
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -109,7 +110,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               onChanged: (v) => setState(() => _search = v.toLowerCase()),
               decoration: InputDecoration(
                 hintText: 'Search users...',
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                prefixIcon: Icon(Icons.search, color: cs.onSurfaceVariant),
                 filled: true,
                 fillColor: cs.surface,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -135,9 +136,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       decoration: BoxDecoration(
                         color: selected ? cs.primary : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? cs.primary : Colors.grey.shade200),
+                        border: Border.all(color: selected ? cs.primary : cs.outlineVariant),
                       ),
-                      child: Text(f, style: TextStyle(color: selected ? Colors.white : cs.onSurface, fontSize: 12, fontWeight: FontWeight.w500)),
+                      child: Text(f, style: TextStyle(color: selected ? cs.onPrimary : cs.onSurface, fontSize: 12, fontWeight: FontWeight.w500)),
                     ),
                   );
                 },
@@ -149,19 +150,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               stream: _db.collection('users').orderBy('createdAt', descending: true).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator(color: cs.primary));
+                  return const AppLoadingState(message: 'Loading users…');
                 }
                 if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                        const SizedBox(height: 8),
-                        const Text('Failed to load users', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  );
+                  return AppErrorState(onRetry: () => setState(() {}));
                 }
 
                 var docs = snapshot.data?.docs ?? [];
@@ -172,10 +164,20 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     final data = d.data() as Map<String, dynamic>;
                     return data['accountStatus'] == 'suspended';
                   }).toList();
+                } else if (_filter == 'Verified Student') {
+                  // Check isUniversityVerified directly rather than trusting
+                  // role == 'verified_student' — the two are meant to move
+                  // together (updateUniversityVerification sets both), but
+                  // a role edited outside that flow (e.g. directly in the
+                  // Firestore console) would make an actually-verified user
+                  // invisible under this filter otherwise.
+                  docs = docs.where((d) {
+                    final data = d.data() as Map<String, dynamic>;
+                    return data['isUniversityVerified'] == true;
+                  }).toList();
                 } else if (_filter != 'All') {
                   final roleMap = {
                     'Normal User': 'normal_user',
-                    'Verified Student': 'verified_student',
                     'Vendor': 'vendor',
                     'Admin': 'admin',
                   };
@@ -196,16 +198,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 }
 
                 if (docs.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.people_outline, color: Colors.grey.shade400, size: 48),
-                        const SizedBox(height: 8),
-                        Text(_filter == 'All' ? 'No users yet.' : 'No $_filter users.',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                      ],
-                    ),
+                  return AppEmptyState(
+                    icon: Icons.people_outline,
+                    title: _filter == 'All' ? 'No users yet' : 'No $_filter users',
+                    subtitle: _search.isNotEmpty ? 'Try a different search term.' : 'Users will appear here once they register.',
                   );
                 }
 
@@ -235,7 +231,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       decoration: BoxDecoration(
                         color: cs.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: isSuspended ? Colors.red.shade100 : Colors.grey.shade100),
+                        border: Border.all(color: isSuspended ? Colors.red.shade100 : cs.outlineVariant),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,22 +239,27 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: cs.primary.withValues(alpha: 0.1),
-                                    child: Text(name.isNotEmpty ? name[0] : '?', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
-                                      Text(email, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                    ],
-                                  ),
-                                ],
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: cs.primary.withValues(alpha: 0.1),
+                                      child: Text(name.isNotEmpty ? name[0] : '?', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
+                                          Text(email, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
@@ -282,11 +283,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              _verifiedBadge('Email', emailVerified),
+                              _verifiedBadge(cs, 'Email', emailVerified),
                               const SizedBox(width: 8),
-                              _verifiedBadge('University', uniVerified),
+                              _verifiedBadge(cs, 'University', uniVerified),
                               const Spacer(),
-                              Text('Joined $joined', style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                              Text('Joined $joined', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 11)),
                             ],
                           ),
                           if (role != 'admin') ...[
@@ -326,18 +327,18 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-  Widget _verifiedBadge(String label, bool verified) {
+  Widget _verifiedBadge(ColorScheme cs, String label, bool verified) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: verified ? Colors.green.shade50 : Colors.grey.shade100,
+        color: verified ? Colors.green.shade50 : cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
-          Icon(verified ? Icons.check_circle : Icons.cancel, size: 12, color: verified ? Colors.green : Colors.grey),
+          Icon(verified ? Icons.check_circle : Icons.cancel, size: 12, color: verified ? Colors.green : cs.onSurfaceVariant),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 11, color: verified ? Colors.green : Colors.grey)),
+          Text(label, style: TextStyle(fontSize: 11, color: verified ? Colors.green : cs.onSurfaceVariant)),
         ],
       ),
     );

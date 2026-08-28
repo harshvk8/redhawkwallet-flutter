@@ -1,114 +1,135 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../../core/widgets/app_states.dart';
 
-class NotificationsScreen extends StatefulWidget {
+class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
-  @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
-}
-
-class _NotificationsScreenState extends State<NotificationsScreen> {
-  bool _isLoading = true;
-  bool _hasError = false;
-
-  static const List<Map<String, String>> _notifications = [
-    {'title': 'Wallet topped up', 'detail': 'Your demo wallet balance was updated.', 'time': '10 min ago', 'icon': 'wallet'},
-    {'title': 'New offer available', 'detail': '10% Student Discount at Red Hawk Cafe.', 'time': '1 hr ago', 'icon': 'offer'},
-    {'title': 'Verification reminder', 'detail': 'Add your university email to unlock rewards.', 'time': 'Today', 'icon': 'verify'},
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() { _isLoading = true; _hasError = false; });
-    try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (mounted) setState(() => _isLoading = false);
-    } catch (_) {
-      if (mounted) setState(() { _isLoading = false; _hasError = true; });
-    }
-  }
-
-  IconData _icon(String type) {
+  IconData _iconFor(String? type) {
     switch (type) {
-      case 'offer': return Icons.local_offer_outlined;
-      case 'verify': return Icons.school_outlined;
-      default: return Icons.account_balance_wallet_outlined;
+      case 'deposit':
+        return Icons.account_balance_wallet;
+      case 'vendor_status':
+        return Icons.storefront;
+      case 'transaction':
+      default:
+        return Icons.notifications_none;
     }
+  }
+
+  String _timeAgo(DateTime time) {
+    final diff = DateTime.now().difference(time);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+    if (diff.inHours < 24) return '${diff.inHours} hr ago';
+    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays < 7) return '${diff.inDays} days ago';
+    return '${time.month}/${time.day}/${time.year}';
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
-    Widget body;
-    if (_isLoading) {
-      body = const AppLoadingState(message: 'Loading notifications…');
-    } else if (_hasError) {
-      body = AppErrorState(onRetry: _load);
-    } else if (_notifications.isEmpty) {
-      body = const AppEmptyState(
-        icon: Icons.notifications_none_outlined,
-        title: 'No notifications',
-        subtitle: 'You\'re all caught up! Check back later.',
-      );
-    } else {
-      body = ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _notifications.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 10),
-        itemBuilder: (context, index) {
-          final n = _notifications[index];
-          return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.grey.shade100),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: cs.primary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(_icon(n['icon']!), color: cs.primary, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(n['title']!, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
-                          Text(n['time']!, style: TextStyle(fontSize: 11, color: cs.onSurface.withValues(alpha: 0.5))),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(n['detail']!, style: TextStyle(fontSize: 13, color: cs.onSurface.withValues(alpha: 0.7), height: 1.4)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    }
+    final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Notifications')),
-      body: body,
+      body: uid == null
+          ? const SizedBox.shrink()
+          : StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('notifications')
+                  .where('uid', isEqualTo: uid)
+                  .orderBy('createdAt', descending: true)
+                  .limit(100)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator(color: cs.primary));
+                }
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Failed to load notifications.'));
+                }
+                final docs = snapshot.data?.docs ?? [];
+                if (docs.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.notifications_none, size: 48, color: cs.onSurfaceVariant),
+                        const SizedBox(height: 8),
+                        Text('No notifications yet.', style: TextStyle(color: cs.onSurfaceVariant)),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemBuilder: (context, index) {
+                    final doc = docs[index];
+                    final data = doc.data() as Map<String, dynamic>;
+                    final read = data['read'] as bool? ?? false;
+                    final createdAt = (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now();
+
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: read ? null : () => doc.reference.update({'read': true}),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: read ? cs.surface : cs.primary.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: cs.outlineVariant),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: cs.primary.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(_iconFor(data['type'] as String?), color: cs.primary, size: 20),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    data['title'] as String? ?? '',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: read ? FontWeight.w600 : FontWeight.bold,
+                                      color: cs.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(data['detail'] as String? ?? '', style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
+                                  const SizedBox(height: 6),
+                                  Text(_timeAgo(createdAt), style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
+                                ],
+                              ),
+                            ),
+                            if (!read)
+                              Container(
+                                width: 8,
+                                height: 8,
+                                margin: const EdgeInsets.only(top: 4),
+                                decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  itemCount: docs.length,
+                );
+              },
+            ),
     );
   }
 }

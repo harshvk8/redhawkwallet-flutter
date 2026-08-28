@@ -26,6 +26,7 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
 
   void _showIssueDetail(BuildContext context, Map<String, dynamic> issue) {
     final isOpen = issue['status'] == 'Open';
+    final cs = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
@@ -39,7 +40,7 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
               children: [
                 Icon(Icons.warning_amber, color: isOpen ? Colors.orange : Colors.green),
                 const SizedBox(width: 8),
-                Expanded(child: Text(issue['title'] as String, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                Expanded(child: Text(issue['title'] as String, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: cs.onSurface))),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -51,26 +52,26 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            _detailRow(Icons.person_outline, 'Reported by', issue['reportedBy'] as String),
-            _detailRow(Icons.calendar_today_outlined, 'Date', issue['date'] as String),
-            _detailRow(Icons.info_outline, 'Status', issue['status'] as String),
+            _detailRow(cs, Icons.person_outline, 'Reported by', issue['reportedBy'] as String),
+            _detailRow(cs, Icons.calendar_today_outlined, 'Date', issue['date'] as String),
+            _detailRow(cs, Icons.info_outline, 'Status', issue['status'] as String),
             const SizedBox(height: 16),
-            const Text('Resolution coming post-MVP. Track via support queue.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+            Text('Resolution coming post-MVP. Track via support queue.', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
           ],
         ),
       ),
     );
   }
 
-  Widget _detailRow(IconData icon, String label, String value) {
+  Widget _detailRow(ColorScheme cs, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: Colors.grey),
+          Icon(icon, size: 16, color: cs.onSurfaceVariant),
           const SizedBox(width: 8),
-          Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          Text('$label: ', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: cs.onSurface)),
         ],
       ),
     );
@@ -78,8 +79,8 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Reported Issues'),
         backgroundColor: const Color(0xFFC8102E),
@@ -107,11 +108,11 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFFC8102E) : Colors.white,
+                        color: selected ? const Color(0xFFC8102E) : cs.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: selected ? const Color(0xFFC8102E) : Colors.grey.shade200),
+                        border: Border.all(color: selected ? const Color(0xFFC8102E) : cs.outlineVariant),
                       ),
-                      child: Text(filter, style: TextStyle(color: selected ? Colors.white : Colors.black, fontSize: 13, fontWeight: FontWeight.w500)),
+                      child: Text(filter, style: TextStyle(color: selected ? Colors.white : cs.onSurface, fontSize: 13, fontWeight: FontWeight.w500)),
                     ),
                   );
                 },
@@ -128,9 +129,9 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade100),
+                      border: Border.all(color: cs.outlineVariant),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,7 +143,7 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
                               children: [
                                 Icon(Icons.warning_amber, color: isOpen ? Colors.orange : Colors.green, size: 20),
                                 const SizedBox(width: 8),
-                                Text(issue['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                Text(issue['title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
                               ],
                             ),
                             Container(
@@ -156,8 +157,8 @@ class _ReportedIssuesScreenState extends State<ReportedIssuesScreen> {
                           ],
                         ),
                         const SizedBox(height: 6),
-                        Text('Reported by ${issue['reportedBy']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                        Text(issue['date'], style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text('Reported by ${issue['reportedBy']}', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+                        Text(issue['date'], style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                         const SizedBox(height: 10),
                         OutlinedButton(
                           onPressed: () => _showIssueDetail(context, issue),

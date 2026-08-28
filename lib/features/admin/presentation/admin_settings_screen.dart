@@ -35,7 +35,7 @@ class AdminSettingsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: [
@@ -50,7 +50,7 @@ class AdminSettingsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('Admin User', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const Text('admin@redhawk.edu', style: TextStyle(color: Colors.grey, fontSize: 13)),
+              Text('admin@redhawk.edu', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
               const SizedBox(height: 4),
               Text('Role: Admin', style: TextStyle(color: cs.primary, fontSize: 12, fontWeight: FontWeight.bold)),
             ],
@@ -76,7 +76,7 @@ class AdminSettingsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

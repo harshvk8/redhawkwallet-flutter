@@ -81,16 +81,16 @@ class UserProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Verification Status', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          _statusRow('Email Verified', true),
+          _statusRow(cs, 'Email Verified', true),
           const SizedBox(height: 8),
-          _statusRow('University Verified', false),
+          _statusRow(cs, 'University Verified', false),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -111,7 +111,7 @@ class UserProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _statusRow(String label, bool verified) {
+  Widget _statusRow(ColorScheme cs, String label, bool verified) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -119,14 +119,14 @@ class UserProfileScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: verified ? Colors.green.shade50 : Colors.grey.shade100,
+            color: verified ? Colors.green.shade50 : cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
             children: [
-              Icon(verified ? Icons.check_circle : Icons.cancel, size: 14, color: verified ? Colors.green : Colors.grey),
+              Icon(verified ? Icons.check_circle : Icons.cancel, size: 14, color: verified ? Colors.green : cs.onSurfaceVariant),
               const SizedBox(width: 4),
-              Text(verified ? 'Verified' : 'Not Verified', style: TextStyle(fontSize: 12, color: verified ? Colors.green : Colors.grey, fontWeight: FontWeight.bold)),
+              Text(verified ? 'Verified' : 'Not Verified', style: TextStyle(fontSize: 12, color: verified ? Colors.green : cs.onSurfaceVariant, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
@@ -141,7 +141,7 @@ class UserProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,7 +164,7 @@ class UserProfileScreen extends StatelessWidget {
         children: [
           Icon(icon, color: cs.primary, size: 20),
           const SizedBox(width: 12),
-          Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          Text('$label: ', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
           Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
         ],
       ),

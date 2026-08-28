@@ -135,7 +135,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: _periods.map((p) {
@@ -157,7 +157,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: selected ? Colors.white : cs.onSurface.withValues(alpha: 0.6),
+                    color: selected ? cs.onPrimary : cs.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ),
@@ -194,7 +194,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
             Icon(icon, color: color, size: 20),
             const SizedBox(height: 4),
             Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cs.onSurface)),
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+            Text(label, style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
           ],
         ),
       ),
@@ -208,7 +208,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -247,7 +247,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: _topItems.asMap().entries.map((entry) {
@@ -255,7 +255,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
           final item = entry.value;
           return Column(
             children: [
-              if (i > 0) Divider(height: 1, color: Colors.grey.shade100),
+              if (i > 0) Divider(height: 1, color: cs.outlineVariant),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
@@ -283,7 +283,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(item['name'] as String, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: cs.onSurface)),
-                          Text('${item['sold']} sold', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text('${item['sold']} sold', style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
                         ],
                       ),
                     ),
@@ -311,7 +311,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -335,7 +335,7 @@ class _VendorSalesReportScreenState extends State<VendorSalesReportScreen> {
                       child: LinearProgressIndicator(
                         value: pct,
                         minHeight: 10,
-                        backgroundColor: Colors.grey.shade200,
+                        backgroundColor: cs.surfaceContainerHighest,
                         valueColor: AlwaysStoppedAnimation<Color>(color),
                       ),
                     ),
