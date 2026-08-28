@@ -296,11 +296,11 @@ class _AdminManageVendorsScreenState extends State<AdminManageVendorsScreen> {
                               ] else if (displayStatus == 'Active') ...[
                                 Expanded(child: _actionBtn('Suspend', Colors.red, () => _suspendVendor(uid, businessName))),
                                 const SizedBox(width: 8),
-                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data))),
+                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: {...data, 'uid': uid}))),
                               ] else if (displayStatus == 'Suspended') ...[
                                 Expanded(child: _actionBtn('Reactivate', Colors.green, () => _reactivateVendor(uid, businessName))),
                                 const SizedBox(width: 8),
-                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: data))),
+                                Expanded(child: _outlineBtn('Details', cs, () => context.push('/admin/vendor-details', extra: {...data, 'uid': uid}))),
                               ],
                             ],
                           ),

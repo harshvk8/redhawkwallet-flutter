@@ -155,7 +155,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             icon: const Icon(Icons.refresh),
             onPressed: _loading ? null : _loadAll,
           ),
-          IconButton(icon: const Icon(Icons.notifications_none), onPressed: () => context.push('/notifications')),
+          IconButton(
+            icon: const Icon(Icons.notifications_none),
+            onPressed: () => context.push('/notifications'),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {

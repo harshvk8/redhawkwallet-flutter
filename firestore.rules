@@ -62,6 +62,16 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    match /notifications/{notificationId} {
+      // Written exclusively by transferMoney (Admin SDK, bypasses rules)
+      // alongside the transfer that triggered them, so a client can never
+      // forge a notification for someone else. Owner may only flip `read`.
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null && resource.data.uid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create, delete: if false;
+    }
+
     match /paymentRequests/{requestId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null &&

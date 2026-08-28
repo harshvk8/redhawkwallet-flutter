@@ -58,6 +58,7 @@ import '../../features/legal/presentation/vendor_terms_screen.dart';
 import '../../features/support/presentation/support_chat_screen.dart';
 import '../../features/admin/presentation/admin_support_chats_screen.dart';
 import '../../features/admin/presentation/admin_support_chat_detail_screen.dart';
+import '../services/push_notification_service.dart';
 
 class AppRouter {
   static final _authNotifier = _AuthStateNotifier();
@@ -228,7 +229,10 @@ class AppRouter {
       GoRoute(path: '/vendor/sales-report', builder: (context, state) => const VendorSalesReportScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminDashboardScreen()),
       GoRoute(path: '/admin/vendors', builder: (context, state) => const AdminManageVendorsScreen()),
-      GoRoute(path: '/admin/vendor-details', builder: (context, state) => const AdminVendorDetailsScreen()),
+      GoRoute(
+        path: '/admin/vendor-details',
+        builder: (context, state) => AdminVendorDetailsScreen(vendor: state.extra as Map<String, dynamic>?),
+      ),
       GoRoute(path: '/admin/users', builder: (context, state) => const AdminUsersScreen()),
       GoRoute(path: '/admin/transactions', builder: (context, state) => const AdminTransactionsScreen()),
       GoRoute(path: '/admin/transaction-details', builder: (context, state) => const AdminTransactionDetailsScreen()),
@@ -357,6 +361,7 @@ class _AuthStateNotifier extends ChangeNotifier {
         notifyListeners();
         return;
       }
+      PushNotificationService.instance.registerForUser(user.uid);
       _userDocSub = FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
