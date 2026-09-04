@@ -1,1 +1,46 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"red-hawk-wallet-dev","appId":"1:817185446546:android:cd17833d44899c297e244b","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"red-hawk-wallet-dev","configurations":{"android":"1:817185446546:android:cd17833d44899c297e244b","ios":"1:817185446546:ios:647d6183271e0d747e244b","web":"1:817185446546:web:834c8fb4e84fc3fb7e244b"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "red-hawk-wallet-dev",
+          "appId": "1:817185446546:android:cd17833d44899c297e244b",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "red-hawk-wallet-dev",
+          "configurations": {
+            "android": "1:817185446546:android:cd17833d44899c297e244b",
+            "ios": "1:817185446546:ios:647d6183271e0d747e244b",
+            "web": "1:817185446546:web:834c8fb4e84fc3fb7e244b"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ]
+}
