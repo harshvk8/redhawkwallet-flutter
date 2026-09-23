@@ -39,5 +39,15 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # Some pods ship a lower default deployment target than the Podfile's
+    # `platform :ios '15.0'` and don't pick it up on their own, which this
+    # Xcode's toolchain (min supported: 15.0) then rejects outright.
+    target.build_configurations.each do |config|
+      deployment_target = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      if deployment_target && deployment_target.to_f < 15.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
   end
 end

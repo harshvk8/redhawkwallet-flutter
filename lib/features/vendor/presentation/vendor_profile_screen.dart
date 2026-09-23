@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../core/widgets/app_states.dart';
 
 class VendorProfileScreen extends StatelessWidget {
   const VendorProfileScreen({super.key});
@@ -8,6 +11,8 @@ class VendorProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Vendor Profile'),
@@ -18,99 +23,133 @@ class VendorProfileScreen extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: cs.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: cs.outlineVariant),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: cs.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(Icons.store, color: Color(0xFFC8102E), size: 44),
+      body: uid == null
+          ? const AppErrorState(message: 'Not signed in.')
+          : StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const AppLoadingState(message: 'Loading profile…');
+                }
+                if (snapshot.hasError || !(snapshot.data?.exists ?? false)) {
+                  return AppErrorState(onRetry: () {});
+                }
+
+                final data = snapshot.data!.data() ?? {};
+                final businessName = data['businessName'] as String? ?? 'Business name not set';
+                final ownerName = data['name'] as String? ?? 'Not set';
+                final accountStatus = data['accountStatus'] as String? ?? 'active';
+                final phoneNumber = data['phoneNumber'] as String?;
+                final category = data['businessCategory'] as String?;
+                final location = data['businessLocation'] as String?;
+                final hours = data['businessHours'] as String?;
+                final isActive = accountStatus == 'active';
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: cs.surface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: cs.outlineVariant),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: cs.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Icon(Icons.store, color: Color(0xFFC8102E), size: 44),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(businessName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Text('Owner: $ownerName', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: isActive ? Colors.green.shade50 : Colors.orange.shade50,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                isActive ? 'Active' : accountStatus[0].toUpperCase() + accountStatus.substring(1),
+                                style: TextStyle(
+                                  color: isActive ? Colors.green.shade700 : Colors.orange.shade700,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: cs.surface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: cs.outlineVariant),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Business Information', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 12),
+                            _detailRow(cs, Icons.email_outlined, 'Email', FirebaseAuth.instance.currentUser?.email ?? 'Not set'),
+                            _detailRow(cs, Icons.phone_outlined, 'Phone', phoneNumber ?? 'Not set'),
+                            _detailRow(cs, Icons.category_outlined, 'Category', category ?? 'Not set'),
+                            _detailRow(cs, Icons.location_on_outlined, 'Location', location ?? 'Not set'),
+                            _detailRow(cs, Icons.access_time, 'Hours', hours ?? 'Not set'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => context.push('/vendor/edit-profile'),
+                          icon: const Icon(Icons.edit),
+                          label: const Text('Edit Profile'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFC8102E),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            await FirebaseAuth.instance.signOut();
+                            if (context.mounted) context.go('/login');
+                          },
+                          icon: const Icon(Icons.logout, color: Colors.red),
+                          label: const Text('Logout', style: TextStyle(color: Colors.red)),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: const BorderSide(color: Colors.red),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  const Text('Red Hawk Cafe', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text('Owner: John Smith', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(20)),
-                    child: Text('Active', style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold, fontSize: 13)),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: cs.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: cs.outlineVariant),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Business Information', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
-                  _detailRow(cs, Icons.email_outlined, 'Email', FirebaseAuth.instance.currentUser?.email ?? 'cafe@redhawk.edu'),
-                  _detailRow(cs, Icons.phone_outlined, 'Phone', '+1 (973) 555-0101'),
-                  _detailRow(cs, Icons.category_outlined, 'Category', 'Food & Drinks'),
-                  _detailRow(cs, Icons.location_on_outlined, 'Location', 'Student Center, Floor 1'),
-                  _detailRow(cs, Icons.access_time, 'Hours', 'Mon-Fri 8AM - 6PM'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => context.push('/vendor/edit-profile'),
-                icon: const Icon(Icons.edit),
-                label: const Text('Edit Profile'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC8102E),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                  if (context.mounted) context.go('/login');
-                },
-                icon: const Icon(Icons.logout, color: Colors.red),
-                label: const Text('Logout', style: TextStyle(color: Colors.red)),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: const BorderSide(color: Colors.red),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

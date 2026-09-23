@@ -47,25 +47,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [colorScheme.primary, const Color(0xFFC8102E)]),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Red Hawk Cafe', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                        SizedBox(height: 4),
-                        Text('Active Vendor', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                        SizedBox(height: 16),
-                        Text('\$0.00', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-                        Text('Total Sales Today (Demo)', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                      ],
-                    ),
-                  ),
+                  _buildBalanceCard(context),
                   const SizedBox(height: 16),
                   _buildStatsRow(context),
                   const SizedBox(height: 20),
@@ -197,6 +179,61 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBalanceCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    Widget card({required String name, required String status, required String balance}) {
+      return GestureDetector(
+        onTap: () => context.push('/vendor/sales-report'),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [colorScheme.primary, const Color(0xFFC8102E)]),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(status, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+              const SizedBox(height: 16),
+              Text(balance, style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
+              const Text('Wallet Balance · Tap for sales report', style: TextStyle(color: Colors.white70, fontSize: 12)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (uid == null) {
+      return card(name: 'Vendor', status: 'Active Vendor', balance: '\$0.00');
+    }
+
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+      builder: (context, userSnapshot) {
+        final userData = userSnapshot.data?.data() ?? {};
+        final name = userData['businessName'] as String? ?? 'Vendor';
+        final isActive = (userData['accountStatus'] as String? ?? 'active') == 'active';
+
+        return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance.collection('wallets').doc(uid).snapshots(),
+          builder: (context, walletSnapshot) {
+            final balance = (walletSnapshot.data?.data()?['balance'] as num?)?.toDouble() ?? 0.0;
+            return card(
+              name: name,
+              status: isActive ? 'Active Vendor' : 'Vendor',
+              balance: '\$${balance.toStringAsFixed(2)}',
+            );
+          },
+        );
+      },
     );
   }
 
